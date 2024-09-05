@@ -243,7 +243,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 					identityObject.putPOJO(VERIFIED_ATTRIBUTES, request.getRequest().getVerifiedAttributes());
 					
-					ObjectNode identityObject1 = mapper.convertValue(request.getRequest().getIdentity().toString(), ObjectNode.class);
+					ObjectNode identityObject1 = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 					
 					if(identityObject1.get(UIN)==null) {
 						
