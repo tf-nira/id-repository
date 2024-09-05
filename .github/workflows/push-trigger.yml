@@ -20,6 +20,7 @@ on:
       - 1.*
       - develop
       - MOSIP*
+      - nira_1.2.1
 
 jobs:
   build-maven-id-repository:
