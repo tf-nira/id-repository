@@ -397,10 +397,10 @@ public class CredentialServiceManager {
 					String token = tokenIDGenerator.generateTokenID(uin, partnerId);
 					//Given requestId and the handle value is hashed together to generate a unique requestId for handle credential.
 					//Credential issuance status check systems should generate the handle requestId in the same way to get latest issuance status.
-					String handleRequestId = requestId.concat(handleInfoDTO.getHandle());
+					//String handleRequestId = requestId.concat(handleInfoDTO.getHandle());
 					return createCredReqDto(handleInfoDTO.getHandle(), partnerId, null, null,
 							token, handleInfoDTO.getAdditionalData(),
-							securityManager.hash(handleRequestId.getBytes(StandardCharsets.UTF_8)));
+							null);
 				});
 			}).collect(Collectors.toList());
 			eventRequestsList.addAll(handleRequests);
