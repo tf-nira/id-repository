@@ -21,6 +21,7 @@ on:
       - develop
       - MOSIP*
       - nira_1.2.1
+      - tf_nira_dev
 
 jobs:
   build-maven-id-repository:
