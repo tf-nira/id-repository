@@ -41,7 +41,7 @@ public class Uin implements Persistable<String>, UinInfo {
 	public Uin(String uinRefId, String uin, String uinHash, byte[] uinData, String uinDataHash, String regId,
 			String statusCode, String createdBy, LocalDateTime createdDateTime,
 			String updatedBy, LocalDateTime updatedDateTime, Boolean isDeleted, LocalDateTime deletedDateTime,
-			List<UinBiometric> biometrics, List<UinDocument> documents) {
+			List<UinBiometric> biometrics, List<UinDocument> documents,String part1,String part2,String part3 ,String part4) {
 		this.uinRefId = uinRefId;
 		this.uin = uin;
 		this.uinHash = uinHash;
@@ -57,6 +57,10 @@ public class Uin implements Persistable<String>, UinInfo {
 		this.deletedDateTime = deletedDateTime;
 		this.biometrics = biometrics;
 		this.documents = documents;
+		this.part1=part1;
+		this.part2=part2;
+		this.part3=part3;
+		this.part4=part4;
 	}
 
 	/** The uin ref id. */
@@ -120,6 +124,18 @@ public class Uin implements Persistable<String>, UinInfo {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "uin", cascade = CascadeType.ALL)
 	@NotFound(action = NotFoundAction.IGNORE)
 	private List<UinDocument> documents;
+	
+	@Column(name = "part1")
+	private String part1;
+	
+	@Column(name = "part2")
+	private String part2;
+	
+	@Column(name = "part3")
+	private String part3;
+	
+	@Column(name = "part4")
+	private String part4;
 
 	/**
 	 * Gets the uin data.
