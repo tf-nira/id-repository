@@ -253,7 +253,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		Map<String,String> partEncodedMap=getEncodedPart(identityObject.get("part"));
 		if (Objects.nonNull(request.getRequest().getDocuments()) && !request.getRequest().getDocuments().isEmpty()) {
 			addDocuments(uinHashWithSalt, identityInfo, request.getRequest().getDocuments(), uinRefId, docList, bioList,
-					false);
+				false);
 			uinEntity = new Uin(uinRefId, uinToEncrypt, uinHash, identityInfo, securityManager.hash(identityInfo),
 					request.getRequest().getRegistrationId(), activeStatus, IdRepoSecurityManager.getUser(),
 					DateUtils.getUTCCurrentDateTime(), null, null, false, null, bioList, docList,partEncodedMap.get("part1"),partEncodedMap.get("part2"),partEncodedMap.get("part3"),partEncodedMap.get("part4"));
@@ -509,13 +509,14 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
+				ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
+				Map<String,String> partEncoded=getEncodedPart(identityObject.get("part"));
+				uinObject.setPart1(partEncoded.get("part1"));
+				uinObject.setPart2(partEncoded.get("part2"));
+				uinObject.setPart3(partEncoded.get("part3"));
+				uinObject.setPart4(partEncoded.get("part4"));
 			}
-			ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
-			Map<String,String> partEncoded=getEncodedPart(identityObject.get("part"));
-			uinObject.setPart1(partEncoded.get("part1"));
-			uinObject.setPart2(partEncoded.get("part2"));
-			uinObject.setPart3(partEncoded.get("part3"));
-			uinObject.setPart4(partEncoded.get("part4"));
+			
 			uinObject = uinRepo.save(uinObject);
 			anonymousProfileHelper.setNewUinData(uinObject.getUinData());
 			uinHistoryRepo.save(new UinHistory(uinObject.getUinRefId(), DateUtils.getUTCCurrentDateTime(),
