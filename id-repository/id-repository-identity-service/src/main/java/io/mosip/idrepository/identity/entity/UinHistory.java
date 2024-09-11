@@ -61,7 +61,7 @@ public class UinHistory implements UinInfo, Persistable<String> {
 	public UinHistory(String uinRefId, LocalDateTime effectiveDateTime, String uin, String uinHash, byte[] uinData,
 			String uinDataHash, String regId, String statusCode, String createdBy,
 			LocalDateTime createdDateTime, String updatedBy, LocalDateTime updatedDateTime, Boolean isDeleted,
-			LocalDateTime deletedDateTime) {
+			LocalDateTime deletedDateTime,String part1,String part2,String part3,String part4) {
 		this.uinRefId = uinRefId;
 		this.effectiveDateTime = effectiveDateTime;
 		this.uin = uin;
@@ -76,6 +76,10 @@ public class UinHistory implements UinInfo, Persistable<String> {
 		this.updatedDateTime = updatedDateTime;
 		this.isDeleted = isDeleted;
 		this.deletedDateTime = deletedDateTime;
+		this.part1=part1;
+		this.part2=part2;
+		this.part3=part3;
+		this.part4=part4;
 	}
 
 	/** The uin ref id. */
@@ -137,6 +141,18 @@ public class UinHistory implements UinInfo, Persistable<String> {
 	/** The deleted date time. */
 	@Column(name = "del_dtimes")
 	private LocalDateTime deletedDateTime;
+	
+	@Column(name = "part1")
+	private String part1;
+	
+	@Column(name = "part2")
+	private String part2;
+	
+	@Column(name = "part3")
+	private String part3;
+	
+	@Column(name = "part4")
+	private String part4;
 
 	/**
 	 * Gets the uin data.

@@ -34,6 +34,10 @@ CREATE TABLE idrepo.uin_h(
 	upd_dtimes timestamp,
 	is_deleted boolean DEFAULT FALSE,
 	del_dtimes timestamp,
+	part1 character varying(64) NOT NULL,
+	part2 character varying(64) NOT NULL,
+	part3 character varying(64) NOT NULL,
+	part4 character varying(64) NOT NULL,
 	CONSTRAINT pk_uinh PRIMARY KEY (uin_ref_id,eff_dtimes),
 	CONSTRAINT uk_uinh UNIQUE (uin,eff_dtimes)
 

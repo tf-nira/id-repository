@@ -15,6 +15,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import io.mosip.idrepository.core.constant.CredentialRequestStatusLifecycle;
 import io.mosip.idrepository.core.constant.IdType;
+import io.mosip.idrepository.core.constant.Part;
 import io.mosip.idrepository.core.dto.DocumentsDTO;
 import io.mosip.idrepository.core.dto.IdRequestDTO;
 import io.mosip.idrepository.core.dto.RequestDTO;
@@ -249,19 +250,20 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		List<UinDocument> docList = new ArrayList<>();
 		List<UinBiometric> bioList = new ArrayList<>();
 		Uin uinEntity;
+		Map<String,String> partEncodedMap=getEncodedPart(identityObject.get("part"));
 		if (Objects.nonNull(request.getRequest().getDocuments()) && !request.getRequest().getDocuments().isEmpty()) {
 			addDocuments(uinHashWithSalt, identityInfo, request.getRequest().getDocuments(), uinRefId, docList, bioList,
-					false);
+				false);
 			uinEntity = new Uin(uinRefId, uinToEncrypt, uinHash, identityInfo, securityManager.hash(identityInfo),
 					request.getRequest().getRegistrationId(), activeStatus, IdRepoSecurityManager.getUser(),
-					DateUtils.getUTCCurrentDateTime(), null, null, false, null, bioList, docList);
+					DateUtils.getUTCCurrentDateTime(), null, null, false, null, bioList, docList,partEncodedMap.get("part1"),partEncodedMap.get("part2"),partEncodedMap.get("part3"),partEncodedMap.get("part4"));
 			uinEntity = uinRepo.save(uinEntity);
 			mosipLogger.debug(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY,
 					"Record successfully saved in db with documents");
 		} else {
 			uinEntity = new Uin(uinRefId, uinToEncrypt, uinHash, identityInfo, securityManager.hash(identityInfo),
 					request.getRequest().getRegistrationId(), activeStatus, IdRepoSecurityManager.getUser(),
-					DateUtils.getUTCCurrentDateTime(), null, null, false, null, null, null);
+					DateUtils.getUTCCurrentDateTime(), null, null, false, null, null, null, partEncodedMap.get("part1"),partEncodedMap.get("part2"),partEncodedMap.get("part3"),partEncodedMap.get("part4"));
 			uinEntity = uinRepo.save(uinEntity);
 			mosipLogger.debug(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY,
 					"Record successfully saved in db without documents");
@@ -269,12 +271,54 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		uinHistoryRepo.save(new UinHistory(uinRefId, DateUtils.getUTCCurrentDateTime(), uinEntity.getUin(), uinEntity.getUinHash(),
 						uinEntity.getUinData(), uinEntity.getUinDataHash(), uinEntity.getRegId(), activeStatus,
-						IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(), null, null, false, null));
+						IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(), null, null, false, null,uinEntity.getPart1(),uinEntity.getPart2(),uinEntity.getPart3(),uinEntity.getPart4()));
 
 		addIdentityHandle(uinEntity, selectedUniqueHandlesMap);
 		issueCredential(uinEntity.getUin(), uinHashWithSalt, activeStatus, null, uinEntity.getRegId());
 		anonymousProfileHelper.buildAndsaveProfile(false);
 		return uinEntity;
+	}
+
+	private Map<String, String> getEncodedPart(JsonNode partJsonNode) {
+		Map<String,String> 	partMap=new HashMap<String,String>();
+		String trueEncoded=CryptoUtil.encodeToPlainBase64("true".getBytes());
+		String falseEncoded=CryptoUtil.encodeToPlainBase64("false".getBytes());
+		String part=null;
+        if(partJsonNode!=null) {
+        	part=partJsonNode.asText();
+        }
+	    if(part==null) {
+	    	partMap.put("part1",falseEncoded);
+			partMap.put("part2",falseEncoded);
+			partMap.put("part3",falseEncoded);
+			partMap.put("part4",falseEncoded);
+	    }
+	    else if(part.equals(Part.PART1.getPart())) {
+			partMap.put("part1",trueEncoded);
+			partMap.put("part2",falseEncoded);
+			partMap.put("part3",falseEncoded);
+			partMap.put("part4",falseEncoded);
+			
+		}else if(part.equals(Part.PART2.getPart())) {
+			partMap.put("part1",falseEncoded);
+			partMap.put("part2",trueEncoded);
+			partMap.put("part3",falseEncoded);
+			partMap.put("part4",falseEncoded);
+		}
+        else if(part.equals(Part.PART3.getPart())) {
+        	partMap.put("part1",falseEncoded);
+			partMap.put("part2",falseEncoded);
+			partMap.put("part3",trueEncoded);
+			partMap.put("part4",falseEncoded);
+		}
+        else if(part.equals(Part.PART4.getPart())) {
+        	partMap.put("part1",falseEncoded);
+			partMap.put("part2",falseEncoded);
+			partMap.put("part3",falseEncoded);
+			partMap.put("part4",trueEncoded);
+         }
+	   
+		return partMap;
 	}
 
 	protected String getUinToEncrypt(String uin) {
@@ -465,15 +509,21 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
+				ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
+				Map<String,String> partEncoded=getEncodedPart(identityObject.get("part"));
+				uinObject.setPart1(partEncoded.get("part1"));
+				uinObject.setPart2(partEncoded.get("part2"));
+				uinObject.setPart3(partEncoded.get("part3"));
+				uinObject.setPart4(partEncoded.get("part4"));
 			}
-
+			
 			uinObject = uinRepo.save(uinObject);
 			anonymousProfileHelper.setNewUinData(uinObject.getUinData());
 			uinHistoryRepo.save(new UinHistory(uinObject.getUinRefId(), DateUtils.getUTCCurrentDateTime(),
 					uinObject.getUin(), uinObject.getUinHash(), uinObject.getUinData(), uinObject.getUinDataHash(),
 					uinObject.getRegId(), uinObject.getStatusCode(), IdRepoSecurityManager.getUser(),
 					DateUtils.getUTCCurrentDateTime(), IdRepoSecurityManager.getUser(),
-					DateUtils.getUTCCurrentDateTime(), false, null));
+					DateUtils.getUTCCurrentDateTime(), false, null,uinObject.getPart1(),uinObject.getPart2(),uinObject.getPart3(),uinObject.getPart4()));
 			issueCredential(uinObject.getUin(), uinHashWithSalt, uinObject.getStatusCode(),
 					DateUtils.getUTCCurrentDateTime(), uinObject.getRegId());
 			anonymousProfileHelper.buildAndsaveProfile(false);
