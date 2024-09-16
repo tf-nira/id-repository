@@ -340,7 +340,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			if(identityObject.get(UIN)==null) {
 				
 				// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
-				String applicantCitizenshipType = identityObject.path("applicantCitizenshipType").get(0).get("value").asText();
+				String applicantCitizenshipType = identityObject.path("userServiceType").get(0).get("value").asText();
 				String gender = identityObject.path("gender").get(0).get("value").asText();
 				String dateOfBirth = identityObject.get("dateOfBirth").asText();
 				
