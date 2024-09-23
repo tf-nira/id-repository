@@ -509,12 +509,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
-				ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
-				Map<String,String> partEncoded=getEncodedPart(identityObject.get("part"));
-				uinObject.setPart1(partEncoded.get("part1"));
-				uinObject.setPart2(partEncoded.get("part2"));
-				uinObject.setPart3(partEncoded.get("part3"));
-				uinObject.setPart4(partEncoded.get("part4"));
 			}
 			
 			uinObject = uinRepo.save(uinObject);
