@@ -73,6 +73,7 @@
         <module>credential-service</module>
         <module>id-repository-salt-generator</module>
         <module>id-repository-credentials-feeder</module>
+        <module>credential-minio-cleanup</module>
 	</modules>
 
 	<properties>	
