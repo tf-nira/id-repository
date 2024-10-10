@@ -42,7 +42,8 @@ public class CredentialMinioCleanupScheduler {
 	@Scheduled(cron = "${mosip.cleanup.minio.scheduler.cronexpression}")
     public void scheduleTask()
     {    try {
-			LOGGER.info(IdRepoSecurityManager.getUser(), "CleanUpMinioScheduler", "scheuler started");
+
+			LOGGER.info(IdRepoSecurityManager.getUser(), "CleanUpMinioScheduler", "credentials", "scheuler started");
 			String[] statusCodeArray = statusCodes.split(",");
 		 if(statusCodeArray.length>0) {
 				Sort sort = Sort.by(Sort.Direction.ASC, "createDateTime");
@@ -53,6 +54,7 @@ public class CredentialMinioCleanupScheduler {
 					 List<CredentialEntity> credentials=pagecredentialEntities.getContent();
 					for (CredentialEntity credential : credentials) {
 						String dataShareUrl = credential.getDataShareUrl();
+						if (dataShareUrl != null) {
 						String[] dataShareArray = dataShareUrl.split("/");
 						if (dataShareArray.length == 9) {
 							 objectStoreAdapter.deleteObject(dataShareArray[7], dataShareArray[6], null,
@@ -62,6 +64,7 @@ public class CredentialMinioCleanupScheduler {
 									"Record deleted from minio " + dataShareArray[8]);
 
 						}
+					}
 
 					}
 				}
