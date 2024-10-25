@@ -256,6 +256,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			String constructedNIN = constructNin(uin, applicantCitizenshipType, gender, dateOfBirth);
 			// Update request object with new NIN
 			identityObject.put("NIN", constructedNIN);
+			request.getRequest().setIdentity(identityObject);
 		}
 		byte[] identityInfo = convertToBytes(identityObject);
 		String uinHash = getUinHash(uin);
