@@ -62,6 +62,12 @@ public class CredentialConstants {
 	
 	public static final String FULLADDRESS = "fullAddress";
 	
+	public static final String NATIONALITY = "Nationality";
+
+	public static final String DATEOFISSUANCE = "Date of Issuance";
+
+	public static final String DATEOFEXPIRY = "Date of Expiry";
+
 	/** The Constant DATETIME_PATTERN. */
 	public static final String DATETIME_PATTERN = "mosip.credential.service.datetime.pattern";
 
@@ -78,5 +84,8 @@ public class CredentialConstants {
 	public static final String CREDENTIAL_PHOTO_ATTRIBUTE_NAMES = "mosip.credential.photo.attribute.names";
 	public static final String CREDENTIAL_NAME_ATTRIBUTE_NAMES = "mosip.credential.name.attribute.names";
 	public static final String CREDENTIAL_ADDRESS_ATTRIBUTE_NAMES = "mosip.credential.address.attribute.names";
+	public static final String CREDENTIAL_NATIONALITY_ATTRIBUTE_NAMES = "mosip.credential.nationality.attribute.names";
+	public static final String CREDENTIAL_DATEOFISSUANCE_ATTRIBUTE_NAMES = "mosip.credential.dateofissuance.attribute.names";
+	public static final String CREDENTIAL_DATEOFEXPIRY_ATTRIBUTE_NAMES = "mosip.credential.dateofexpiry.attribute.names";
 
 }

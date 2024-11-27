@@ -1,12 +1,18 @@
 package io.mosip.credentialstore.provider;
 import static io.mosip.credentialstore.constants.CredentialConstants.ADDRESS_FORMAT_FUNCTION;
 import static io.mosip.credentialstore.constants.CredentialConstants.CREDENTIAL_ADDRESS_ATTRIBUTE_NAMES;
+import static io.mosip.credentialstore.constants.CredentialConstants.CREDENTIAL_DATEOFEXPIRY_ATTRIBUTE_NAMES;
+import static io.mosip.credentialstore.constants.CredentialConstants.CREDENTIAL_DATEOFISSUANCE_ATTRIBUTE_NAMES;
 import static io.mosip.credentialstore.constants.CredentialConstants.CREDENTIAL_NAME_ATTRIBUTE_NAMES;
+import static io.mosip.credentialstore.constants.CredentialConstants.CREDENTIAL_NATIONALITY_ATTRIBUTE_NAMES;
 import static io.mosip.credentialstore.constants.CredentialConstants.CREDENTIAL_PHOTO_ATTRIBUTE_NAMES;
+import static io.mosip.credentialstore.constants.CredentialConstants.DATEOFEXPIRY;
+import static io.mosip.credentialstore.constants.CredentialConstants.DATEOFISSUANCE;
 import static io.mosip.credentialstore.constants.CredentialConstants.FULLADDRESS;
 import static io.mosip.credentialstore.constants.CredentialConstants.FULLNAME;
 import static io.mosip.credentialstore.constants.CredentialConstants.IDENTITY_ATTRIBUTES;
 import static io.mosip.credentialstore.constants.CredentialConstants.NAME_FORMAT_FUNCTION;
+import static io.mosip.credentialstore.constants.CredentialConstants.NATIONALITY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -125,6 +131,12 @@ public class CredentialProvider {
 
 	@Value("${credential.service.default.vid.type:PERPETUAL}")
 	private String defaultVidType;
+
+	@Value("${credential.service.card.expiry.years:10}")
+	private int cardExpiryInyears;
+
+	@Value("${credential.service.applicant.nationality:UGA}")
+	private String nationality;
 
 	private static final Logger LOGGER = IdRepoLogger.getLogger(CredentialProvider.class);
 
@@ -352,6 +364,18 @@ public class CredentialProvider {
 					additionalData.put("ExpiryTimestamp", vidInfoDTO.getExpiryTimestamp().toString());
 					additionalData.put("TransactionLimit", vidInfoDTO.getTransactionLimit());
 				}
+				else if (isDateOfIssuanceAttribute(attribute)) {
+					attributesMap.put(key, DateUtils.getUTCCurrentDateTimeString(key.getFormat()));
+				} else if (isDateOFExpiryAttribute(attribute)) {
+					DateTimeFormatter format = DateTimeFormatter.ofPattern(EnvUtil.getDateTimePattern());
+					LocalDateTime localdatetime = LocalDateTime
+							.parse(DateUtils.getUTCCurrentDateTimeString(EnvUtil.getDateTimePattern()), format);
+					LocalDateTime dateOfExpiryLocaDateTime = localdatetime.plusYears(cardExpiryInyears);
+					DateTimeFormatter formater = DateTimeFormatter.ofPattern(key.getFormat());
+					attributesMap.put(key, dateOfExpiryLocaDateTime.format(formater));
+				} else if (isNationalityAttribute(attribute)) {
+					attributesMap.put(key, nationality);
+				}
 			}
 
 			credentialServiceRequestDto.setAdditionalData(additionalData);
@@ -405,6 +429,17 @@ public class CredentialProvider {
 				.anyMatch(attrName::equalsIgnoreCase);
 	}
 
+	private boolean isNationalityAttribute(String attrName) {
+		return isAttributeInProperty(attrName, CREDENTIAL_NATIONALITY_ATTRIBUTE_NAMES, NATIONALITY);
+	}
+
+	private boolean isDateOfIssuanceAttribute(String attrName) {
+		return isAttributeInProperty(attrName, CREDENTIAL_DATEOFISSUANCE_ATTRIBUTE_NAMES, DATEOFISSUANCE);
+	}
+
+	private boolean isDateOFExpiryAttribute(String attrName) {
+		return isAttributeInProperty(attrName, CREDENTIAL_DATEOFEXPIRY_ATTRIBUTE_NAMES, DATEOFEXPIRY);
+	}
 	private AllowedKycDto createAllowedKycDto(String attrName) {
 		AllowedKycDto allowedKycDto = new AllowedKycDto();
 		allowedKycDto.setAttributeName(attrName);
