@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.mosip.commons.khazana.exception.ObjectStoreAdapterException;
 import io.mosip.idrepository.core.dto.BioExtractRequestDTO;
 import io.mosip.idrepository.core.dto.BioExtractResponseDTO;
@@ -136,15 +134,11 @@ public class BiometricExtractionServiceImpl implements BiometricExtractionServic
 			throws BiometricExtractionException {
 		mosipLogger.debug(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), "extractBiometricTemplate",
 				"INVOKING BIOMETRIC EXTRACTION FOR THE FORMAT: " + extractionFormats);
-		ObjectMapper objectMapper = new ObjectMapper();
-		try {
-			String json = objectMapper.writeValueAsString(birs);
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), "extractBiometricTemplate",
+				"INVOKING BIOMETRIC EXTRACTION FOR THE list of birs: " + birs);
+		for (BIR bir : birs) {
 			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
-					"extractBiometricTemplate", "INVOKING BIOMETRIC EXTRACTION FOR THE list of birs: " + birs);
-			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
-					"extractBiometricTemplate", "INVOKING BIOMETRIC EXTRACTION FOR THE BIRs json: " + json);
-		} catch (Exception e) {
-			mosipLogger.error("Error serializing BIR list", e);
+					"extractBiometricTemplate", "INVOKING BIOMETRIC EXTRACTION FOR THE  of bir: " + bir);
 		}
 		BioExtractRequestDTO bioExtractReq = new BioExtractRequestDTO();
 		bioExtractReq.setBiometrics(birs);
