@@ -43,9 +43,9 @@ public class CredentialConstants {
 
 	public static final String RETRIEVE = "RETRIEVE";
 
-	public static final String BF_SUB_TYPE ="subType";
+	public static final String BF_SUB_TYPE = "fingersIndex";
 
-	public static final String BF_RANK = "rank";
+	public static final String BF_FINGERPRINT = "fingerPrint";
 	
 
 	public static final String MASKING_ATTRIBUTES = "maskingAttributes";

@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class BestFingerDto {
 
-	String subType;
-	int rank;
+	String fingersIndex;
+	String fingerPrint;
 }

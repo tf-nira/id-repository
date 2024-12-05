@@ -112,6 +112,7 @@ public class QrCodeProvider extends CredentialProvider {
 			dataProviderResponse.setCredentialId(credentialId);
 
 			dataProviderResponse.setIssuanceDate(localdatetime);
+
 			LOGGER.debug(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
 					"end formatting credential data");
 			return dataProviderResponse;

@@ -394,10 +394,16 @@ public class CredentialProvider {
 					if ((key.getFormat() != null)
 							&& CredentialConstants.BESTTWOFINGERS.equalsIgnoreCase(key.getFormat())) {
 						List<BestFingerDto> bestFingerList = getBestTwoFingers(individualBiometricsValue, key);
-						attributesMap.put(key, bestFingerList);
+						if (!bestFingerList.isEmpty()) {
+							attributesMap.put(key, bestFingerList);
+						}
+
 					} else {
 						String cbeff = filterBiometric(individualBiometricsValue, key);
-						attributesMap.put(key, cbeff);
+						if (cbeff != null) {
+							attributesMap.put(key, cbeff);
+						}
+
 					}
 				}
 
@@ -460,7 +466,9 @@ public class CredentialProvider {
 	private List<BestFingerDto> getBestTwoFingers(String individualBiometricsValue, AllowedKycDto key)
 			throws Exception {
 		List<BestFingerDto> bestFingerList = new ArrayList<>();
-		Map<String, Long> subTypeScoreMap = new HashMap<>();
+		Map<String, Long> leftSubTypeScoreMap = new HashMap<>();
+		Map<String, Long> rightSubTypeScoreMap = new HashMap<>();
+		Map<String, BIR> subtypeBIRMap = new HashMap<>();
 		Source source = key.getSource().get(0);
 
 		List<Filter> filterList = source.getFilter();
@@ -485,7 +493,13 @@ public class CredentialProvider {
 				String subType;
 				if (bdbSubTypeList != null) {
 					subType = getSubType(bdbSubTypeList);
-					subTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+					if (subType.contains("Left")) {
+						leftSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+					} else {
+						rightSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+					}
+					subtypeBIRMap.put(subType, bir);
+
 				}
 
 			} else if (typeAndSubTypeMap.containsKey(type) && typeAndSubTypeMap.get(type) != null) {
@@ -495,30 +509,39 @@ public class CredentialProvider {
 				if (bdbSubTypeList != null) {
 					subType = getSubType(bdbSubTypeList);
 					if (subTypeList.contains(subType)) {
-						subTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
-
+						if (subType.contains("Left")) {
+							leftSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+						} else {
+							rightSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+						}
+						subtypeBIRMap.put(subType, bir);
 					}
 				}
 			}
 		}
-		if (!subTypeScoreMap.isEmpty()) {
-			if (subTypeScoreMap.size() == 1) {
-				String firstBestFinger = Collections.max(subTypeScoreMap.entrySet(), Map.Entry.comparingByValue())
-						.getKey();
-				bestFingerList.add(new BestFingerDto(firstBestFinger, 1));
-			} else {
-				String firstBestFinger = Collections.max(subTypeScoreMap.entrySet(), Map.Entry.comparingByValue())
-						.getKey();
-				subTypeScoreMap.remove(firstBestFinger);
-				String secondBestFinger = Collections.max(subTypeScoreMap.entrySet(), Map.Entry.comparingByValue())
-						.getKey();
-				bestFingerList.add(new BestFingerDto(firstBestFinger, 1));
-				bestFingerList.add(new BestFingerDto(secondBestFinger, 2));
-			}
-
-		}
-
+		getBestTwoFingersWithData(leftSubTypeScoreMap, subtypeBIRMap, bestFingerList);
+		getBestTwoFingersWithData(rightSubTypeScoreMap, subtypeBIRMap, bestFingerList);
 		return bestFingerList;
+	}
+
+	private void getBestTwoFingersWithData(Map<String, Long> subTypeScoreMap, Map<String, BIR> subtypeBIRMap,
+			List<BestFingerDto> bestFingerList)
+			throws Exception {
+		BestFingerDto bestFingerDto = null;
+		if (!subTypeScoreMap.isEmpty()) {
+				String bestFinger = Collections.max(subTypeScoreMap.entrySet(), Map.Entry.comparingByValue())
+						.getKey();
+				String fingerPrint = getBiometric(bestFinger, subtypeBIRMap);
+				bestFingerDto = new BestFingerDto(bestFinger, fingerPrint);
+				bestFingerList.add(bestFingerDto);
+		}
+	}
+
+	private String getBiometric(String leftBestFinger, Map<String, BIR> subtypeBIRMap) throws Exception {
+		List<BIR> filteredBIRList = new ArrayList<>();
+		filteredBIRList.add(subtypeBIRMap.get(leftBestFinger));
+		byte[] cBEFFByte = cbeffutil.createXML(filteredBIRList);
+		return CryptoUtil.encodeToURLSafeBase64(cBEFFByte);
 	}
 
 	protected String getSubType(List<String> bdbSubTypeList) {
@@ -590,7 +613,7 @@ public class CredentialProvider {
 				return CryptoUtil.encodeToURLSafeBase64(cBEFFByte);
 
 			} else {
-				return individualBiometricsValue;
+				return null;
 			}
 		} else {
 			return individualBiometricsValue;
