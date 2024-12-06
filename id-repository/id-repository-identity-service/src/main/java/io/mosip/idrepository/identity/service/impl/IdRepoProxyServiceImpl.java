@@ -462,8 +462,6 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 				List<BIR> filtertedBirTypesForModality = filterExceptionBiometrics(birTypesForModality, finalBirs);
 				Optional<Entry<String, String>> extractionFormatForModality = extractionFormats.entrySet().stream()
 						.filter(ent -> ent.getKey().toLowerCase().contains(modality.value().toLowerCase())).findAny();
-				mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
-						"getBiometricsForRequestedFormats", "filtered birs: " + filtertedBirTypesForModality);
 				if (!filtertedBirTypesForModality.isEmpty()) {
 					if (!extractionFormatForModality.isEmpty()) {
 					Entry<String, String> format = extractionFormatForModality.get();

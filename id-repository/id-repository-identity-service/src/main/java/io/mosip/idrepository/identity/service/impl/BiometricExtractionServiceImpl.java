@@ -134,8 +134,6 @@ public class BiometricExtractionServiceImpl implements BiometricExtractionServic
 			throws BiometricExtractionException {
 		mosipLogger.debug(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), "extractBiometricTemplate",
 				"INVOKING BIOMETRIC EXTRACTION FOR THE FORMAT: " + extractionFormats);
-		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), "extractBiometricTemplate",
-				"INVOKING BIOMETRIC EXTRACTION FOR THE list of birs: " + birs);
 		BioExtractRequestDTO bioExtractReq = new BioExtractRequestDTO();
 		bioExtractReq.setBiometrics(birs);
 		bioExtractReq.setExtractionFormats(extractionFormats);
