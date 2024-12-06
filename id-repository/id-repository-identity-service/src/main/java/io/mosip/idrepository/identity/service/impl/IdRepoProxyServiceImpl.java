@@ -464,7 +464,8 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 						.filter(ent -> ent.getKey().toLowerCase().contains(modality.value().toLowerCase())).findAny();
 				mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
 						"getBiometricsForRequestedFormats", "filtered birs: " + filtertedBirTypesForModality);
-				if (!extractionFormatForModality.isEmpty()) {
+				if (!filtertedBirTypesForModality.isEmpty()) {
+					if (!extractionFormatForModality.isEmpty()) {
 					Entry<String, String> format = extractionFormatForModality.get();
 					CompletableFuture<List<BIR>> extractTemplateFuture = biometricExtractionService.extractTemplate(
 							uinHash, fileName, format.getKey(), format.getValue(), filtertedBirTypesForModality);
@@ -474,6 +475,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, "extractTemplate",
 							"GETTING NON EXTRACTED FORMAT for Modality: " + modality.name());
 					finalBirs.addAll(filtertedBirTypesForModality);
+				}
 				}
 			}
 
