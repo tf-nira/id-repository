@@ -1,7 +1,59 @@
 package io.mosip.idrepository.identity.service.impl;
 
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ACTIVE_STATUS;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ADD_IDENTITY;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ALL;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.BIO;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.BIOMETRICS;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CREATE;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.DEMO;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.DEMOGRAPHICS;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.GET_FILES;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_HASH;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_REPO;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_REPO_SERVICE_IMPL;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.MOSIP_ID_UPDATE;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.READ;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.RETRIEVE_IDENTITY;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.SUPPORTED_MODALITIES;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.UPDATE_IDENTITY;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.WEB_SUB_PUBLISH_URL;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.BIO_EXTRACTION_ERROR;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.DATABASE_ACCESS_ERROR;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.DOCUMENT_HASH_MISMATCH;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.ID_OBJECT_PROCESSING_FAILED;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.NO_RECORD_FOUND;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.RECORD_EXISTS;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.JDBCConnectionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.mosip.idrepository.core.builder.RestRequestBuilder;
 import io.mosip.idrepository.core.constant.EventType;
 import io.mosip.idrepository.core.constant.IDAEventType;
@@ -9,7 +61,6 @@ import io.mosip.idrepository.core.constant.IdRepoErrorConstants;
 import io.mosip.idrepository.core.constant.IdType;
 import io.mosip.idrepository.core.constant.RestServicesConstants;
 import io.mosip.idrepository.core.dto.DocumentsDTO;
-import io.mosip.idrepository.core.dto.HandleInfoDTO;
 import io.mosip.idrepository.core.dto.IdRequestDTO;
 import io.mosip.idrepository.core.dto.IdResponseDTO;
 import io.mosip.idrepository.core.dto.ResponseDTO;
@@ -46,55 +97,6 @@ import io.mosip.kernel.core.websub.model.Event;
 import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.kernel.core.websub.model.Type;
 import io.mosip.kernel.core.websub.spi.PublisherClient;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.exception.JDBCConnectionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionException;
-
-import javax.annotation.Resource;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ACTIVE_STATUS;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ADD_IDENTITY;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ALL;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.BIO;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.BIOMETRICS;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.CREATE;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.DEMO;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.DEMOGRAPHICS;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.GET_FILES;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_HASH;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_REPO;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_REPO_SERVICE_IMPL;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.MOSIP_ID_UPDATE;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.READ;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.RETRIEVE_IDENTITY;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.SUPPORTED_MODALITIES;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.UPDATE_IDENTITY;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.WEB_SUB_PUBLISH_URL;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.BIO_EXTRACTION_ERROR;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.DATABASE_ACCESS_ERROR;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.DOCUMENT_HASH_MISMATCH;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.ID_OBJECT_PROCESSING_FAILED;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.NO_RECORD_FOUND;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.RECORD_EXISTS;
 
 /**
  * The Class IdRepoServiceImpl - Service implementation for Identity service.
@@ -457,20 +459,21 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 				List<BIR> birTypesForModality = originalBirs.stream()
 						.filter(bir -> bir.getBdbInfo().getType().get(0).value().equalsIgnoreCase(modality.value()))
 						.collect(Collectors.toList());
-
+				List<BIR> filtertedBirTypesForModality = filterExceptionBiometrics(birTypesForModality, finalBirs);
 				Optional<Entry<String, String>> extractionFormatForModality = extractionFormats.entrySet().stream()
 						.filter(ent -> ent.getKey().toLowerCase().contains(modality.value().toLowerCase())).findAny();
-
+				mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+						"getBiometricsForRequestedFormats", "filtered birs: " + filtertedBirTypesForModality);
 				if (!extractionFormatForModality.isEmpty()) {
 					Entry<String, String> format = extractionFormatForModality.get();
 					CompletableFuture<List<BIR>> extractTemplateFuture = biometricExtractionService.extractTemplate(
-							uinHash, fileName, format.getKey(), format.getValue(), birTypesForModality);
+							uinHash, fileName, format.getKey(), format.getValue(), filtertedBirTypesForModality);
 					extractionFutures.add(extractTemplateFuture);
 
 				} else {
 					mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, "extractTemplate",
 							"GETTING NON EXTRACTED FORMAT for Modality: " + modality.name());
-					finalBirs.addAll(birTypesForModality);
+					finalBirs.addAll(filtertedBirTypesForModality);
 				}
 			}
 
@@ -782,6 +785,27 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					: ((IdRepoAppUncheckedException) e).getErrorText();
 			throw new IdRepoAppException(errorCode, errorMsg, e);
 		}
+	}
+
+	private List<BIR> filterExceptionBiometrics(List<BIR> birTypesForModality, List<BIR> finalBirs)
+	{
+		List<BIR> filteredBirs = new ArrayList<BIR>();
+		for (BIR bir : birTypesForModality) {
+
+		Map<String, String> othersMap = new HashMap<String, String>();
+		if (bir.getOthers() != null) {
+			othersMap = bir.getOthers().entrySet().stream()
+					.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+		}
+
+		if ((othersMap == null || !othersMap.containsKey("EXCEPTION")) ? true
+				: !(Boolean.parseBoolean(othersMap.get("EXCEPTION")))) {
+			filteredBirs.add(bir);
+		} else {
+			finalBirs.add(bir);
+		}
+	}
+	return filteredBirs;
 	}
 
 }
