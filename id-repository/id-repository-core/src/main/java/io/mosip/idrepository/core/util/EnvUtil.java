@@ -68,6 +68,7 @@ public class EnvUtil {
 	@Getter @Setter private static Boolean credServiceIncludeCertificate;
 	@Getter @Setter private static Boolean credServiceIncludePayload;
 	@Getter @Setter private static String uinJsonPath;
+	@Getter @Setter private static String ninJsonPath;
 	@Getter @Setter private static String idrepoDBUrl;
 	@Getter @Setter private static String idrepoDBUsername;
 	@Getter @Setter private static String idrepoDBPassword;
@@ -162,6 +163,7 @@ public class EnvUtil {
 				this.getProperty("mosip.credential.service.includeCertificate", Boolean.class));
 		setCredServiceIncludePayload(this.getProperty("mosip.credential.service.includePayload", Boolean.class));
 		setUinJsonPath(this.getProperty(MOSIP_KERNEL_IDREPO_JSON_PATH, ""));
+		setNinJsonPath(this.getProperty("mosip.idrepo.identity.json.pathNin"));
 		setIdrepoDBUrl(this.getProperty("mosip.idrepo.identity.db.url"));
 		setIdrepoDBUsername(this.getProperty("mosip.idrepo.identity.db.username"));
 		setIdrepoDBPassword(this.getProperty("mosip.idrepo.identity.db.password"));

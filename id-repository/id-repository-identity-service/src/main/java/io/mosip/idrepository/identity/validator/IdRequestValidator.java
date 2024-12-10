@@ -127,6 +127,10 @@ public class IdRequestValidator extends BaseIdRepoValidator implements Validator
 	/** The vid validator. */
 	@Autowired
 	private VidValidator<String> vidValidator;
+	
+	/** The NIN validator. */
+	@Autowired
+	private NinValidator ninValidator;
 
 	@Autowired
 	private IdRepoServiceHelper idRepoServiceHelper;
@@ -370,6 +374,21 @@ public class IdRequestValidator extends BaseIdRepoValidator implements Validator
 	public boolean validateUin(String uin) throws IdRepoAppException {
 		try {
 			return uinValidator.validateId(uin);
+		} catch (InvalidIDException e) {
+			return false;
+		}
+	}
+	
+	/**
+	 * Validate nin.
+	 *
+	 * @param nin the nin
+	 * @return true, if successful
+	 * @throws IdRepoAppException the id repo app exception
+	 */
+	public boolean validateNin(Object nin) throws IdRepoAppException {
+		try {
+			return ninValidator.validateNin(nin);
 		} catch (InvalidIDException e) {
 			return false;
 		}
