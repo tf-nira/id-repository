@@ -3,6 +3,7 @@ package io.mosip.idrepository.identity.test.controller;
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.INVALID_INPUT_PARAMETER;
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.MISSING_INPUT_PARAMETER;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -113,36 +114,35 @@ public class IdRepoControllerTest {
 		request.setId("mosip.id.create");
 		RequestDTO requestDTO = new RequestDTO();
 		Object identity = mapper.readValue(
-				"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-						.getBytes(),
-				Object.class);
+			    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+			    Object.class);
 		requestDTO.setIdentity(identity);
 		request.setRequest(requestDTO);
 		when(validator.validateUin(any())).thenReturn(true);
 		when(idRepoService.addIdentity(any(), any())).thenReturn(response);
 		ResponseEntity<IdResponseDTO> responseEntity = controller.addIdentity(request,
 				new BeanPropertyBindingResult(request, "IdRequestDTO"));
+		assertNotNull(responseEntity);
 		assertEquals(response, responseEntity.getBody());
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}
 
 	@Test(expected = IdRepoAppException.class)
-	public void testAddIdentityFailed()
-			throws IdRepoAppException, JsonParseException, JsonMappingException, IOException {
+	public void testAddIdentityFailed() throws IdRepoAppException, JsonParseException, JsonMappingException, IOException {
 		IdResponseDTO response = new IdResponseDTO();
 		IdRequestDTO request = new IdRequestDTO();
 		request.setId("mosip.id.creat");
 		RequestDTO requestDTO = new RequestDTO();
 		Object identity = mapper.readValue(
-				"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-						.getBytes(),
-				Object.class);
+			    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+			    Object.class);
 		requestDTO.setIdentity(identity);
 		request.setRequest(requestDTO);
 		when(idRepoService.addIdentity(any(), any()))
 				.thenThrow(new IdRepoAppException(IdRepoErrorConstants.UNKNOWN_ERROR));
 		ResponseEntity<IdResponseDTO> responseEntity = controller.addIdentity(request,
 				new BeanPropertyBindingResult(request, "IdRequestDTO"));
+		assertNotNull(responseEntity);
 		assertEquals(response, responseEntity.getBody());
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}
@@ -162,9 +162,8 @@ public class IdRepoControllerTest {
 			request.setId("mosip.id.create");
 			RequestDTO requestDTO = new RequestDTO();
 			Object identity = mapper.readValue(
-					"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-							.getBytes(),
-					Object.class);
+				    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+				    Object.class);
 			requestDTO.setIdentity(identity);
 			request.setRequest(requestDTO);
 			when(validator.validateUin(Mockito.anyString())).thenThrow(new InvalidIDException(null, null));
@@ -283,9 +282,8 @@ public class IdRepoControllerTest {
 		request.setId("mosip.id.update");
 		RequestDTO requestDTO = new RequestDTO();
 		Object identity = mapper.readValue(
-				"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-						.getBytes(),
-				Object.class);
+			    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+			    Object.class);
 		requestDTO.setIdentity(identity);
 		request.setRequest(requestDTO);
 		BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "IdRequestDTO");
@@ -304,9 +302,8 @@ public class IdRepoControllerTest {
 			request.setId("mosip.id.update");
 			RequestDTO requestDTO = new RequestDTO();
 			Object identity = mapper.readValue(
-					"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-							.getBytes(),
-					Object.class);
+				    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+				    Object.class);
 			requestDTO.setIdentity(identity);
 			request.setRequest(requestDTO);
 			BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "IdRequestDTO");
@@ -329,9 +326,8 @@ public class IdRepoControllerTest {
 			request.setId("mosip.id.update");
 			RequestDTO requestDTO = new RequestDTO();
 			Object identity = mapper.readValue(
-					"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-							.getBytes(),
-					Object.class);
+				    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+				    Object.class);
 			requestDTO.setIdentity(identity);
 			request.setRequest(requestDTO);
 			BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "IdRequestDTO");
@@ -351,9 +347,8 @@ public class IdRepoControllerTest {
 		request.setId("mosip.id.update");
 		RequestDTO requestDTO = new RequestDTO();
 		Object identity = mapper.readValue(
-				"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-						.getBytes(),
-				Object.class);
+			    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+			    Object.class);
 		requestDTO.setIdentity(identity);
 		request.setRequest(requestDTO);
 		when(idRepoService.updateIdentity(any(), any()))
@@ -453,9 +448,8 @@ public class IdRepoControllerTest {
 		String uin = "6743571690";
 		RequestDTO requestDTO = new RequestDTO();
 		Object identity = mapper.readValue(
-				"{\"UIN\":6743571690,\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-						.getBytes(),
-				Object.class);
+			    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+			    Object.class);
 		requestDTO.setIdentity(identity);
 		String uinOutPut = ReflectionTestUtils.invokeMethod(controller, "getUin", requestDTO);
 		assertEquals(uin, uinOutPut);
@@ -466,10 +460,9 @@ public class IdRepoControllerTest {
 		RequestDTO requestDTO = new RequestDTO();
 		Object identity;
 		try {
-			identity = mapper.readValue(
-					"{\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}}"
-							.getBytes(),
-					Object.class);
+			 identity = mapper.readValue(
+				    "{\"UIN\":\"6743571690\",\"dateOfBirth\":\"12345\",\"fullName\":[{\"language\":\"ARA\",\"value\":\"Manoj\",\"label\":\"string\"}]}",
+				    Object.class);
 			requestDTO.setIdentity(identity);
 			ReflectionTestUtils.invokeMethod(controller, "getUin", requestDTO);
 		} catch (UndeclaredThrowableException e) {

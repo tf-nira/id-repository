@@ -17,6 +17,8 @@ public class RequestDTO extends BaseRequestResponseDTO {
 	
 	private String uin;
 	
+	private String nin;
+	
 	@Deprecated(since = "1.1.4")
 	private String biometricReferenceId;
 }
