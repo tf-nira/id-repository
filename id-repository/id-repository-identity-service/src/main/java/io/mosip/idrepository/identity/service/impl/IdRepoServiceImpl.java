@@ -13,6 +13,7 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UNKNOWN_E
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_COUNT_LIMIT_EXCEEDED;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,6 +84,7 @@ import io.mosip.idrepository.core.util.DummyPartnerCheckUtil;
 import io.mosip.idrepository.core.util.EnvUtil;
 import io.mosip.idrepository.identity.constant.CitizenshipType;
 import io.mosip.idrepository.identity.dto.HandleDto;
+import io.mosip.idrepository.identity.entity.CardDetail;
 import io.mosip.idrepository.identity.entity.IdentityUpdateTracker;
 import io.mosip.idrepository.identity.entity.Uin;
 import io.mosip.idrepository.identity.entity.UinBiometric;
@@ -94,6 +96,7 @@ import io.mosip.idrepository.identity.helper.AnonymousProfileHelper;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
 import io.mosip.idrepository.identity.provider.IdentityUpdateTrackerPolicyProvider;
+import io.mosip.idrepository.identity.repository.CardDetailRepository;
 import io.mosip.idrepository.identity.repository.IdentityUpdateTrackerRepo;
 import io.mosip.idrepository.identity.repository.UinBiometricHistoryRepo;
 import io.mosip.idrepository.identity.repository.UinDocumentHistoryRepo;
@@ -213,6 +216,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	@Autowired
 	private HandleRepo handleRepo;
 	
+	@Autowired
+	protected CardDetailRepository cardDetailRepository;
+
 	@Value("${mosip.idrepo.identity.uin-status.registered}")
 	private String activeStatus;
 
@@ -227,6 +233,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 	@Value("${" + UIN_REFID + "}")
 	private String uinRefId;
+
+	@Value("${mosip.idrepo.card.expiry.years:10}")
+	private int cardExpiryInyears;
 
 	
 	/**
@@ -275,7 +284,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		Map<String,String> partEncodedMap=getEncodedPart(identityObject.get("part"));
 		if (Objects.nonNull(request.getRequest().getDocuments()) && !request.getRequest().getDocuments().isEmpty()) {
 			addDocuments(uinHashWithSalt, identityInfo, request.getRequest().getDocuments(), uinRefId, docList, bioList,
-				false);
+					false);
 			uinEntity = new Uin(uinRefId, uinToEncrypt, uinHash, identityInfo, securityManager.hash(identityInfo),
 					request.getRequest().getRegistrationId(), activeStatus, IdRepoSecurityManager.getUser(),
 					DateUtils.getUTCCurrentDateTime(), null, null, false, null, bioList, docList,partEncodedMap.get("part1"),partEncodedMap.get("part2"),partEncodedMap.get("part3"),partEncodedMap.get("part4"));
@@ -296,9 +305,28 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(), null, null, false, null,uinEntity.getPart1(),uinEntity.getPart2(),uinEntity.getPart3(),uinEntity.getPart4()));
 
 		addIdentityHandle(uinEntity, selectedUniqueHandlesMap);
+		addCardDetails(identityObject);
 		issueCredential(uinEntity.getUin(), uinHashWithSalt, activeStatus, null, uinEntity.getRegId());
 		anonymousProfileHelper.buildAndsaveProfile(false);
 		return uinEntity;
+	}
+
+	private void addCardDetails(ObjectNode identityObject) {
+
+		if (identityObject.get("NIN") != null) {
+			String NIN = identityObject.get("NIN").asText();
+			String ninHash = securityManager.hash(NIN.getBytes());
+			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
+			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
+			CardDetail cardDetail = new CardDetail();
+			cardDetail.setNin(ninHash);
+			cardDetail.setDateOfIssuance(Date.valueOf(cardIssuanceDate));
+			cardDetail.setDateOfExpiry(Date.valueOf(cardExpiryDate));
+			cardDetail.setCreatedBy(EnvUtil.getAppId());
+			cardDetail.setCrDTimes(DateUtils.getUTCCurrentDateTime());
+			cardDetailRepository.save(cardDetail);
+		}
+
 	}
 
 	private Map<String, String> getEncodedPart(JsonNode partJsonNode) {
@@ -531,6 +559,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
+				saveCardDetails(requestDTO);
 			}
 			
 			uinObject = uinRepo.save(uinObject);
@@ -540,6 +569,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.getRegId(), uinObject.getStatusCode(), IdRepoSecurityManager.getUser(),
 					DateUtils.getUTCCurrentDateTime(), IdRepoSecurityManager.getUser(),
 					DateUtils.getUTCCurrentDateTime(), false, null,uinObject.getPart1(),uinObject.getPart2(),uinObject.getPart3(),uinObject.getPart4()));
+
 			issueCredential(uinObject.getUin(), uinHashWithSalt, uinObject.getStatusCode(),
 					DateUtils.getUTCCurrentDateTime(), uinObject.getRegId());
 			anonymousProfileHelper.buildAndsaveProfile(false);
@@ -552,6 +582,16 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					"\n" + e.getErrorText());
 			throw new IdRepoAppException(e.getErrorCode(), e.getErrorText(), e);
 		}
+	}
+
+	private void saveCardDetails(RequestDTO requestDTO) {
+		ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
+		if (identityObject.get("isCardRequired") != null) {
+			if (identityObject.get("isCardRequired").asText().equalsIgnoreCase("yes")) {
+				addCardDetails(identityObject);
+			}
+		}
+
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

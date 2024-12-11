@@ -19,11 +19,14 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -131,9 +134,6 @@ public class CredentialProvider {
 
 	@Value("${credential.service.default.vid.type:PERPETUAL}")
 	private String defaultVidType;
-
-	@Value("${credential.service.card.expiry.years:10}")
-	private int cardExpiryInyears;
 
 	@Value("${credential.service.applicant.nationality:UGA}")
 	private String nationality;
@@ -365,14 +365,15 @@ public class CredentialProvider {
 					additionalData.put("TransactionLimit", vidInfoDTO.getTransactionLimit());
 				}
 				else if (isDateOfIssuanceAttribute(attribute)) {
-					attributesMap.put(key, DateUtils.getUTCCurrentDateTimeString(key.getFormat()));
+					String dateOfIssuance = idResponseDto.getResponse().getDateOfIssuance();
+					if (dateOfIssuance != null) {
+						attributesMap.put(key, convertDate(dateOfIssuance, key.getFormat()));
+					}
 				} else if (isDateOFExpiryAttribute(attribute)) {
-					DateTimeFormatter format = DateTimeFormatter.ofPattern(EnvUtil.getDateTimePattern());
-					LocalDateTime localdatetime = LocalDateTime
-							.parse(DateUtils.getUTCCurrentDateTimeString(EnvUtil.getDateTimePattern()), format);
-					LocalDateTime dateOfExpiryLocaDateTime = localdatetime.plusYears(cardExpiryInyears);
-					DateTimeFormatter formater = DateTimeFormatter.ofPattern(key.getFormat());
-					attributesMap.put(key, dateOfExpiryLocaDateTime.format(formater));
+					String dateOfExpiry = idResponseDto.getResponse().getDateOfExpiry();
+					if (dateOfExpiry != null) {
+						attributesMap.put(key, convertDate(dateOfExpiry, key.getFormat()));
+					}
 				} else if (isNationalityAttribute(attribute)) {
 					attributesMap.put(key, nationality);
 				}
@@ -862,4 +863,12 @@ public class CredentialProvider {
 		return MVEL.executeExpression(serializable, context, myVarFactory, String.class);
 	}
 
+	private String convertDate(String date, String format) throws ParseException {
+		SimpleDateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date original = originalFormat.parse(date);
+		SimpleDateFormat newFormat = new SimpleDateFormat(format);
+		String formattedDate = newFormat.format(original);
+
+		return formattedDate;
+	}
 }

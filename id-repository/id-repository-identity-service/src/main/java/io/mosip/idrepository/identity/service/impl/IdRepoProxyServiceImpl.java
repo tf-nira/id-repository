@@ -78,9 +78,11 @@ import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.core.spi.BiometricExtractionService;
 import io.mosip.idrepository.core.spi.IdRepoService;
 import io.mosip.idrepository.core.util.EnvUtil;
+import io.mosip.idrepository.identity.entity.CardDetail;
 import io.mosip.idrepository.identity.entity.Uin;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
+import io.mosip.idrepository.identity.repository.CardDetailRepository;
 import io.mosip.idrepository.identity.repository.UinDraftRepo;
 import io.mosip.idrepository.identity.repository.UinHistoryRepo;
 import io.mosip.idrepository.identity.repository.UinRepo;
@@ -167,6 +169,9 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 	@Autowired
 	private HandleRepo handleRepo;
+
+	@Autowired
+	private CardDetailRepository cardDetailRepository;
 
 	@Autowired
 	private IdRepoServiceHelper idRepoServiceHelper;
@@ -679,6 +684,15 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			ObjectNode identityObject = convertToObject(uin.getUinData(), ObjectNode.class);
 			response.setVerifiedAttributes(mapper.convertValue(identityObject.get("verifiedAttributes"), List.class));
 			identityObject.remove("verifiedAttributes");
+
+			if (identityObject.get("NIN") != null) {
+				String NIN = identityObject.get("NIN").asText();
+				List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.getBytes()));
+				if (!cardDetails.isEmpty()) {
+					response.setDateOfIssuance(cardDetails.get(0).getDateOfIssuance().toString());
+					response.setDateOfExpiry(cardDetails.get(0).getDateOfExpiry().toString());
+				}
+			}
 			response.setIdentity(identityObject);
 		}
 		idResponse.setResponse(response);

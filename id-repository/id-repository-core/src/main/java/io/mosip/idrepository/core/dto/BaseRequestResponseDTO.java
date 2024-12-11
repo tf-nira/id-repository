@@ -1,5 +1,6 @@
 package io.mosip.idrepository.core.dto;
 
+
 import java.util.List;
 
 import lombok.Data;
@@ -23,4 +24,8 @@ public class BaseRequestResponseDTO {
 	private List<DocumentsDTO> documents;
 	
 	private List<String> verifiedAttributes;
+
+	private String dateOfIssuance;
+
+	private String dateOfExpiry;
 }
