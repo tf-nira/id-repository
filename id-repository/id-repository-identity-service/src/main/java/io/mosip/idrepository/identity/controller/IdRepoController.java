@@ -84,6 +84,8 @@ import springfox.documentation.annotations.ApiIgnore;
 public class IdRepoController {
 
 	private static final String GET_UIN = "getUin";
+	
+	private static final String GET_NIN = "getNin";
 
 	private static final String ID_TYPE = "idType";
 
@@ -526,7 +528,7 @@ public class IdRepoController {
 					// Extract UIN from the retrieved identity
 					String identityJson = mapper.writeValueAsString(uinObj.getResponse().getIdentity()); 
 					try {
-						uin = JsonPath.read(identityJson, "$.UIN"); // Extract "UIN" field
+						uin = JsonPath.read(identityJson, "$.UIN");
 						if (uin == null || ((String) uin).isEmpty()) {
 							throw new IdRepoAppException(MISSING_INPUT_PARAMETER.getErrorCode(),
 									"Extracted UIN is empty or null.");
@@ -560,26 +562,25 @@ public class IdRepoController {
 	
 	private String extractAndValidateNin(Object request) throws IdRepoAppException {			
 				if (Objects.isNull(request)) {
-			        mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_CONTROLLER, GET_UIN, "request is null");
+			        mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_CONTROLLER, GET_NIN, "request is null");
 			        throw new IdRepoAppException(MISSING_INPUT_PARAMETER.getErrorCode(),
 			                String.format(MISSING_INPUT_PARAMETER.getErrorMessage(), "request"));
 			    }
 				Object nin = null;
 			    String pathOfNin = EnvUtil.getNinJsonPath();
 			    try {
-			        // Extract UIN using JSON path
 		        	String identity = mapper.writeValueAsString(request);
 		        	JsonPath jsonPath = JsonPath.compile(pathOfNin);
 			        try {
 			        	nin = jsonPath.read(identity);
 			        } catch (PathNotFoundException e) {
-			            mosipLogger.warn(IdRepoSecurityManager.getUser(), ID_REPO_CONTROLLER, GET_UIN, 
+			            mosipLogger.warn(IdRepoSecurityManager.getUser(), ID_REPO_CONTROLLER, GET_NIN, 
 			                "NIN not found in the request, attempting to extract NIN.");
 			        }
 			    if (!validator.validateNin(nin)) {
 			        mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_CONTROLLER, "VALIDATE_NIN", "Invalid NIN provided");
 			        throw new IdRepoAppException(INVALID_INPUT_PARAMETER.getErrorCode(),
-			                String.format(INVALID_INPUT_PARAMETER.getErrorMessage(), "NIN"));
+			                String.format(INVALID_INPUT_PARAMETER.getErrorMessage(), NIN));
 			    }
 			    return String.valueOf(nin).toLowerCase() + "@nin";
 		        } catch (JsonProcessingException e) {
