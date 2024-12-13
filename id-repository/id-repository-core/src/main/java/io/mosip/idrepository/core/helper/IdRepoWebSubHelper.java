@@ -1,5 +1,8 @@
 package io.mosip.idrepository.core.helper;
 
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CARD_EVENT_CALLBACK_URL;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CARD_EVENT_SECRET;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CARD_EVENT_TOPIC;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.EXPIRY_TIMESTAMP;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_HASH;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_REPO;
@@ -79,6 +82,15 @@ public class IdRepoWebSubHelper {
 
 	@Value("${" + VID_EVENT_CALLBACK_URL + "}")
 	private String vidEventUrl;
+
+	@Value("${" + CARD_EVENT_TOPIC + "}")
+	private String cardEventTopic;
+
+	@Value("${" + CARD_EVENT_SECRET + "}")
+	private String cardEventSecret;
+
+	@Value("${" + CARD_EVENT_CALLBACK_URL + "}")
+	private String cardEventUrl;
 
 	/** The ida event type namespace. */
 	@Value("${id-repo-ida-event-type-namespace:mosip}")
@@ -260,5 +272,21 @@ public class IdRepoWebSubHelper {
 	
 	public <U> void publishEvent(String eventTopic, U eventModel) {
 		publisher.publishUpdate(eventTopic, eventModel, MediaType.APPLICATION_JSON_VALUE, null, publisherURL);
+	}
+
+	public void subscribeForCardEvent() {
+		try {
+			SubscriptionChangeRequest subscriptionRequest = new SubscriptionChangeRequest();
+			subscriptionRequest.setCallbackURL(cardEventUrl);
+			subscriptionRequest.setHubURL(hubURL);
+			subscriptionRequest.setSecret(cardEventSecret);
+			subscriptionRequest.setTopic(cardEventTopic);
+			subscribe.subscribe(subscriptionRequest);
+			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
+					"subscribeForCardEvent", "subscribed event topic: " + cardEventTopic);
+		} catch (Exception e) {
+			mosipLogger.warn(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
+					"subscribeForCardEvent", "Error subscribing topic: " + cardEventTopic + "\n" + e.getMessage());
+		}
 	}
 }

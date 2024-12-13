@@ -1118,4 +1118,18 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		return formattedNin.toString();
 
 	}
+
+	@Override
+	public void updateCardNumber(Map<String, Object> data) {
+	String nin=(String) data.get("nin");
+	Long card_number = (Long) data.get("card_number");
+	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+	if (!cardDetails.isEmpty()) {
+		CardDetail cardDetail = cardDetails.get(0);
+		cardDetail.setCardNumber(String.valueOf(card_number));
+		cardDetail.setUpdatedBy(EnvUtil.getAppId());
+		cardDetail.setUpdDTimes(DateUtils.getUTCCurrentDateTime());
+		cardDetailRepository.saveAndFlush(cardDetail);
+	}
+	}
 }

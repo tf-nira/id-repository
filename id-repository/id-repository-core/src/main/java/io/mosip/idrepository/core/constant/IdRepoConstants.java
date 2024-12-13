@@ -143,6 +143,12 @@ public class IdRepoConstants {
 	
 	public static final String IDENTITY_MAPPING_JSON = "mosip.identity.mapping-file";
 
+	public static final String CARD_EVENT_SECRET = "mosip.idrepo.websub.card-number-update.secret";
+
+	public static final String CARD_EVENT_TOPIC = "mosip.idrepo.websub.card-number-update.topic";
+
+	public static final String CARD_EVENT_CALLBACK_URL = "mosip.idrepo.websub.card-number-update.callback-url";
+
 	
 	/** The value. */
 	private final String value;
