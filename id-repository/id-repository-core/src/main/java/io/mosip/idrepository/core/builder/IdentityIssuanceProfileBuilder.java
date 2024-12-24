@@ -111,6 +111,9 @@ public class IdentityIssuanceProfileBuilder {
 				.verified(this.getVerified(identity))
 				.biometricInfo(this.getBiometricInfo(bioData))
 				.documents(this.getDocuments(identity))
+				.district(this.getDistrict(identity))
+				.service(this.getService(identity))
+				.service_type(this.getServiceType(identity))
 				.build();
 	}
 
@@ -127,6 +130,27 @@ public class IdentityIssuanceProfileBuilder {
 	private String getGender(JsonNode identity) {
 		if (Objects.nonNull(getIdentityMapping().getIdentity().getGender().getValue())) {
 			return extractValue(identity.get(getIdentityMapping().getIdentity().getGender().getValue())).orElse(null);
+		}
+		return null;
+	}
+	
+	private String getDistrict(JsonNode identity) {
+		if (Objects.nonNull(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue())) {
+			return extractValue(identity.get(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue())).orElse(null);
+		}
+		return null;
+	}
+	
+	private String getService(JsonNode identity) {
+		if (Objects.nonNull(getIdentityMapping().getIdentity().getUserService().getValue())) {
+			return extractValue(identity.get(getIdentityMapping().getIdentity().getUserService().getValue())).orElse(null);
+		}
+		return null;
+	}
+
+	private String getServiceType(JsonNode identity) {
+		if (Objects.nonNull(getIdentityMapping().getIdentity().getUserServiceType().getValue())) {
+			return extractValue(identity.get(getIdentityMapping().getIdentity().getUserServiceType().getValue())).orElse(null);
 		}
 		return null;
 	}
