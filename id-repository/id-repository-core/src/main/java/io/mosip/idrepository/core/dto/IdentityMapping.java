@@ -46,9 +46,6 @@ public class IdentityMapping {
 		private ResidenceStatus residenceStatus;
 		private FullAddress fullAddress;
 		private SelectedHandles selectedHandles;
-		private ApplicantPlaceOfResidenceDistrict applicantPlaceOfResidenceDistrict;
-		private UserService userService;
-		private UserServiceType userServiceType;
 
 	}
 
@@ -254,23 +251,5 @@ public class IdentityMapping {
 	public static class SelectedHandles {
 		private String value;
 	}
-	
-	@Data
-	@NoArgsConstructor
-	public static class ApplicantPlaceOfResidenceDistrict {
-		private String value;
-	}
-	
-	@Data
-	@NoArgsConstructor
-	public static class UserService {
-		private String value;
-	}
 
-	@Data
-	@NoArgsConstructor
-	public static class UserServiceType{
-		private String value;
-	}
-	
 }

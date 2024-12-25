@@ -17,7 +17,4 @@ public class AnonymousProfile {
 	private List<String> verified;
 	private List<BiometricInfo> biometricInfo;
 	private List<String> documents;
-	private String district;
-	private String service;
-	private String service_type;
 }
