@@ -19,5 +19,5 @@ public class AnonymousProfile {
 	private List<String> documents;
 	private String district;
 	private String service;
-	private String service_type;
+	private String serviceType;
 }

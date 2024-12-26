@@ -113,7 +113,7 @@ public class IdentityIssuanceProfileBuilder {
 				.documents(this.getDocuments(identity))
 				.district(this.getDistrict(identity))
 				.service(this.getService(identity))
-				.service_type(this.getServiceType(identity))
+				.serviceType(this.getServiceType(identity))
 				.build();
 	}
 
@@ -135,23 +135,35 @@ public class IdentityIssuanceProfileBuilder {
 	}
 	
 	private String getDistrict(JsonNode identity) {
-		if (Objects.nonNull(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue())) {
-			return extractValue(identity.get(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue())).orElse(null);
-		}
+		if (Objects.nonNull(getIdentityMapping().getIdentity())
+				&& Objects.nonNull(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict())
+				&& Objects.nonNull(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue())
+				&& Objects.nonNull(identity)
+				&& Objects.nonNull(identity.get(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue())))
+			return extractValue(identity.get(getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue()))
+					.orElse(null);
 		return null;
 	}
 	
 	private String getService(JsonNode identity) {
-		if (Objects.nonNull(getIdentityMapping().getIdentity().getUserService().getValue())) {
-			return extractValue(identity.get(getIdentityMapping().getIdentity().getUserService().getValue())).orElse(null);
-		}
+		if (Objects.nonNull(getIdentityMapping().getIdentity())
+				&& Objects.nonNull(getIdentityMapping().getIdentity().getUserService())
+				&& Objects.nonNull(getIdentityMapping().getIdentity().getUserService().getValue())
+				&& Objects.nonNull(identity)
+				&& Objects.nonNull(identity.get(getIdentityMapping().getIdentity().getUserService().getValue())))
+			return extractValue(identity.get(getIdentityMapping().getIdentity().getUserService().getValue()))
+					.orElse(null);
 		return null;
 	}
 
 	private String getServiceType(JsonNode identity) {
-		if (Objects.nonNull(getIdentityMapping().getIdentity().getUserServiceType().getValue())) {
-			return extractValue(identity.get(getIdentityMapping().getIdentity().getUserServiceType().getValue())).orElse(null);
-		}
+		if (Objects.nonNull(getIdentityMapping().getIdentity())
+				&& Objects.nonNull(getIdentityMapping().getIdentity().getUserServiceType())
+				&& Objects.nonNull(getIdentityMapping().getIdentity().getUserServiceType().getValue())
+				&& Objects.nonNull(identity)
+				&& Objects.nonNull(identity.get(getIdentityMapping().getIdentity().getUserServiceType().getValue())))
+			return extractValue(identity.get(getIdentityMapping().getIdentity().getUserServiceType().getValue()))
+					.orElse(null);
 		return null;
 	}
 
