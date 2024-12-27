@@ -247,10 +247,11 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					
 					ObjectNode identityObject1 = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 					
-					if(identityObject1.get(UIN)==null) {
+					if (identityObject1.get(NIN) == null) {
 						
 						// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
-						String applicantCitizenshipType = identityObject1.path("applicantCitizenshipType").get(0).get("value").asText();
+						String applicantCitizenshipType = identityObject1.path("userServiceType").get(0).get("value")
+								.asText();
 						String gender = identityObject1.path("gender").get(0).get("value").asText();
 						String dateOfBirth = identityObject1.get("dateOfBirth").asText();
 						
@@ -343,7 +344,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			/* Update request object */
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
 			
-			if(identityObject.get(UIN)==null) {
+			if (identityObject.get(NIN) == null) {
 				
 				// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
 				String applicantCitizenshipType = identityObject.path("userServiceType").get(0).get("value").asText();

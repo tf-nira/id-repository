@@ -7,10 +7,10 @@
 		"type": "DOC015",
 		"value": "proofOfAddress"
 	},
-	"gender": {
+	"gender": [{
 		"language": "eng",
 		"value": "Male"
-	},
+	}],
 	"city": [{
 		"language": "eng",
 		"value": "KNT"
@@ -87,10 +87,15 @@
 		"language": "eng",
 		"value": "#٥٧٠، ٥٣ سترِِت، ٤ بلُكك"
 	}],
+	"userServiceType": [{
+			"language": "eng",
+			"value": "Naturalisation"
+		}],
 	"email": "test@mosip.net",
 	"proofOfException": {
 		"format": "pdf",
 		"type": "COE",
 		"value": "proofOfException"
-	}
+	},
+	"NIN": "RF726873082076"
 }
