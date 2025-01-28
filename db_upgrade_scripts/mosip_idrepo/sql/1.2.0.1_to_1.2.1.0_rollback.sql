@@ -18,3 +18,6 @@ DROP COLUMN part3,
 DROP COLUMN part4;
 ----------------------------------------------------------------------------------------------------
 DROP TABLE IF EXISTS idrepo.card_detail;
+----------------------------------------------------------------------------------------------------
+ALTER TABLE idrepo.uin_document ALTER COLUMN doccat_code TYPE character varying(36)
+ALTER TABLE idrepo.uin_document_draft ALTER COLUMN doccat_code TYPE character varying(36)

@@ -42,3 +42,6 @@ CREATE TABLE idrepo.card_detail(
 GRANT SELECT, INSERT, TRUNCATE, REFERENCES, UPDATE, DELETE
    ON idrepo.card_detail
    TO idrepouser;
+--------------------------------------------------------------------------------------------------
+ALTER TABLE idrepo.uin_document ALTER COLUMN doccat_code TYPE character varying(64)
+ALTER TABLE idrepo.uin_document_draft ALTER COLUMN doccat_code TYPE character varying(64)
