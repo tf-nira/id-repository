@@ -2,7 +2,7 @@ package io.mosip.idrepository.identity.constant;
 
 public enum CitizenshipType {
 	BIRTH("Birth", "C"),
-	NATURALISATION("Naturalisation", "N"),
+	NATURALIZATION("Naturalization", "N"),
 	REGISTRATION("Registration", "R"), DUAL("Dual", "R"), ARTICLE("Article", "C");
 	
 	final String citizenshipType;

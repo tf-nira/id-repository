@@ -1099,8 +1099,8 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		if (citizenshipType.toLowerCase().contains(CitizenshipType.BIRTH.getCitizenshipType().toLowerCase())) {
 			ninCode = CitizenshipType.BIRTH.getNinCode();
 		} else if (citizenshipType.toLowerCase()
-				.contains(CitizenshipType.NATURALISATION.getCitizenshipType().toLowerCase())) {
-			ninCode = CitizenshipType.NATURALISATION.getNinCode();
+				.contains(CitizenshipType.NATURALIZATION.getCitizenshipType().toLowerCase())) {
+			ninCode = CitizenshipType.NATURALIZATION.getNinCode();
 		} else if (citizenshipType.toLowerCase().contains(CitizenshipType.DUAL.getCitizenshipType().toLowerCase())) {
 			ninCode = CitizenshipType.DUAL.getNinCode();
 		} else if (citizenshipType.toLowerCase().contains(CitizenshipType.ARTICLE.getCitizenshipType().toLowerCase())) {

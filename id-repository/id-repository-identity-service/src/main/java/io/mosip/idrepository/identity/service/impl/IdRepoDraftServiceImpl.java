@@ -315,8 +315,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
         if(citizenshipType.toLowerCase().contains(CitizenshipType.BIRTH.getCitizenshipType().toLowerCase())) {
         	ninCode = CitizenshipType.BIRTH.getNinCode();
         }
-        else if(citizenshipType.toLowerCase().contains(CitizenshipType.NATURALISATION.getCitizenshipType().toLowerCase())) {
-        	ninCode = CitizenshipType.NATURALISATION.getNinCode();
+		else if (citizenshipType.toLowerCase()
+				.contains(CitizenshipType.NATURALIZATION.getCitizenshipType().toLowerCase())) {
+			ninCode = CitizenshipType.NATURALIZATION.getNinCode();
         }
 		else if (citizenshipType.toLowerCase().contains(CitizenshipType.DUAL.getCitizenshipType().toLowerCase())) {
 			ninCode = CitizenshipType.DUAL.getNinCode();
