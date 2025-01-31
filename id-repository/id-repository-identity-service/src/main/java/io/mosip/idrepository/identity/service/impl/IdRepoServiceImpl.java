@@ -238,6 +238,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	private int cardExpiryInyears;
 
 	
+	@Value("${mosip.idrepo.dob.format}")
+	private String dobFormat;
+
 	/**
 	 * Adds the identity to DB.
 	 *
@@ -1092,7 +1095,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		char genderChar = gender.charAt(0);
 
-		DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(dobFormat);
 		LocalDate date = formatter.parseLocalDate(dateOfBirth);
 		int yearOfBirth = date.getYear();
 

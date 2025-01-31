@@ -238,7 +238,7 @@ public class IdRepoDraftServiceImplTest {
 		RestRequestDTO restReq = new RestRequestDTO();
 		restReq.setUri("");
 		when(restBuilder.buildRequest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(restReq);
-
+		ReflectionTestUtils.setField(idRepoServiceImpl, "dobFormat", "dd/MM/yyyy");
 	}
 
 	@Test

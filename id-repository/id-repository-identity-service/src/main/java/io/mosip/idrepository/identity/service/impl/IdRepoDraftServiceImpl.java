@@ -157,6 +157,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 	@Value("${mosip.idrepo.create-identity.enable-force-merge:false}")
 	private boolean isForceMergeEnabled;
 	
+	@Value("${mosip.idrepo.dob.format}")
+	private String dobFormat;
+
 	private static final String NIN = "NIN";
 
 	private static final String UIN = "UIN";
@@ -308,7 +311,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
         
         char genderChar = gender.charAt(0);
         
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(dobFormat);
         LocalDate date = formatter.parseLocalDate(dateOfBirth);
         int yearOfBirth = date.getYear(); 
 
