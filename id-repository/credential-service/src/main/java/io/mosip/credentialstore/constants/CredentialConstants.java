@@ -64,9 +64,9 @@ public class CredentialConstants {
 	
 	public static final String NATIONALITY = "Nationality";
 
-	public static final String DATEOFISSUANCE = "Date of Issuance";
+	public static final String DATEOFISSUANCE = "dateOfIssuance";
 
-	public static final String DATEOFEXPIRY = "Date of Expiry";
+	public static final String DATEOFEXPIRY = "dateOfExpiry";
 
 	/** The Constant DATETIME_PATTERN. */
 	public static final String DATETIME_PATTERN = "mosip.credential.service.datetime.pattern";
