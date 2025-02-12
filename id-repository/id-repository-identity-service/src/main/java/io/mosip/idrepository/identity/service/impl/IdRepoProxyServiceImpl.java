@@ -60,6 +60,7 @@ import io.mosip.idrepository.core.constant.IDAEventType;
 import io.mosip.idrepository.core.constant.IdRepoErrorConstants;
 import io.mosip.idrepository.core.constant.IdType;
 import io.mosip.idrepository.core.constant.RestServicesConstants;
+import io.mosip.idrepository.core.dto.CardDetailDto;
 import io.mosip.idrepository.core.dto.DocumentsDTO;
 import io.mosip.idrepository.core.dto.IdRequestDTO;
 import io.mosip.idrepository.core.dto.IdResponseDTO;
@@ -688,10 +689,17 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 			if (identityObject.get("NIN") != null) {
 				String NIN = identityObject.get("NIN").asText();
-				List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.getBytes()));
+				List<CardDetail> cardDetails = cardDetailRepository
+						.getCardDetails(securityManager.hash(NIN.getBytes()));
+				List<CardDetailDto> cardDetailDtos = new ArrayList<CardDetailDto>();
 				if (!cardDetails.isEmpty()) {
-					response.setDateOfIssuance(cardDetails.get(0).getDateOfIssuance().toString());
-					response.setDateOfExpiry(cardDetails.get(0).getDateOfExpiry().toString());
+					for (CardDetail cardDetail : cardDetails) {
+						CardDetailDto cardDetailDto = new CardDetailDto();
+						cardDetailDto.setDateOfExpiry(cardDetail.getDateOfExpiry().toString());
+						cardDetailDto.setDateOfIssuance(cardDetail.getDateOfIssuance().toString());
+						cardDetailDto.setCardNumber(cardDetail.getCardNumber());
+						cardDetailDtos.add(cardDetailDto);
+					}
 				}
 			}
 			response.setIdentity(identityObject);

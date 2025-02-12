@@ -25,7 +25,5 @@ public class BaseRequestResponseDTO {
 	
 	private List<String> verifiedAttributes;
 
-	private String dateOfIssuance;
-
-	private String dateOfExpiry;
+	private List<CardDetailDto> cardDetails;
 }
