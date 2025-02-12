@@ -701,7 +701,9 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 						cardDetailDtos.add(cardDetailDto);
 					}
 				}
+				response.setCardDetails(cardDetailDtos);
 			}
+
 			response.setIdentity(identityObject);
 		}
 		idResponse.setResponse(response);
