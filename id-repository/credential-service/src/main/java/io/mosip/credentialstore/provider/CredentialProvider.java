@@ -74,6 +74,7 @@ import io.mosip.credentialstore.util.JsonUtil;
 import io.mosip.credentialstore.util.Utilities;
 import io.mosip.credentialstore.util.VIDUtil;
 import io.mosip.idrepository.core.builder.IdentityIssuanceProfileBuilder;
+import io.mosip.idrepository.core.dto.CardDetailDto;
 import io.mosip.idrepository.core.dto.CredentialServiceRequestDto;
 import io.mosip.idrepository.core.dto.DocumentsDTO;
 import io.mosip.idrepository.core.dto.IdResponseDTO;
@@ -242,7 +243,16 @@ public class CredentialProvider {
 					"Preparing demo and bio sharable attributes");
 			Map<AllowedKycDto, Object> attributesMap = new HashMap<>();
 			JSONObject identity = new JSONObject((Map) idResponseDto.getResponse().getIdentity());
-
+			List<CardDetailDto> cardDetailsDtoList = idResponseDto.getResponse().getCardDetails();
+			CardDetailDto cardDetailDtoWithoutCardNumber = null;
+			if (cardDetailsDtoList != null && !cardDetailsDtoList.isEmpty()) {
+			for (CardDetailDto cardDetailDto : cardDetailsDtoList) {
+				if (cardDetailDto.getCardNumber() == null || cardDetailDto.getCardNumber().isEmpty()) {
+					cardDetailDtoWithoutCardNumber = cardDetailDto;
+					break;
+				}
+			}
+		}
 			final List<AllowedKycDto> sharableAttributeFromPolicy = Optional.ofNullable(policyResponseDto.getPolicies())
 					.map(PolicyAttributesDto::getShareableAttributes).orElseGet(List::of);
 			List<AllowedKycDto> sharableAttributeList = sharableAttributeFromPolicy;
@@ -365,12 +375,12 @@ public class CredentialProvider {
 					additionalData.put("TransactionLimit", vidInfoDTO.getTransactionLimit());
 				}
 				else if (isDateOfIssuanceAttribute(attribute)) {
-					String dateOfIssuance = idResponseDto.getResponse().getDateOfIssuance();
+					String dateOfIssuance = cardDetailDtoWithoutCardNumber.getDateOfIssuance();
 					if (dateOfIssuance != null) {
 						attributesMap.put(key, convertDate(dateOfIssuance, key.getFormat()));
 					}
 				} else if (isDateOFExpiryAttribute(attribute)) {
-					String dateOfExpiry = idResponseDto.getResponse().getDateOfExpiry();
+					String dateOfExpiry = cardDetailDtoWithoutCardNumber.getDateOfExpiry();
 					if (dateOfExpiry != null) {
 						attributesMap.put(key, convertDate(dateOfExpiry, key.getFormat()));
 					}
