@@ -161,7 +161,8 @@ public class VerCredProvider extends CredentialProvider {
 					List<Map<String, String>> bestFingerMapList = new ArrayList<>();
 					for (BestFingerDto bestFinger : bestFingerList) {
 						Map<String, String> bestFingerMap = new HashMap<>();
-						bestFingerMap.put(CredentialConstants.BF_SUB_TYPE, bestFinger.getFingersIndex());
+						// bestFingerMap.put(CredentialConstants.BF_SUB_TYPE,
+						// bestFinger.getFingersIndex());
 						bestFingerMap.put(CredentialConstants.BF_FINGERPRINT,
 								bestFinger.getFingerPrint());
 						bestFingerMapList.add(bestFingerMap);
