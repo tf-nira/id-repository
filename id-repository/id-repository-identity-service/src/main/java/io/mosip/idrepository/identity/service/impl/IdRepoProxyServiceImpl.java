@@ -24,9 +24,11 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.DATABASE_
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.DOCUMENT_HASH_MISMATCH;
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.ID_OBJECT_PROCESSING_FAILED;
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.NO_RECORD_FOUND;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.PARSE_EXCEPTION;
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.RECORD_EXISTS;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -191,6 +193,9 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 	@Value("${id-repo-ida-event-type-name:ida}")
 	private String idaEventTypeName;
+
+	@Value("${mosip.idrepo.dob.format}")
+	private String dobFormat;
 
 	/*
 	 * (non-Javadoc)
@@ -695,8 +700,13 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 				if (!cardDetails.isEmpty()) {
 					for (CardDetail cardDetail : cardDetails) {
 						CardDetailDto cardDetailDto = new CardDetailDto();
-						cardDetailDto.setDateOfExpiry(cardDetail.getDateOfExpiry().toString());
-						cardDetailDto.setDateOfIssuance(cardDetail.getDateOfIssuance().toString());
+						try {
+							cardDetailDto.setDateOfExpiry(convertDate(cardDetail.getDateOfExpiry()));
+							cardDetailDto.setDateOfIssuance(convertDate(cardDetail.getDateOfIssuance()));
+						} catch (ParseException e) {
+							throw new IdRepoAppException(PARSE_EXCEPTION);
+						}
+
 						cardDetailDto.setCardNumber(cardDetail.getCardNumber());
 						cardDetailDtos.add(cardDetailDto);
 					}
@@ -840,4 +850,15 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 	}
 
+	private String convertDate(java.sql.Date date) throws ParseException {
+		java.time.LocalDate localDate = date.toLocalDate();
+
+
+		java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern(dobFormat);
+
+		// Format the LocalDate to a String in the "dd-MM-yyyy" format
+		String formattedDate = localDate.format(formatter);
+
+		return formattedDate;
+	}
 }
