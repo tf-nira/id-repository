@@ -118,10 +118,8 @@ public enum IdRepoErrorConstants {
 	
 	TECHNICAL_ERROR("IDR-BIE-001", "Technical Error in Biometric Extraction"),
 	
-	JOB_FAILED("IDR-CFJ-001", "Credential Feeder job failed")
-	
-	;
-	
+	JOB_FAILED("IDR-CFJ-001", "Credential Feeder job failed"),
+	PARSE_EXCEPTION("IDR-IDC-015", "Date Format Exception");
 
 	/** The error code. */
 	private final String errorCode;

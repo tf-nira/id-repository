@@ -321,13 +321,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			String ninHash = securityManager.hash(NIN.getBytes());
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
-			java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern(dobFormat);
-			String formattedIssuanceDate = cardIssuanceDate.format(formatter);
-			String formattedExpiryDate = cardExpiryDate.format(formatter);
 			CardDetail cardDetail = new CardDetail();
 			cardDetail.setNin(ninHash);
-			cardDetail.setDateOfIssuance(Date.valueOf(formattedIssuanceDate));
-			cardDetail.setDateOfExpiry(Date.valueOf(formattedExpiryDate));
+			cardDetail.setDateOfIssuance(Date.valueOf(cardIssuanceDate));
+			cardDetail.setDateOfExpiry(Date.valueOf(cardExpiryDate));
 			cardDetail.setCreatedBy(EnvUtil.getAppId());
 			cardDetail.setCrDTimes(DateUtils.getUTCCurrentDateTime());
 			cardDetailRepository.save(cardDetail);
