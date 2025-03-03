@@ -876,7 +876,7 @@ public class CredentialProvider {
 	}
 
 	private String convertDate(String date, String format) throws ParseException {
-		SimpleDateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat originalFormat = new SimpleDateFormat(dobFormat);
 		Date original = originalFormat.parse(date);
 		SimpleDateFormat newFormat = new SimpleDateFormat(format);
 		String formattedDate = newFormat.format(original);
