@@ -197,6 +197,11 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	@Value("${mosip.idrepo.dob.format}")
 	private String dobFormat;
 
+	private static final String INUGANDA = "In Uganda";
+
+	private static final String OUTSIDEUGANDA = "Outside Uganda";
+
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -691,11 +696,11 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			ObjectNode identityObject = convertToObject(uin.getUinData(), ObjectNode.class);
 			response.setVerifiedAttributes(mapper.convertValue(identityObject.get("verifiedAttributes"), List.class));
 			identityObject.remove("verifiedAttributes");
-
+			constructAddressDetails(identityObject);
 			if (identityObject.get("NIN") != null) {
 				String NIN = identityObject.get("NIN").asText();
 				List<CardDetail> cardDetails = cardDetailRepository
-						.getCardDetails(securityManager.hash(NIN.getBytes()));
+						.getCardDetail(securityManager.hash(NIN.getBytes()));
 				List<CardDetailDto> cardDetailDtos = new ArrayList<CardDetailDto>();
 				if (!cardDetails.isEmpty()) {
 					for (CardDetail cardDetail : cardDetails) {
@@ -718,6 +723,196 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 		}
 		idResponse.setResponse(response);
 		return idResponse;
+	}
+
+	private void constructAddressDetails(ObjectNode identityObject) {
+
+		String residenceStatus = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getResidenceStatus().getValue()));
+		String applicantOriginPlace = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantOriginPlace().getValue()));
+		String applicantBirthPlace = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantBirthPlace().getValue()));
+		String fatherResidence = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherResidence().getValue()));
+		String fatherOrigin = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherOrigin().getValue()));
+		String motherResidence = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherResidence().getValue()));
+		String motherOrigin = String.valueOf(identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherOrigin().getValue()));
+		if (residenceStatus != null && residenceStatus.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceVillage().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfResidenceYearsLived().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfResidenceHouseNo().getValue());
+			identityObject
+					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getAppResCountryUGA().getValue());
+			
+		}
+		if (residenceStatus != null && residenceStatus.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantForeignResidenceCountry().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantForeignResidenceAddress().getValue());
+		}
+		if (applicantBirthPlace != null && applicantBirthPlace.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getAppBirCountryUGA().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthDistrict().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthVillage().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthCity().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfBirthHealthFacility().getValue());
+		}
+		if (applicantBirthPlace != null && applicantBirthPlace.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantForeignBirthCountry().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantForeignBirthAddress().getValue());
+		}
+		if (applicantOriginPlace != null && applicantOriginPlace.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject
+					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getAppOriCountryUGA().getValue());
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfOriginCounty()
+							.getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfOriginSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfOriginDistrict().getValue());
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfOriginParish()
+							.getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfOriginVillage().getValue());
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity()
+							.getApplicantPlaceOfOriginIndigenousCommunityTribe().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfOriginClan().getValue());
+		}
+		if (applicantOriginPlace != null && applicantOriginPlace.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantForeignOriginAddress().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantForeignOriginCountry().getValue());
+		}
+		if (fatherResidence != null && fatherResidence.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatResCountryUGA().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceDistrict().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceVillage().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceStreet().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceHouseNo().getValue());
+
+		}
+		if (fatherResidence != null && fatherResidence.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherForeignResidenceCountry().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherForeignResidenceAddress().getValue());
+		}
+		if (fatherOrigin != null && fatherOrigin.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject
+					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatOriCountryUGA().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceDistrict().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherPlaceOfResidenceVillage().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherIndigenousCommunityTribe().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getFatherIndigenousCommunityClan().getValue());
+
+		}
+		if (fatherOrigin != null && fatherOrigin.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginCountry().getValue());
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginAddress().getValue());
+		}
+		if (motherResidence != null && motherResidence.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject
+					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotResCountryUGA().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceDistrict().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceVillage().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceStreet().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfResidenceHouseNo().getValue());
+
+		}
+		if (motherResidence != null && motherResidence.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherForeignResidenceCountry().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherForeignResidenceAddress().getValue());
+		}
+		if (motherOrigin != null && motherOrigin.equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotOriCountryUGA().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfOriginDistrict().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfOriginCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfOriginSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfOriginParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherPlaceOfOriginVillage().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherIndigenousCommunityTribe().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getMotherIndigenousCommunityClan().getValue());
+
+		}
+		if (motherOrigin != null && motherOrigin.equalsIgnoreCase(INUGANDA)) {
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginCountry().getValue());
+			identityObject.remove(
+					idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginAddress().getValue());
+		}
 	}
 
 	/**

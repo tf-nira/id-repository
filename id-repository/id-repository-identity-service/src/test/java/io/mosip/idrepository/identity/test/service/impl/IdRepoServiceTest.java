@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import org.apache.commons.io.IOUtils;
 import org.hibernate.exception.JDBCConnectionException;
 import org.junit.Before;
@@ -61,6 +60,7 @@ import io.mosip.idrepository.core.constant.IdType;
 import io.mosip.idrepository.core.dto.AuthTypeStatusEventDTO;
 import io.mosip.idrepository.core.dto.IdRequestDTO;
 import io.mosip.idrepository.core.dto.IdResponseDTO;
+import io.mosip.idrepository.core.dto.IdentityMapping;
 import io.mosip.idrepository.core.dto.RequestDTO;
 import io.mosip.idrepository.core.dto.ResponseDTO;
 import io.mosip.idrepository.core.dto.RestRequestDTO;
@@ -83,6 +83,7 @@ import io.mosip.idrepository.identity.entity.Uin;
 import io.mosip.idrepository.identity.entity.UinBiometric;
 import io.mosip.idrepository.identity.entity.UinDocument;
 import io.mosip.idrepository.identity.helper.AnonymousProfileHelper;
+import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
 import io.mosip.idrepository.identity.provider.IdentityUpdateTrackerPolicyProvider;
 import io.mosip.idrepository.identity.repository.IdentityUpdateTrackerRepo;
@@ -167,7 +168,7 @@ public class IdRepoServiceTest {
 	@Mock
 	private UinRepo uinRepo;
 
-	@Mock
+	@InjectMocks
 	private IdRepoServiceHelper idRepoServiceHelper;
 
 	@Mock
@@ -204,6 +205,9 @@ public class IdRepoServiceTest {
 	@Mock
 	private IdentityUpdateTrackerRepo identityUpdateTracker;
 
+	@Mock
+	private IdRepoServiceHelper idRepoServiceHelper1;
+
 	/** The id. */
 	private Map<String, String> id;
 
@@ -239,6 +243,8 @@ public class IdRepoServiceTest {
 		ReflectionTestUtils.setField(securityManager, "mapper", mapper);
 		ReflectionTestUtils.setField(service, "securityManager", securityManager);
 		ReflectionTestUtils.setField(proxyService, "securityManager", securityManager);
+		ReflectionTestUtils.setField(proxyService, "idRepoServiceHelper", idRepoServiceHelper);
+		ReflectionTestUtils.setField(service, "idRepoServiceHelper", idRepoServiceHelper1);
 		when(restBuilder.buildRequest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(new RestRequestDTO());
 		when(restHelper.requestSync(Mockito.any()))
 				.thenReturn(mapper.readValue("{\"response\":{\"data\":\"1234\"}}".getBytes(), ObjectNode.class));
@@ -264,6 +270,36 @@ public class IdRepoServiceTest {
 		when(anonymousProfileHelper.setOldCbeff(Mockito.any())).thenReturn(anonymousProfileHelper);
 		when(anonymousProfileHelper.setNewUinData(Mockito.any())).thenReturn(anonymousProfileHelper);
 		when(anonymousProfileHelper.isNewCbeffPresent()).thenReturn(true);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "mapper", mapper);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "restBuilder", restBuilder);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "restHelper", restHelper);
+		IdentityMapping identityMapping = new IdentityMapping();
+		identityMapping.setIdentity(new IdentityMapping.Identity());
+		IdentityMapping.ResidenceStatus residenceStatus = new IdentityMapping.ResidenceStatus();
+		residenceStatus.setValue("residenceStatus");
+		identityMapping.getIdentity().setResidenceStatus(residenceStatus);
+		IdentityMapping.ApplicantOriginPlace applicantOriginPlace = new IdentityMapping.ApplicantOriginPlace();
+		residenceStatus.setValue("applicantOriginPlace");
+		identityMapping.getIdentity().setApplicantOriginPlace(applicantOriginPlace);
+		IdentityMapping.ApplicantBirthPlace applicantBirthPlace = new IdentityMapping.ApplicantBirthPlace();
+		residenceStatus.setValue("applicantBirthPlace");
+		identityMapping.getIdentity().setApplicantBirthPlace(applicantBirthPlace);
+		IdentityMapping.FatherResidence fatherResidence = new IdentityMapping.FatherResidence();
+		residenceStatus.setValue("fatherResidence");
+		identityMapping.getIdentity().setFatherResidence(fatherResidence);
+		IdentityMapping.FatherOrigin fatherOrigin = new IdentityMapping.FatherOrigin();
+		residenceStatus.setValue("fatherOrigin");
+		identityMapping.getIdentity().setFatherOrigin(fatherOrigin);
+		IdentityMapping.MotherResidence motherResidence = new IdentityMapping.MotherResidence();
+		residenceStatus.setValue("motherResidence");
+		identityMapping.getIdentity().setMotherResidence(motherResidence);
+		IdentityMapping.MotherOrigin motherOrigin = new IdentityMapping.MotherOrigin();
+		residenceStatus.setValue("motherOrigin");
+		identityMapping.getIdentity().setMotherOrigin(motherOrigin);
+		IdentityMapping.SelectedHandles selectedHandles = new IdentityMapping.SelectedHandles();
+		residenceStatus.setValue("selectedHandles");
+		identityMapping.getIdentity().setSelectedHandles(selectedHandles);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "identityMapping", identityMapping);
 	}
 
 	/**
@@ -2014,6 +2050,7 @@ public class IdRepoServiceTest {
 		when(uinRepo.existsByRegId(Mockito.any())).thenReturn(true);
 		when(uinEncryptSaltRepo.retrieveSaltById(Mockito.anyInt())).thenReturn("7C9JlRD32RnFTzAmeTfIzg");
 		when(uinHashSaltRepo.retrieveSaltById(Mockito.anyInt())).thenReturn("AG7JQI1HwFp_cI_DcdAQ9A");
+
 		IdResponseDTO retrieveIdentityByUin = proxyService.retrieveIdentity("1234", IdType.UIN, "bio",
 				Map.of("fingerExtractionFormat", "format"));
 		assertEquals(identityWithDoc, mapper.writeValueAsString(retrieveIdentityByUin.getResponse().getIdentity()));
