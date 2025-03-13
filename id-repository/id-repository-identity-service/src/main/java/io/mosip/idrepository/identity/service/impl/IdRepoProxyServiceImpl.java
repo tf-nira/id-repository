@@ -53,6 +53,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -727,21 +728,21 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 	private void constructAddressDetails(ObjectNode identityObject) {
 
-		String residenceStatus = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getResidenceStatus().getValue()));
-		String applicantOriginPlace = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantOriginPlace().getValue()));
-		String applicantBirthPlace = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantBirthPlace().getValue()));
-		String fatherResidence = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherResidence().getValue()));
-		String fatherOrigin = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherOrigin().getValue()));
-		String motherResidence = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherResidence().getValue()));
-		String motherOrigin = String.valueOf(identityObject
-				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherOrigin().getValue()));
-		if (residenceStatus != null && residenceStatus.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		JsonNode residenceStatus = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getResidenceStatus().getValue());
+		JsonNode applicantOriginPlace = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantOriginPlace().getValue());
+		JsonNode applicantBirthPlace = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantBirthPlace().getValue());
+		JsonNode fatherResidence = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherResidence().getValue());
+		JsonNode fatherOrigin = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherOrigin().getValue());
+		JsonNode motherResidence = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherResidence().getValue());
+		JsonNode motherOrigin = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherOrigin().getValue());
+		if (residenceStatus != null && (residenceStatus.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceCounty().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceSubCounty().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue());
@@ -757,13 +758,14 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getAppResCountryUGA().getValue());
 			
 		}
-		if (residenceStatus != null && residenceStatus.equalsIgnoreCase(INUGANDA)) {
+		if (residenceStatus != null && (residenceStatus.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignResidenceCountry().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignResidenceAddress().getValue());
 		}
-		if (applicantBirthPlace != null && applicantBirthPlace.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (applicantBirthPlace != null
+				&& (applicantBirthPlace.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getAppBirCountryUGA().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
@@ -781,13 +783,15 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantPlaceOfBirthHealthFacility().getValue());
 		}
-		if (applicantBirthPlace != null && applicantBirthPlace.equalsIgnoreCase(INUGANDA)) {
+		if (applicantBirthPlace != null
+				&& (applicantBirthPlace.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignBirthCountry().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignBirthAddress().getValue());
 		}
-		if (applicantOriginPlace != null && applicantOriginPlace.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (applicantOriginPlace != null
+				&& (applicantOriginPlace.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject
 					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getAppOriCountryUGA().getValue());
 			identityObject.remove(
@@ -808,13 +812,14 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantPlaceOfOriginClan().getValue());
 		}
-		if (applicantOriginPlace != null && applicantOriginPlace.equalsIgnoreCase(INUGANDA)) {
+		if (applicantOriginPlace != null
+				&& (applicantOriginPlace.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignOriginAddress().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignOriginCountry().getValue());
 		}
-		if (fatherResidence != null && fatherResidence.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (fatherResidence != null && (fatherResidence.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getFatResCountryUGA().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
@@ -833,13 +838,13 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.getFatherPlaceOfResidenceHouseNo().getValue());
 
 		}
-		if (fatherResidence != null && fatherResidence.equalsIgnoreCase(INUGANDA)) {
+		if (fatherResidence != null && (fatherResidence.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getFatherForeignResidenceCountry().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getFatherForeignResidenceAddress().getValue());
 		}
-		if (fatherOrigin != null && fatherOrigin.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (fatherOrigin != null && (fatherOrigin.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject
 					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getFatOriCountryUGA().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
@@ -858,13 +863,13 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.getFatherIndigenousCommunityClan().getValue());
 
 		}
-		if (fatherOrigin != null && fatherOrigin.equalsIgnoreCase(INUGANDA)) {
+		if (fatherOrigin != null && (fatherOrigin.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(
 					idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginCountry().getValue());
 			identityObject.remove(
 					idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginAddress().getValue());
 		}
-		if (motherResidence != null && motherResidence.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (motherResidence != null && (motherResidence.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject
 					.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotResCountryUGA().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
@@ -883,13 +888,13 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.getMotherPlaceOfResidenceHouseNo().getValue());
 
 		}
-		if (motherResidence != null && motherResidence.equalsIgnoreCase(INUGANDA)) {
+		if (motherResidence != null && (motherResidence.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getMotherForeignResidenceCountry().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getMotherForeignResidenceAddress().getValue());
 		}
-		if (motherOrigin != null && motherOrigin.equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (motherOrigin != null && (motherOrigin.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getMotOriCountryUGA().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getMotherPlaceOfOriginDistrict().getValue());
@@ -907,7 +912,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.getMotherIndigenousCommunityClan().getValue());
 
 		}
-		if (motherOrigin != null && motherOrigin.equalsIgnoreCase(INUGANDA)) {
+		if (motherOrigin != null && (motherOrigin.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
 			identityObject.remove(
 					idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginCountry().getValue());
 			identityObject.remove(
