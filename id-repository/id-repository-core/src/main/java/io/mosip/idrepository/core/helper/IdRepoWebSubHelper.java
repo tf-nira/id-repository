@@ -225,37 +225,38 @@ public class IdRepoWebSubHelper {
 	 * @param model the model
 	 */
 	public void sendEventToIDA(EventModel model, Consumer<EventModel> idaEventModelConsumer) {
-		if (idaEventModelConsumer != null) {
-			idaEventModelConsumer.accept(model);
-		}
-
-		String partnerId = model.getTopic().split("//")[0];
-		if (!dummyCheck.isDummyOLVPartner(partnerId)) {
-			try {
-				mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), SEND_EVENT_TO_IDA,
-						"Trying registering topic: " + model.getTopic());
-				this.tryRegisteringTopic(model.getTopic());
-			} catch (Exception e) {
-				// Exception will be there if topic already registered. Ignore that
-				mosipLogger.warn(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), SEND_EVENT_TO_IDA,
-						"Error in registering topic: " + model.getTopic() + " : " + e.getMessage());
-			}
-			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), SEND_EVENT_TO_IDA,
-					"Publising event to topic: " + model.getTopic());
-			this.publishEvent(model);
-		}
+		/*
+		 * if (idaEventModelConsumer != null) { idaEventModelConsumer.accept(model); }
+		 * 
+		 * String partnerId = model.getTopic().split("//")[0]; if
+		 * (!dummyCheck.isDummyOLVPartner(partnerId)) { try {
+		 * mosipLogger.info(IdRepoSecurityManager.getUser(),
+		 * this.getClass().getCanonicalName(), SEND_EVENT_TO_IDA,
+		 * "Trying registering topic: " + model.getTopic());
+		 * this.tryRegisteringTopic(model.getTopic()); } catch (Exception e) { //
+		 * Exception will be there if topic already registered. Ignore that
+		 * mosipLogger.warn(IdRepoSecurityManager.getUser(),
+		 * this.getClass().getCanonicalName(), SEND_EVENT_TO_IDA,
+		 * "Error in registering topic: " + model.getTopic() + " : " + e.getMessage());
+		 * } mosipLogger.info(IdRepoSecurityManager.getUser(),
+		 * this.getClass().getCanonicalName(), SEND_EVENT_TO_IDA,
+		 * "Publising event to topic: " + model.getTopic()); this.publishEvent(model); }
+		 */
 	}
 
 	public void subscribeForVidEvent() {
 		try {
-			SubscriptionChangeRequest subscriptionRequest = new SubscriptionChangeRequest();
-			subscriptionRequest.setCallbackURL(vidEventUrl);
-			subscriptionRequest.setHubURL(hubURL);
-			subscriptionRequest.setSecret(vidEventSecret);
-			subscriptionRequest.setTopic(vidEventTopic);
-			subscribe.subscribe(subscriptionRequest);
-			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "subscribeForVidEvent",
-					"subscribed event topic: " + vidEventTopic);
+			/*
+			 * SubscriptionChangeRequest subscriptionRequest = new
+			 * SubscriptionChangeRequest(); subscriptionRequest.setCallbackURL(vidEventUrl);
+			 * subscriptionRequest.setHubURL(hubURL);
+			 * subscriptionRequest.setSecret(vidEventSecret);
+			 * subscriptionRequest.setTopic(vidEventTopic);
+			 * subscribe.subscribe(subscriptionRequest);
+			 * mosipLogger.info(IdRepoSecurityManager.getUser(),
+			 * this.getClass().getCanonicalName(), "subscribeForVidEvent",
+			 * "subscribed event topic: " + vidEventTopic);
+			 */
 		} catch (Exception e) {
 			mosipLogger.warn(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "subscribeForVidEvent",
 					"Error subscribing topic: " + vidEventTopic + "\n" + e.getMessage());

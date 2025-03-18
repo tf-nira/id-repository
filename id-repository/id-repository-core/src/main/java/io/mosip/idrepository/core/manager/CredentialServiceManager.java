@@ -1,7 +1,33 @@
 package io.mosip.idrepository.core.manager;
 
+import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.UIN_REFID;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.mosip.idrepository.core.builder.RestRequestBuilder;
 import io.mosip.idrepository.core.constant.EventType;
 import io.mosip.idrepository.core.constant.IDAEventType;
@@ -12,9 +38,7 @@ import io.mosip.idrepository.core.dto.CredentialIssueRequestDto;
 import io.mosip.idrepository.core.dto.CredentialIssueRequestWrapperDto;
 import io.mosip.idrepository.core.dto.CredentialStatusUpdateEvent;
 import io.mosip.idrepository.core.dto.HandleInfoDTO;
-import io.mosip.idrepository.core.dto.RestRequestDTO;
 import io.mosip.idrepository.core.dto.VidInfoDTO;
-import io.mosip.idrepository.core.dto.VidsInfosDTO;
 import io.mosip.idrepository.core.entity.CredentialRequestStatus;
 import io.mosip.idrepository.core.entity.Handle;
 import io.mosip.idrepository.core.exception.IdRepoAppException;
@@ -37,30 +61,6 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
 import io.mosip.kernel.core.websub.model.EventModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.annotation.Async;
-
-import javax.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.UIN_REFID;
 
 /**
  * The Class CredentialServiceManager.
@@ -199,35 +199,32 @@ public class CredentialServiceManager {
 									String txnId, IntFunction<String> saltRetreivalFunction,
 									BiConsumer<CredentialIssueRequestWrapperDto, Map<String, Object>> credentialRequestResponseConsumer,
 									Consumer<EventModel> idaEventModelConsumer, List<String> partnerIds, String requestId) {
-		try {
-			List<VidInfoDTO> vidInfoDtos = null;
-			if (isUpdate && !vidSupportDisabled) {
-				RestRequestDTO restRequest = restBuilder.buildRequest(RestServicesConstants.RETRIEVE_VIDS_BY_UIN, null,
-						VidsInfosDTO.class);
-				restRequest.setUri(restRequest.getUri().replace("{uin}", uin));
-				VidsInfosDTO response = restHelper.requestSync(restRequest);
-				vidInfoDtos = response.getResponse();
-			}
-
-			if (partnerIds.isEmpty() || (partnerIds.size() == 1 && dummyCheck.isDummyOLVPartner(partnerIds.get(0)))) {
-				partnerIds = partnerServiceManager.getOLVPartnerIds();
-			}
-
-			if ((status != null && isUpdate) && (!ACTIVATED.equals(status) || expiryTimestamp != null)) {
-				// Event to be sent to IDA for deactivation/blocked uin state
-				sendUINEventToIDA(uin, expiryTimestamp, status, vidInfoDtos, partnerIds, txnId,
-						id -> securityManager.getIdHashWithSaltModuloByPlainIdHash(id, saltRetreivalFunction), idaEventModelConsumer);
-			} else {
-				// For create uin, or update uin with null expiry (active status), send event to
-				// credential service.
-				sendUinEventsToCredService(uin, expiryTimestamp, isUpdate, vidInfoDtos, getHandles(uin, saltRetreivalFunction), partnerIds,
-						saltRetreivalFunction, credentialRequestResponseConsumer,requestId);
-			}
-
-		} catch (Exception e) {
-			mosipLogger.error(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), NOTIFY,
-					e.getMessage());
-		}
+		/*
+		 * try { List<VidInfoDTO> vidInfoDtos = null; if (isUpdate &&
+		 * !vidSupportDisabled) { RestRequestDTO restRequest =
+		 * restBuilder.buildRequest(RestServicesConstants.RETRIEVE_VIDS_BY_UIN, null,
+		 * VidsInfosDTO.class); restRequest.setUri(restRequest.getUri().replace("{uin}",
+		 * uin)); VidsInfosDTO response = restHelper.requestSync(restRequest);
+		 * vidInfoDtos = response.getResponse(); }
+		 * 
+		 * if (partnerIds.isEmpty() || (partnerIds.size() == 1 &&
+		 * dummyCheck.isDummyOLVPartner(partnerIds.get(0)))) { partnerIds =
+		 * partnerServiceManager.getOLVPartnerIds(); }
+		 * 
+		 * if ((status != null && isUpdate) && (!ACTIVATED.equals(status) ||
+		 * expiryTimestamp != null)) { // Event to be sent to IDA for
+		 * deactivation/blocked uin state sendUINEventToIDA(uin, expiryTimestamp,
+		 * status, vidInfoDtos, partnerIds, txnId, id ->
+		 * securityManager.getIdHashWithSaltModuloByPlainIdHash(id,
+		 * saltRetreivalFunction), idaEventModelConsumer); } else { // For create uin,
+		 * or update uin with null expiry (active status), send event to // credential
+		 * service. sendUinEventsToCredService(uin, expiryTimestamp, isUpdate,
+		 * vidInfoDtos, getHandles(uin, saltRetreivalFunction), partnerIds,
+		 * saltRetreivalFunction, credentialRequestResponseConsumer,requestId); }
+		 * 
+		 * } catch (Exception e) { mosipLogger.error(IdRepoSecurityManager.getUser(),
+		 * this.getClass().getCanonicalName(), NOTIFY, e.getMessage()); }
+		 */
 	}
 
 	/**
@@ -245,18 +242,16 @@ public class CredentialServiceManager {
 	public void notifyVIDCredential(String uin, String status, List<VidInfoDTO> vids, boolean isUpdated,
 									IntFunction<String> saltRetreivalFunction,
 									BiConsumer<CredentialIssueRequestWrapperDto, Map<String, Object>> credentialRequestResponseConsumer,
-									Consumer<EventModel> idaEventModelConsumer) {
-		try {
-			List<String> partnerIds = partnerServiceManager.getOLVPartnerIds();
-			if (isUpdated) {
-				sendVIDEventsToIDA(status, vids, partnerIds, idaEventModelConsumer);
-			} else {
-				sendVidEventsToCredService(uin, status, vids, isUpdated, partnerIds, saltRetreivalFunction,
-						credentialRequestResponseConsumer);
-			}
-		} catch (Exception e) {
-			mosipLogger.error(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), GET_PARTNER_IDS, e.getMessage());
-		}
+			Consumer<EventModel> idaEventModelConsumer) {
+		/*
+		 * try { List<String> partnerIds = partnerServiceManager.getOLVPartnerIds(); if
+		 * (isUpdated) { sendVIDEventsToIDA(status, vids, partnerIds,
+		 * idaEventModelConsumer); } else { sendVidEventsToCredService(uin, status,
+		 * vids, isUpdated, partnerIds, saltRetreivalFunction,
+		 * credentialRequestResponseConsumer); } } catch (Exception e) {
+		 * mosipLogger.error(IdRepoSecurityManager.getUser(),
+		 * this.getClass().getSimpleName(), GET_PARTNER_IDS, e.getMessage()); }
+		 */
 	}
 
 
