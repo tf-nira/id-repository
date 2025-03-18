@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -698,6 +699,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			response.setVerifiedAttributes(mapper.convertValue(identityObject.get("verifiedAttributes"), List.class));
 			identityObject.remove("verifiedAttributes");
 			constructAddressDetails(identityObject);
+			removeNullNodes(identityObject);
 			if (identityObject.get("NIN") != null) {
 				String NIN = identityObject.get("NIN").asText();
 				List<CardDetail> cardDetails = cardDetailRepository
@@ -724,6 +726,27 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 		}
 		idResponse.setResponse(response);
 		return idResponse;
+	}
+
+	public static void removeNullNodes(ObjectNode objectNode) {
+
+		List<String> nullKeys = new ArrayList<>();
+
+		// Iterate through the fields of the ObjectNode
+		Iterator<Entry<String, JsonNode>> fields = objectNode.fields();
+
+		while (fields.hasNext()) {
+			Entry<String, JsonNode> entry = fields.next();
+			// Check if the value is null
+			if (entry.getValue().isNull()) {
+				nullKeys.add(entry.getKey()); // Collect the key
+			}
+		}
+
+		// Now remove all the collected keys
+		for (String key : nullKeys) {
+			objectNode.remove(key);
+		}
 	}
 
 	private void constructAddressDetails(ObjectNode identityObject) {
