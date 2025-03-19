@@ -254,8 +254,8 @@ public class IdRepoWebSubHelper {
 			subscriptionRequest.setSecret(vidEventSecret);
 			subscriptionRequest.setTopic(vidEventTopic);
 			subscribe.subscribe(subscriptionRequest);
-			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
-					"subscribeForVidEvent", "subscribed event topic: " + vidEventTopic);
+			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "subscribeForVidEvent",
+					"subscribed event topic: " + vidEventTopic);
 		} catch (Exception e) {
 			mosipLogger.warn(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "subscribeForVidEvent",
 					"Error subscribing topic: " + vidEventTopic + "\n" + e.getMessage());
