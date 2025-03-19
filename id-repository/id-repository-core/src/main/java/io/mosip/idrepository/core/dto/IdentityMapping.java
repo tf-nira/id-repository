@@ -219,8 +219,102 @@ public class IdentityMapping {
 		private FatherIndigenousCommunityTribe fatherIndigenousCommunityTribe;
 		@JsonProperty("fatherIndigenousCommunityClan")
 		private FatherIndigenousCommunityClan fatherIndigenousCommunityClan;
-
+		@JsonProperty("removeSpouseDateOfMarriage")
+		private RemoveSpouseDateOfMarriage removeSpouseDateOfMarriage;
+		@JsonProperty("removeSpouseGivenName")
+		private RemoveSpouseGivenName removeSpouseGivenName;
+		@JsonProperty("spouseDateOfMarriage")
+		private SpouseDateOfMarriage spouseDateOfMarriage;
+		@JsonProperty("spouseGivenName")
+		private SpouseGivenName spouseGivenName;
+		@JsonProperty("spouseSurname")
+		private SpouseSurname spouseSurname;
+		@JsonProperty("spouseOtherNames")
+		private SpouseOtherNames spouseOtherNames;
+		@JsonProperty("spouseMaidenName")
+		private SpouseMaidenName spouseMaidenName;
+		@JsonProperty("spousePreviousName")
+		private SpousePreviousName spousePreviousName;
+		@JsonProperty("spouseNIN")
+		private SpouseNIN spouseNIN;
+		@JsonProperty("spouseCitizenshipType")
+		private SpouseCitizenshipType spouseCitizenshipType;
+		@JsonProperty("spousePlaceOfMarriage")
+		private SpousePlaceOfMarriage spousePlaceOfMarriage;
+		@JsonProperty("spouseTypeOfMarriage")
+		private SpouseTypeOfMarriage spouseTypeOfMarriage;
+		@JsonProperty("spouseMarriageCertificateNumber")
+		private SpouseMarriageCertificateNumber spouseMarriageCertificateNumber;
+		@JsonProperty("spouseTwoDateOfMarriage")
+		private SpouseTwoDateOfMarriage spouseTwoDateOfMarriage;
+		@JsonProperty("spouseTwoGivenName")
+		private SpouseTwoGivenName spouseTwoGivenName;
+		@JsonProperty("spouseTwoSurname")
+		private SpouseTwoSurname spouseTwoSurname;
+		@JsonProperty("spouseTwoOtherNames")
+		private SpouseTwoOtherNames spouseTwoOtherNames;
+		@JsonProperty("spouseTwoMaidenName")
+		private SpouseTwoMaidenName spouseTwoMaidenName;
+		@JsonProperty("spouseTwoPreviousName")
+		private SpouseTwoPreviousName spouseTwoPreviousName;
+		@JsonProperty("spouseTwoNIN")
+		private SpouseTwoNIN spouseTwoNIN;
+		@JsonProperty("spousTwoeCitizenshipType")
+		private SpouseTwoCitizenshipType spouseTwoCitizenshipType;
+		@JsonProperty("spouseTwoPlaceOfMarriage")
+		private SpouseTwoPlaceOfMarriage spouseTwoPlaceOfMarriage;
+		@JsonProperty("spouseTwoTypeOfMarriage")
+		private SpouseTypeOfMarriage spouseTwoTypeOfMarriage;
+		@JsonProperty("spouseTwoMarriageCertificateNumber")
+		private SpouseTwoMarriageCertificateNumber spouseTwoMarriageCertificateNumber;
+		@JsonProperty("spouseThreeDateOfMarriage")
+		private SpouseThreeDateOfMarriage spouseThreeDateOfMarriage;
+		@JsonProperty("spouseThreeGivenName")
+		private SpouseThreeGivenName spouseThreeGivenName;
+		@JsonProperty("spouseThreeSurname")
+		private SpouseThreeSurname spouseThreeSurname;
+		@JsonProperty("spouseThreeOtherNames")
+		private SpouseThreeOtherNames spouseThreeOtherNames;
+		@JsonProperty("spouseThreeMaidenName")
+		private SpouseThreeMaidenName spouseThreeMaidenName;
+		@JsonProperty("spouseThreePreviousName")
+		private SpouseThreePreviousName spouseThreePreviousName;
+		@JsonProperty("spouseThreeNIN")
+		private SpouseThreeNIN spouseThreeNIN;
+		@JsonProperty("spousThreeeCitizenshipType")
+		private SpouseThreeCitizenshipType spouseThreeCitizenshipType;
+		@JsonProperty("spouseThreePlaceOfMarriage")
+		private SpouseThreePlaceOfMarriage spouseThreePlaceOfMarriage;
+		@JsonProperty("spouseThreeTypeOfMarriage")
+		private SpouseTypeOfMarriage spouseThreeTypeOfMarriage;
+		@JsonProperty("spouseThreeMarriageCertificateNumber")
+		private SpouseThreeMarriageCertificateNumber spouseThreeMarriageCertificateNumber;
+		@JsonProperty("spouseFourDateOfMarriage")
+		private SpouseFourDateOfMarriage spouseFourDateOfMarriage;
+		@JsonProperty("spouseFourGivenName")
+		private SpouseFourGivenName spouseFourGivenName;
+		@JsonProperty("spouseFourSurname")
+		private SpouseFourSurname spouseFourSurname;
+		@JsonProperty("spouseFourOtherNames")
+		private SpouseFourOtherNames spouseFourOtherNames;
+		@JsonProperty("spouseFourMaidenName")
+		private SpouseFourMaidenName spouseFourMaidenName;
+		@JsonProperty("spouseFourPreviousName")
+		private SpouseFourPreviousName spouseFourPreviousName;
+		@JsonProperty("spouseFourNIN")
+		private SpouseFourNIN spouseFourNIN;
+		@JsonProperty("spousFoureCitizenshipType")
+		private SpouseFourCitizenshipType spouseFourCitizenshipType;
+		@JsonProperty("spouseFourPlaceOfMarriage")
+		private SpouseFourPlaceOfMarriage spouseFourPlaceOfMarriage;
+		@JsonProperty("spouseFourTypeOfMarriage")
+		private SpouseTypeOfMarriage spouseFourTypeOfMarriage;
+		@JsonProperty("spouseFourMarriageCertificateNumber")
+		private SpouseFourMarriageCertificateNumber spouseFourMarriageCertificateNumber;
+		@JsonProperty("numberOfOtherSpouses")
+		private NumberOfOtherSpouses numberOfOtherSpouses;
 	}
+
 
 	@Data
 	@NoArgsConstructor
@@ -929,4 +1023,285 @@ public class IdentityMapping {
 		private String value;
 	}
 
+	@Data
+	@NoArgsConstructor
+	public static class RemoveSpouseDateOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class RemoveSpouseGivenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseDateOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseGivenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseSurname {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseOtherNames {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseMaidenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpousePreviousName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseNIN {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseCitizenshipType {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpousePlaceOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTypeOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseMarriageCertificateNumber {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoDateOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoGivenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoSurname {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoOtherNames {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoMaidenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoPreviousName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoNIN {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoCitizenshipType {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoPlaceOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoTypeOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseTwoMarriageCertificateNumber {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeDateOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeGivenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeSurname {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeOtherNames {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeMaidenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreePreviousName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeNIN {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeCitizenshipType {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreePlaceOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeTypeOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseThreeMarriageCertificateNumber {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourDateOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourGivenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourSurname {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourOtherNames {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourMaidenName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourPreviousName {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourNIN {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourCitizenshipType {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourPlaceOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourTypeOfMarriage {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class SpouseFourMarriageCertificateNumber {
+		private String value;
+	}
+
+	@Data
+	@NoArgsConstructor
+	public static class NumberOfOtherSpouses {
+		private String value;
+	}
 }

@@ -592,114 +592,196 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void updateSpouseDetails(RequestDTO requestDTO, DocumentContext inputData, DocumentContext dbData)
 			throws IdRepoAppException {
+	
 		String removeSpouseDateOfMarriage = null;
 		String removeSpouseGivenNameValue = null;
 		boolean removed = false;
-		List removeSpouseDateOfMarriagePath = inputData.read(".removeSpouseDateOfMarriage");
+		List removeSpouseDateOfMarriagePath = inputData
+				.read("." + idRepoServiceHelper.getIdentityMapping().getIdentity().getRemoveSpouseDateOfMarriage()
+						.getValue());
 		if (removeSpouseDateOfMarriagePath != null && !removeSpouseDateOfMarriagePath.isEmpty()) {
 			removeSpouseDateOfMarriage = (String) removeSpouseDateOfMarriagePath.get(0);
 		}
-		List removeSpouseGivenNamePath = (List) inputData.read(".removeSpouseGivenName");
+		List removeSpouseGivenNamePath = (List) inputData
+				.read("."
+						+ idRepoServiceHelper.getIdentityMapping().getIdentity().getRemoveSpouseGivenName().getValue());
 		if ((removeSpouseGivenNamePath != null && !removeSpouseGivenNamePath.isEmpty())) {
 			List removeSpouseGivenName = (List) removeSpouseGivenNamePath.get(0);
 			Map<String, String> removeSpouseGivenNameMap = (Map<String, String>) removeSpouseGivenName.get(0);
 			removeSpouseGivenNameValue = removeSpouseGivenNameMap.get("value");
 		}
 		if (removeSpouseDateOfMarriage != null && removeSpouseGivenNameValue != null) {
-			String spouseDateOfMarriage = getDateOfMarriage(".spouseDateOfMarriage", dbData);
-			String spouseGivenName = getSpouseGivenName(".spouseGivenName", dbData);
+			String spouseDateOfMarriage = getDateOfMarriage(
+					"." + idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseDateOfMarriage().getValue(),
+					dbData);
+			String spouseGivenName = getSpouseGivenName(
+					"." + idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseGivenName().getValue(),
+					dbData);
 			if (spouseDateOfMarriage != null && spouseGivenName != null) {
 				if (spouseDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
 						&& spouseGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
-					dbData.put("$", "spouseDateOfMarriage", null);
-					dbData.put("$", "spouseGivenName", null);
-					dbData.put("$", "spouseSurname", null);
-					dbData.put("$", "spouseOtherNames", null);
-					dbData.put("$", "spouseMaidenName", null);
-					dbData.put("$", "spousePreviousName", null);
-					dbData.put("$", "spouseNIN", null);
-					dbData.put("$", "spouseCitizenshipType", null);
-					dbData.put("$", "spousePlaceOfMarriage", null);
-					dbData.put("$", "spouseTypeOfMarriage", null);
-					dbData.put("$", "spouseMarriageCertificateNumber", null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseDateOfMarriage().getValue(),
+							null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseGivenName().getValue(),
+							null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseSurname().getValue(), null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseOtherNames().getValue(),
+							null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseMaidenName().getValue(),
+							null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpousePreviousName().getValue(),
+							null);
+					dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseNIN().getValue(),
+							null);
+					dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseCitizenshipType()
+							.getValue(), null);
+					dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpousePlaceOfMarriage()
+							.getValue(), null);
+					dbData.put("$",
+							idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTypeOfMarriage().getValue(),
+							null);
+					dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+							.getSpouseMarriageCertificateNumber().getValue(), null);
 					removed = true;
 				}
 			}
 			if (!removed) {
-				String spouseTwoDateOfMarriage = getDateOfMarriage(".spouseTwoDateOfMarriage", dbData);
-				String spouseTwoGivenName = getSpouseGivenName(".spouseTwoGivenName", dbData);
+				String spouseTwoDateOfMarriage = getDateOfMarriage("." + idRepoServiceHelper.getIdentityMapping()
+						.getIdentity()
+						.getSpouseTwoDateOfMarriage().getValue(), dbData);
+				String spouseTwoGivenName = getSpouseGivenName(
+						"." + idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTwoGivenName().getValue(),
+						dbData);
 				if (spouseTwoDateOfMarriage != null && spouseTwoGivenName != null) {
 					if (spouseTwoDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
 							&& spouseTwoGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
-						dbData.put("$", "spouseTwoDateOfMarriage", null);
-						dbData.put("$", "spouseTwoGivenName", null);
-						dbData.put("$", "spouseTwoSurname", null);
-						dbData.put("$", "spouseTwoOtherNames", null);
-						dbData.put("$", "spouseTwoMaidenName", null);
-						dbData.put("$", "spouseTwoPreviousName", null);
-						dbData.put("$", "spouseTwoNIN", null);
-						dbData.put("$", "spouseTwoCitizenshipType", null);
-						dbData.put("$", "spouseTwoPlaceOfMarriage", null);
-						dbData.put("$", "spouseTwoTypeOfMarriage", null);
-						dbData.put("$", "spouseTwoMarriageCertificateNumber", null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseTwoDateOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTwoGivenName()
+								.getValue(), null);
+						dbData.put("$",
+								idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTwoSurname().getValue(),
+								null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTwoOtherNames()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTwoMaidenName()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseTwoPreviousName().getValue(), null);
+						dbData.put("$",
+								idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseTwoNIN().getValue(),
+								null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseTwoCitizenshipType().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseTwoPlaceOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseTwoTypeOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseTwoMarriageCertificateNumber().getValue(), null);
 						removed = true;
 					}
 				}
 			}
 			if (!removed) {
-				String spouseThreeDateOfMarriage = getDateOfMarriage(".spouseThreeDateOfMarriage", dbData);
-				String spouseThreeGivenName = getSpouseGivenName(".spouseThreeGivenName", dbData);
+				String spouseThreeDateOfMarriage = getDateOfMarriage("." + idRepoServiceHelper.getIdentityMapping()
+						.getIdentity().getSpouseThreeDateOfMarriage().getValue(), dbData);
+				String spouseThreeGivenName = getSpouseGivenName("."
+						+ idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseThreeGivenName().getValue(),
+						dbData);
 				if (spouseThreeDateOfMarriage != null && spouseThreeGivenName != null) {
 					if (spouseThreeDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
 							&& spouseThreeGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
-						dbData.put("$", "spouseThreeDateOfMarriage", null);
-						dbData.put("$", "spouseThreeGivenName", null);
-						dbData.put("$", "spouseThreeSurname", null);
-						dbData.put("$", "spouseThreeOtherNames", null);
-						dbData.put("$", "spouseThreeMaidenName", null);
-						dbData.put("$", "spouseThreePreviousName", null);
-						dbData.put("$", "spouseThreeNIN", null);
-						dbData.put("$", "spouseThreeCitizenshipType", null);
-						dbData.put("$", "spouseThreePlaceOfMarriage", null);
-						dbData.put("$", "spouseThreeTypeOfMarriage", null);
-						dbData.put("$", "spouseThreeMarriageCertificateNumber", null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreeDateOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseThreeGivenName()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseThreeSurname()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreeOtherNames().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreeMaidenName().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreePreviousName().getValue(), null);
+						dbData.put("$",
+								idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseThreeNIN().getValue(),
+								null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreeCitizenshipType().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreePlaceOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreeTypeOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseThreeMarriageCertificateNumber().getValue(), null);
 						removed = true;
 					}
 				}
 			}
 			if (!removed) {
-				String spouseFourDateOfMarriage = getDateOfMarriage(".spouseFourDateOfMarriage", dbData);
-				String spouseFourGivenName = getSpouseGivenName(".spouseFourGivenName", dbData);
+				String spouseFourDateOfMarriage = getDateOfMarriage(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourDateOfMarriage().getValue(),
+						dbData);
+				String spouseFourGivenName = getSpouseGivenName(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourGivenName().getValue(),
+						dbData);
 				if (spouseFourDateOfMarriage != null && spouseFourGivenName != null) {
 					if (spouseFourDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
 							&& spouseFourGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
-						dbData.put("$", "spouseFourDateOfMarriage", null);
-						dbData.put("$", "spouseFourGivenName", null);
-						dbData.put("$", "spouseFourSurname", null);
-						dbData.put("$", "spouseFourOtherNames", null);
-						dbData.put("$", "spouseFourMaidenName", null);
-						dbData.put("$", "spouseFourPreviousName", null);
-						dbData.put("$", "spousFoureNIN", null);
-						dbData.put("$", "spouseFourCitizenshipType", null);
-						dbData.put("$", "spouseFourPlaceOfMarriage", null);
-						dbData.put("$", "spouseFourTypeOfMarriage", null);
-						dbData.put("$", "spouseFourMarriageCertificateNumber", null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseFourDateOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourGivenName()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourSurname()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourOtherNames()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourMaidenName()
+								.getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseFourPreviousName().getValue(), null);
+						dbData.put("$",
+								idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourNIN().getValue(),
+								null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseFourCitizenshipType().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseFourPlaceOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseFourTypeOfMarriage().getValue(), null);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+								.getSpouseFourMarriageCertificateNumber().getValue(), null);
 						removed = true;
 					}
 				}
 			}
 			if (removed) {
-				dbData.put("$", "removeSpouseDateOfMarriage", null);
-				dbData.put("$", "removeSpouseGivenName", null);
-				inputData.put("$", "removeSpouseDateOfMarriage", null);
-				inputData.put("$", "removeSpouseGivenName", null);
-				List numberOfOtherSpousesPath = dbData.read(".numberOfOtherSpouses");
+				dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getRemoveSpouseDateOfMarriage()
+						.getValue(), null);
+				dbData.put("$",
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getRemoveSpouseGivenName().getValue(),
+						null);
+				inputData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity()
+						.getRemoveSpouseDateOfMarriage().getValue(), null);
+				inputData.put("$",
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getRemoveSpouseGivenName().getValue(),
+						null);
+				List numberOfOtherSpousesPath = dbData.read("."
+						+ idRepoServiceHelper.getIdentityMapping().getIdentity().getNumberOfOtherSpouses().getValue());
 				if (numberOfOtherSpousesPath != null && !numberOfOtherSpousesPath.isEmpty()) {
 					String numberOfOtherSpousesstr = (String) numberOfOtherSpousesPath.get(0);
 					int numberOfOtherSpouses = Integer.parseInt(numberOfOtherSpousesstr);
 					if (numberOfOtherSpouses != 0) {
 						numberOfOtherSpouses = numberOfOtherSpouses - 1;
-						dbData.put("$", "numberOfOtherSpouses", numberOfOtherSpouses);
+						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getNumberOfOtherSpouses()
+								.getValue(), numberOfOtherSpouses);
 					}
 				}
 
