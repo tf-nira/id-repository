@@ -780,8 +780,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					int numberOfOtherSpouses = Integer.parseInt(numberOfOtherSpousesstr);
 					if (numberOfOtherSpouses != 0) {
 						numberOfOtherSpouses = numberOfOtherSpouses - 1;
+						String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpouses);
 						dbData.put("$", idRepoServiceHelper.getIdentityMapping().getIdentity().getNumberOfOtherSpouses()
-								.getValue(), numberOfOtherSpouses);
+								.getValue(), numberOfOtherSpousesValue);
 					}
 				}
 
