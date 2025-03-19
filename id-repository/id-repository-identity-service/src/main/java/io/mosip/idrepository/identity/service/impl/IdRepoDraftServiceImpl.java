@@ -377,6 +377,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			JsonPath uinJsonPath = JsonPath.compile(uinPath.replace(ROOT_PATH, "$"));
 			inputData.set(uinJsonPath, dbData.read(uinJsonPath));
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
+			super.updateSpouseDetails(requestDTO, inputData, dbData);
 			JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(),
 					JSONCompareMode.LENIENT);
 

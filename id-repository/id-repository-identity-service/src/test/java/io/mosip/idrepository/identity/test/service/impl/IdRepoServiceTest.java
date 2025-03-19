@@ -205,9 +205,6 @@ public class IdRepoServiceTest {
 	@Mock
 	private IdentityUpdateTrackerRepo identityUpdateTracker;
 
-	@Mock
-	private IdRepoServiceHelper idRepoServiceHelper1;
-
 	/** The id. */
 	private Map<String, String> id;
 
@@ -244,7 +241,7 @@ public class IdRepoServiceTest {
 		ReflectionTestUtils.setField(service, "securityManager", securityManager);
 		ReflectionTestUtils.setField(proxyService, "securityManager", securityManager);
 		ReflectionTestUtils.setField(proxyService, "idRepoServiceHelper", idRepoServiceHelper);
-		ReflectionTestUtils.setField(service, "idRepoServiceHelper", idRepoServiceHelper1);
+		ReflectionTestUtils.setField(service, "idRepoServiceHelper", idRepoServiceHelper);
 		when(restBuilder.buildRequest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(new RestRequestDTO());
 		when(restHelper.requestSync(Mockito.any()))
 				.thenReturn(mapper.readValue("{\"response\":{\"data\":\"1234\"}}".getBytes(), ObjectNode.class));
@@ -299,6 +296,15 @@ public class IdRepoServiceTest {
 		IdentityMapping.SelectedHandles selectedHandles = new IdentityMapping.SelectedHandles();
 		residenceStatus.setValue("selectedHandles");
 		identityMapping.getIdentity().setSelectedHandles(selectedHandles);
+		IdentityMapping.RemoveSpouseDateOfMarriage removeSpouseDateOfMarriage = new IdentityMapping.RemoveSpouseDateOfMarriage();
+		residenceStatus.setValue("removeSpouseDateOfMarriage");
+		identityMapping.getIdentity().setRemoveSpouseDateOfMarriage(removeSpouseDateOfMarriage);
+		IdentityMapping.RemoveSpouseGivenName removeSpouseGivenName = new IdentityMapping.RemoveSpouseGivenName();
+		residenceStatus.setValue("removeSpouseGivenName");
+		identityMapping.getIdentity().setRemoveSpouseGivenName(removeSpouseGivenName);
+		IdentityMapping.IDSchemaVersion IDSchemaVersion = new IdentityMapping.IDSchemaVersion();
+		residenceStatus.setValue("IDSchemaVersion");
+		identityMapping.getIdentity().setIDSchemaVersion(IDSchemaVersion);
 		ReflectionTestUtils.setField(idRepoServiceHelper, "identityMapping", identityMapping);
 	}
 

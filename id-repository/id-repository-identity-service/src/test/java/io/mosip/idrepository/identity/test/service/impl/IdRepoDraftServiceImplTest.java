@@ -61,6 +61,7 @@ import io.mosip.idrepository.core.constant.IdRepoErrorConstants;
 import io.mosip.idrepository.core.dto.DocumentsDTO;
 import io.mosip.idrepository.core.dto.IdRequestDTO;
 import io.mosip.idrepository.core.dto.IdResponseDTO;
+import io.mosip.idrepository.core.dto.IdentityMapping;
 import io.mosip.idrepository.core.dto.RequestDTO;
 import io.mosip.idrepository.core.dto.RestRequestDTO;
 import io.mosip.idrepository.core.entity.UinEncryptSalt;
@@ -83,6 +84,7 @@ import io.mosip.idrepository.identity.entity.UinDocument;
 import io.mosip.idrepository.identity.entity.UinDocumentDraft;
 import io.mosip.idrepository.identity.entity.UinDraft;
 import io.mosip.idrepository.identity.helper.AnonymousProfileHelper;
+import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
 import io.mosip.idrepository.identity.helper.VidDraftHelper;
 import io.mosip.idrepository.identity.repository.IdentityUpdateTrackerRepo;
@@ -194,6 +196,9 @@ public class IdRepoDraftServiceImplTest {
 	@Mock
 	private AnonymousProfileHelper anonymousProfileHelper;
 
+	@InjectMocks
+	private IdRepoServiceHelper idRepoServiceHelper;
+
 	@Mock
 	private DummyPartnerCheckUtil dummyPartner;
 
@@ -211,6 +216,8 @@ public class IdRepoDraftServiceImplTest {
 
 	@Mock
 	private Environment environment;
+	
+
 
 	/** The id. */
 	private Map<String, String> id;
@@ -239,6 +246,44 @@ public class IdRepoDraftServiceImplTest {
 		restReq.setUri("");
 		when(restBuilder.buildRequest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(restReq);
 		ReflectionTestUtils.setField(idRepoServiceImpl, "dobFormat", "dd/MM/yyyy");
+		ReflectionTestUtils.setField(idRepoServiceImpl, "idRepoServiceHelper", idRepoServiceHelper);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "mapper", mapper);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "restBuilder", restBuilder);
+		ReflectionTestUtils.setField(idRepoServiceHelper, "restHelper", restHelper);
+		IdentityMapping identityMapping = new IdentityMapping();
+		identityMapping.setIdentity(new IdentityMapping.Identity());
+		IdentityMapping.ResidenceStatus residenceStatus = new IdentityMapping.ResidenceStatus();
+		residenceStatus.setValue("residenceStatus");
+		identityMapping.getIdentity().setResidenceStatus(residenceStatus);
+		IdentityMapping.ApplicantOriginPlace applicantOriginPlace = new IdentityMapping.ApplicantOriginPlace();
+		residenceStatus.setValue("applicantOriginPlace");
+		identityMapping.getIdentity().setApplicantOriginPlace(applicantOriginPlace);
+		IdentityMapping.ApplicantBirthPlace applicantBirthPlace = new IdentityMapping.ApplicantBirthPlace();
+		residenceStatus.setValue("applicantBirthPlace");
+		identityMapping.getIdentity().setApplicantBirthPlace(applicantBirthPlace);
+		IdentityMapping.FatherResidence fatherResidence = new IdentityMapping.FatherResidence();
+		residenceStatus.setValue("fatherResidence");
+		identityMapping.getIdentity().setFatherResidence(fatherResidence);
+		IdentityMapping.FatherOrigin fatherOrigin = new IdentityMapping.FatherOrigin();
+		residenceStatus.setValue("fatherOrigin");
+		identityMapping.getIdentity().setFatherOrigin(fatherOrigin);
+		IdentityMapping.MotherResidence motherResidence = new IdentityMapping.MotherResidence();
+		residenceStatus.setValue("motherResidence");
+		identityMapping.getIdentity().setMotherResidence(motherResidence);
+		IdentityMapping.MotherOrigin motherOrigin = new IdentityMapping.MotherOrigin();
+		residenceStatus.setValue("motherOrigin");
+		identityMapping.getIdentity().setMotherOrigin(motherOrigin);
+		IdentityMapping.SelectedHandles selectedHandles = new IdentityMapping.SelectedHandles();
+		residenceStatus.setValue("selectedHandles");
+		identityMapping.getIdentity().setSelectedHandles(selectedHandles);
+		IdentityMapping.RemoveSpouseDateOfMarriage removeSpouseDateOfMarriage = new IdentityMapping.RemoveSpouseDateOfMarriage();
+		residenceStatus.setValue("removeSpouseDateOfMarriage");
+		identityMapping.getIdentity().setRemoveSpouseDateOfMarriage(removeSpouseDateOfMarriage);
+		IdentityMapping.RemoveSpouseGivenName removeSpouseGivenName = new IdentityMapping.RemoveSpouseGivenName();
+		residenceStatus.setValue("removeSpouseGivenName");
+		identityMapping.getIdentity().setRemoveSpouseGivenName(removeSpouseGivenName);
+
+		ReflectionTestUtils.setField(idRepoServiceHelper, "identityMapping", identityMapping);
 	}
 
 	@Test
