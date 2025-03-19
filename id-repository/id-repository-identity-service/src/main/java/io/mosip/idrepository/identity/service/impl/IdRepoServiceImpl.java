@@ -813,15 +813,15 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	}
 
 	private String getDateOfMarriage(String dateOfMarraige, DocumentContext dbData) {
-		String dateOfMarriage = null;
+		String dateOfMarriageValue = null;
 		if (dbData.read(dateOfMarraige) != null) {
 			List dateOfMarraigePath = (List) dbData.read(dateOfMarraige);
 			if (!dateOfMarraigePath.isEmpty()) {
-				dateOfMarriage = (String) dateOfMarraigePath.get(0);
+				dateOfMarriageValue = (String) dateOfMarraigePath.get(0);
 			}
 
 		}
-		return dateOfMarriage;
+		return dateOfMarriageValue;
 	}
 
 	private void saveCardDetails(RequestDTO requestDTO) {
