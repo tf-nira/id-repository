@@ -259,12 +259,12 @@ public class IdentityMapping {
 		private SpouseTwoPreviousName spouseTwoPreviousName;
 		@JsonProperty("spouseTwoNIN")
 		private SpouseTwoNIN spouseTwoNIN;
-		@JsonProperty("spousTwoeCitizenshipType")
+		@JsonProperty("spouseTwoCitizenshipType")
 		private SpouseTwoCitizenshipType spouseTwoCitizenshipType;
 		@JsonProperty("spouseTwoPlaceOfMarriage")
 		private SpouseTwoPlaceOfMarriage spouseTwoPlaceOfMarriage;
 		@JsonProperty("spouseTwoTypeOfMarriage")
-		private SpouseTypeOfMarriage spouseTwoTypeOfMarriage;
+		private SpouseTwoTypeOfMarriage spouseTwoTypeOfMarriage;
 		@JsonProperty("spouseTwoMarriageCertificateNumber")
 		private SpouseTwoMarriageCertificateNumber spouseTwoMarriageCertificateNumber;
 		@JsonProperty("spouseThreeDateOfMarriage")
@@ -281,12 +281,12 @@ public class IdentityMapping {
 		private SpouseThreePreviousName spouseThreePreviousName;
 		@JsonProperty("spouseThreeNIN")
 		private SpouseThreeNIN spouseThreeNIN;
-		@JsonProperty("spousThreeeCitizenshipType")
+		@JsonProperty("spouseThreeCitizenshipType")
 		private SpouseThreeCitizenshipType spouseThreeCitizenshipType;
 		@JsonProperty("spouseThreePlaceOfMarriage")
 		private SpouseThreePlaceOfMarriage spouseThreePlaceOfMarriage;
 		@JsonProperty("spouseThreeTypeOfMarriage")
-		private SpouseTypeOfMarriage spouseThreeTypeOfMarriage;
+		private SpouseThreeTypeOfMarriage spouseThreeTypeOfMarriage;
 		@JsonProperty("spouseThreeMarriageCertificateNumber")
 		private SpouseThreeMarriageCertificateNumber spouseThreeMarriageCertificateNumber;
 		@JsonProperty("spouseFourDateOfMarriage")
@@ -303,12 +303,12 @@ public class IdentityMapping {
 		private SpouseFourPreviousName spouseFourPreviousName;
 		@JsonProperty("spouseFourNIN")
 		private SpouseFourNIN spouseFourNIN;
-		@JsonProperty("spousFoureCitizenshipType")
+		@JsonProperty("spouseFourCitizenshipType")
 		private SpouseFourCitizenshipType spouseFourCitizenshipType;
 		@JsonProperty("spouseFourPlaceOfMarriage")
 		private SpouseFourPlaceOfMarriage spouseFourPlaceOfMarriage;
 		@JsonProperty("spouseFourTypeOfMarriage")
-		private SpouseTypeOfMarriage spouseFourTypeOfMarriage;
+		private SpouseFourTypeOfMarriage spouseFourTypeOfMarriage;
 		@JsonProperty("spouseFourMarriageCertificateNumber")
 		private SpouseFourMarriageCertificateNumber spouseFourMarriageCertificateNumber;
 		@JsonProperty("numberOfOtherSpouses")
