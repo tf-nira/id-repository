@@ -726,10 +726,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 			}
 			if (!removed) {
-				String spouseFourDateOfMarriage = getDateOfMarriage(
+				String spouseFourDateOfMarriage = getDateOfMarriage("." +
 						idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourDateOfMarriage().getValue(),
 						dbData);
-				String spouseFourGivenName = getSpouseGivenName(
+				String spouseFourGivenName = getSpouseGivenName("." +
 						idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourGivenName().getValue(),
 						dbData);
 				if (spouseFourDateOfMarriage != null && spouseFourGivenName != null) {
