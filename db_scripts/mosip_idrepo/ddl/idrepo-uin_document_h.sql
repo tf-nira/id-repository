@@ -17,7 +17,7 @@
 -- DROP TABLE IF EXISTS idrepo.uin_document_h CASCADE;
 CREATE TABLE idrepo.uin_document_h(
 	uin_ref_id character varying(36) NOT NULL,
-	doccat_code character varying(36) NOT NULL,
+	doccat_code character varying(64) NOT NULL,
 	doctyp_code character varying(64) NOT NULL,
 	eff_dtimes timestamp NOT NULL,
 	doc_id character varying(128) NOT NULL,
