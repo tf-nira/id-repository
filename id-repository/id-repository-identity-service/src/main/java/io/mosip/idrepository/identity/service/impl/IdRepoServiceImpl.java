@@ -96,6 +96,7 @@ import io.mosip.idrepository.identity.entity.UinHistory;
 import io.mosip.idrepository.identity.helper.AnonymousProfileHelper;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
+import io.mosip.idrepository.identity.helper.SpouseDetailHelper;
 import io.mosip.idrepository.identity.provider.IdentityUpdateTrackerPolicyProvider;
 import io.mosip.idrepository.identity.repository.CardDetailRepository;
 import io.mosip.idrepository.identity.repository.IdentityUpdateTrackerRepo;
@@ -219,6 +220,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	
 	@Autowired
 	protected CardDetailRepository cardDetailRepository;
+
+	@Autowired
+	private SpouseDetailHelper spouseDetailHelper;
 
 	@Value("${mosip.idrepo.identity.uin-status.registered}")
 	private String activeStatus;
@@ -548,6 +552,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				if (comparisonResult.failed()) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
+				spouseDetailHelper.addSpouseDetails(inputData, dbData);
 				updateSpouseDetails(requestDTO, inputData, dbData);
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));

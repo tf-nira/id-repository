@@ -1,5 +1,33 @@
 package io.mosip.idrepository.identity.helper;
 
+import static io.mosip.idrepository.core.constant.IdRepoConstants.ROOT_PATH;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.INVALID_INPUT_PARAMETER;
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.MISSING_INPUT_PARAMETER;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.io.IOUtils;
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
@@ -20,29 +48,12 @@ import io.mosip.idrepository.core.helper.RestHelper;
 import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
+import io.mosip.idrepository.identity.constant.MappingJsonConstants;
 import io.mosip.idrepository.identity.dto.HandleDto;
 import io.mosip.kernel.core.http.ResponseWrapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.idobjectvalidator.constant.IdObjectValidatorConstant;
-import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.mosip.idrepository.core.constant.IdRepoConstants.ROOT_PATH;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.INVALID_INPUT_PARAMETER;
-import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.MISSING_INPUT_PARAMETER;
 
 @Component
 public class IdRepoServiceHelper {
@@ -80,12 +91,17 @@ public class IdRepoServiceHelper {
 
     private IdentityMapping identityMapping;
 
+	public JSONObject mappingJsonIdentity = null;
+
 
     @PostConstruct
     private void initialize() throws IOException {
         try (InputStream xsdBytes = new URL(identityMappingJson).openStream()) {
-            identityMapping = mapper.readValue(IOUtils.toString(xsdBytes, StandardCharsets.UTF_8),
+			String mappingJsonString = IOUtils.toString(xsdBytes, StandardCharsets.UTF_8);
+			identityMapping = mapper.readValue(mappingJsonString,
                     IdentityMapping.class);;
+			JSONObject mappingJsonObject = mapper.readValue(mappingJsonString, JSONObject.class);
+			mappingJsonIdentity = JsonUtil.getJSONObject(mappingJsonObject, MappingJsonConstants.IDENTITY);
         }
     }
 
@@ -209,4 +225,14 @@ public class IdRepoServiceHelper {
         }
         return postfix;
     }
+
+	public String getMappingJsonValue(String key) throws IOException {
+		Object obj = mappingJsonIdentity.get(key);
+		if (obj instanceof LinkedHashMap) {
+			LinkedHashMap hm = (LinkedHashMap) obj;
+			return hm.get("value") != null ? hm.get("value").toString() : null;
+		}
+		return mappingJsonIdentity.get(key) != null ? mappingJsonIdentity.get(key).toString() : null;
+
+	}
 }

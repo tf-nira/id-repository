@@ -85,6 +85,7 @@ import io.mosip.idrepository.identity.entity.UinDocument;
 import io.mosip.idrepository.identity.helper.AnonymousProfileHelper;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
+import io.mosip.idrepository.identity.helper.SpouseDetailHelper;
 import io.mosip.idrepository.identity.provider.IdentityUpdateTrackerPolicyProvider;
 import io.mosip.idrepository.identity.repository.IdentityUpdateTrackerRepo;
 import io.mosip.idrepository.identity.repository.UinBiometricHistoryRepo;
@@ -148,6 +149,9 @@ public class IdRepoServiceTest {
 
 	@Mock
 	private UinDocumentHistoryRepo uinDocHRepo;
+
+	@Mock
+	private SpouseDetailHelper spouseDetailHelper;
 
 	/** The mapper. */
 	@Autowired
