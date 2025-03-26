@@ -26,9 +26,9 @@ public class SpouseDetailHelper {
 	public void addSpouseDetails(DocumentContext inputData, DocumentContext dbData) throws IOException {
 		// TODO verify logic and call from one place and test it through updateIdentity
 		String numberOfOtherSpousesInput = getStringData(
-				"." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), dbData, null, false);
+				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), dbData, null, false);
 		String numberOfOtherSpousesDB = getStringData(
-				"." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
+				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
 		int numberOfOtherSpousesDBnumber = 0;
 		if (numberOfOtherSpousesDB != null) {
 			numberOfOtherSpousesDBnumber = Integer.parseInt(numberOfOtherSpousesDB);
@@ -38,10 +38,10 @@ public class SpouseDetailHelper {
 			for (int i = 1; i <= numberOfOtherSpousesRequest; i++) {
 				for (int j = 1; j <= 4; j++) {
 					List givenNameCheck = getSimpleType(
-							"." + idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"),
+							idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"),
 							dbData,
 							null, false);
-					if (givenNameCheck != null) {
+					if (givenNameCheck == null) {
 						Map<String, Object> inputDataMap = getSpouseDetails(inputData, getNumber(i));
 						addSpouseDetailsToDb(dbData, getNumber(j), inputDataMap, getNumber(i));
 						numberOfOtherSpousesDBnumber++;
@@ -62,33 +62,33 @@ public class SpouseDetailHelper {
 		Map<String, Object> fieldMap = new HashMap<String, Object>();
 
 		getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "GivenName"), data, fieldMap, true);
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "GivenName"), data, fieldMap, true);
         getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "Surname"), data, fieldMap, true);
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "Surname"), data, fieldMap, true);
 	    getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "OtherNames"), data, fieldMap, true);
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "OtherNames"), data, fieldMap, true);
 		getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "PreviousName"), data, fieldMap,
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "PreviousName"), data, fieldMap,
 				true);
 		getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "MaidenName"), data, fieldMap, true);
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "MaidenName"), data, fieldMap, true);
 		getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "CitizenshipType"), data, fieldMap,
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "CitizenshipType"), data, fieldMap,
 				true);
 		getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "PlaceOfMarriage"), data, fieldMap,
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "PlaceOfMarriage"), data, fieldMap,
 				true);
 
 		getSimpleType(
-				"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "TypeOfMarriage"), data, fieldMap,
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "TypeOfMarriage"), data, fieldMap,
 				true);
 		getStringData(
-					"." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "MarriageCertificateNumber"),
+				idRepoServiceHelper.getMappingJsonValue("spouse" + number + "MarriageCertificateNumber"),
 					data, fieldMap,
 				true);
-		getStringData("." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "NIN"), data, fieldMap,
+		getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + number + "NIN"), data, fieldMap,
 				true);
-		getStringData("." + idRepoServiceHelper.getMappingJsonValue("spouse" + number + "spouseDateOfMarriage"),
+		getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + number + "spouseDateOfMarriage"),
 					data, fieldMap,
 				true);
 
@@ -97,8 +97,8 @@ public class SpouseDetailHelper {
 
 	private List getSimpleType(String fieldname, DocumentContext dbData, Map<String, Object> fieldMap, boolean add) {
 		List fieldnameList = null;
-		if (dbData.read("."+fieldname) != null) {
-			List fieldnamePath = (List) dbData.read("."+fieldname);
+		if (dbData.read("." + fieldname) != null) {
+			List fieldnamePath = (List) dbData.read("." + fieldname);
 			if (!fieldnamePath.isEmpty()) {
 				 fieldnameList = (List) fieldnamePath.get(0);
 			}
