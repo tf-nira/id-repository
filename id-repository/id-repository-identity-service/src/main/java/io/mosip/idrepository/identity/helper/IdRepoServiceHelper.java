@@ -227,12 +227,15 @@ public class IdRepoServiceHelper {
     }
 
 	public String getMappingJsonValue(String key) throws IOException {
-		Object obj = mappingJsonIdentity.get(key);
-		if (obj instanceof LinkedHashMap) {
-			LinkedHashMap hm = (LinkedHashMap) obj;
-			return hm.get("value") != null ? hm.get("value").toString() : null;
+		if (mappingJsonIdentity != null) {
+			Object obj = mappingJsonIdentity.get(key);
+			if (obj instanceof LinkedHashMap) {
+				LinkedHashMap hm = (LinkedHashMap) obj;
+				return hm.get("value") != null ? hm.get("value").toString() : null;
+			}
+			return mappingJsonIdentity.get(key) != null ? mappingJsonIdentity.get(key).toString() : null;
 		}
-		return mappingJsonIdentity.get(key) != null ? mappingJsonIdentity.get(key).toString() : null;
+		return null;
 
 	}
 }
