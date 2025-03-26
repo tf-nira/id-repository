@@ -96,6 +96,7 @@ import io.mosip.idrepository.identity.entity.UinHistory;
 import io.mosip.idrepository.identity.helper.AnonymousProfileHelper;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
+import io.mosip.idrepository.identity.helper.SpouseDetailHelper;
 import io.mosip.idrepository.identity.provider.IdentityUpdateTrackerPolicyProvider;
 import io.mosip.idrepository.identity.repository.CardDetailRepository;
 import io.mosip.idrepository.identity.repository.IdentityUpdateTrackerRepo;
@@ -219,6 +220,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	
 	@Autowired
 	protected CardDetailRepository cardDetailRepository;
+
+	@Autowired
+	private SpouseDetailHelper spouseDetailHelper;
 
 	@Value("${mosip.idrepo.identity.uin-status.registered}")
 	private String activeStatus;
@@ -544,10 +548,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 				JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(),
 						dbData.jsonString(), JSONCompareMode.LENIENT);
-
-				if (comparisonResult.failed()) {
+				String numberOfOtherSpousesInput = getString(
+						"." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData);
+				if (comparisonResult.failed() && numberOfOtherSpousesInput == null) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
+				spouseDetailHelper.addSpouseDetails(inputData, dbData);
 				updateSpouseDetails(requestDTO, inputData, dbData);
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
@@ -611,7 +617,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			removeSpouseGivenNameValue = removeSpouseGivenNameMap.get("value");
 		}
 		if (removeSpouseDateOfMarriage != null && removeSpouseGivenNameValue != null) {
-			String spouseDateOfMarriage = getDateOfMarriage(
+			String spouseDateOfMarriage = getString(
 					"." + idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseDateOfMarriage().getValue(),
 					dbData);
 			String spouseGivenName = getSpouseGivenName(
@@ -657,7 +663,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 			}
 			if (!removed) {
-				String spouseTwoDateOfMarriage = getDateOfMarriage("." + idRepoServiceHelper.getIdentityMapping()
+				String spouseTwoDateOfMarriage = getString("." + idRepoServiceHelper.getIdentityMapping()
 						.getIdentity()
 						.getSpouseTwoDateOfMarriage().getValue(), dbData);
 				String spouseTwoGivenName = getSpouseGivenName(
@@ -704,7 +710,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 			}
 			if (!removed) {
-				String spouseThreeDateOfMarriage = getDateOfMarriage("." + idRepoServiceHelper.getIdentityMapping()
+				String spouseThreeDateOfMarriage = getString("." + idRepoServiceHelper.getIdentityMapping()
 						.getIdentity().getSpouseThreeDateOfMarriage().getValue(), dbData);
 				String spouseThreeGivenName = getSpouseGivenName("."
 						+ idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseThreeGivenName().getValue(),
@@ -750,7 +756,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 			}
 			if (!removed) {
-				String spouseFourDateOfMarriage = getDateOfMarriage("." +
+				String spouseFourDateOfMarriage = getString("." +
 						idRepoServiceHelper.getIdentityMapping().getIdentity().getSpouseFourDateOfMarriage().getValue(),
 						dbData);
 				String spouseFourGivenName = getSpouseGivenName("." +
@@ -855,10 +861,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		return spouseGivenName;
 	}
 
-	private String getDateOfMarriage(String dateOfMarraige, DocumentContext dbData) {
+	private String getString(String fieldName, DocumentContext dbData) {
 		String dateOfMarriageValue = null;
-		if (dbData.read(dateOfMarraige) != null) {
-			List dateOfMarraigePath = (List) dbData.read(dateOfMarraige);
+		if (dbData.read(fieldName) != null) {
+			List dateOfMarraigePath = (List) dbData.read(fieldName);
 			if (!dateOfMarraigePath.isEmpty()) {
 				dateOfMarriageValue = (String) dateOfMarraigePath.get(0);
 			}
