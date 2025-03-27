@@ -548,7 +548,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(),
 						dbData.jsonString(), JSONCompareMode.LENIENT);
 				String numberOfOtherSpousesInput = spouseDetailHelper.getStringData(
-						"." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
+						idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
 				if (comparisonResult.failed() && numberOfOtherSpousesInput == null) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
