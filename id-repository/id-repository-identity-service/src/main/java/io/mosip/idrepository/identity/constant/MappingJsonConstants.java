@@ -65,4 +65,6 @@ public static final String DATE_FORMAT = "yyyy/MM/dd";
 public static final String NIN_STATUS = "status";
 public static final String DISABILITY = "disabilities";
 public static final String NUMBEROFOTHERSPOUSES = "numberOfOtherSpouses";
+public static final String REMOVESPOUSEDATEOFMARRIRAGE = "removeSpouseDateOfMarriage";
+public static final String REMOVESPOUSEGIVENNAME = "removeSpouseGivenName";
 }

@@ -1,5 +1,7 @@
 package io.mosip.idrepository.identity.helper;
 
+import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.SPOUSE_DETAILS_NOT_FOUND;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 
+import io.mosip.idrepository.core.dto.RequestDTO;
+import io.mosip.idrepository.core.exception.IdRepoAppException;
 import io.mosip.idrepository.core.logger.IdRepoLogger;
+import io.mosip.idrepository.identity.constant.MappingJsonConstants;
 import io.mosip.idrepository.identity.constant.SpouseNumberMapping;
 import io.mosip.kernel.core.logger.spi.Logger;
 
@@ -24,7 +30,7 @@ public class SpouseDetailHelper {
 	private IdRepoServiceHelper idRepoServiceHelper;
 
 	public void addSpouseDetails(DocumentContext inputData, DocumentContext dbData) throws IOException {
-		// TODO verify logic and call from one place and test it through updateIdentity
+
 		String numberOfOtherSpousesInput = getStringData(
 				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), dbData, null, false);
 		String numberOfOtherSpousesDB = getStringData(
@@ -111,7 +117,7 @@ public class SpouseDetailHelper {
 		return fieldnameList;
 	}
 
-	private String getStringData(String fieldname, DocumentContext dbData, Map<String, Object> fieldMap, boolean add) {
+	public String getStringData(String fieldname, DocumentContext dbData, Map<String, Object> fieldMap, boolean add) {
 		String fieldValue = null;
 		if (dbData.read("." + fieldname) != null) {
 			List fieldnamePath = (List) dbData.read("." + fieldname);
@@ -155,8 +161,8 @@ public class SpouseDetailHelper {
 				idRepoServiceHelper.getMappingJsonValue("spouse" + inputNumber + "MarriageCertificateNumber"));
 		addToData(dbData, idRepoServiceHelper.getMappingJsonValue("spouse" + dbNumber + "NIN"), fieldMap,
 				idRepoServiceHelper.getMappingJsonValue("spouse" + inputNumber + "NIN"));
-		addToData(dbData, idRepoServiceHelper.getMappingJsonValue("spouse" + dbNumber + "spouseDateOfMarriage"),
-				fieldMap, idRepoServiceHelper.getMappingJsonValue("spouse" + inputNumber + "spouseDateOfMarriage"));
+		addToData(dbData, idRepoServiceHelper.getMappingJsonValue("spouse" + dbNumber + "DateOfMarriage"), fieldMap,
+				idRepoServiceHelper.getMappingJsonValue("spouse" + inputNumber + "DateOfMarriage"));
 	}
 
 
@@ -168,7 +174,7 @@ public class SpouseDetailHelper {
 
 	}
 
-	private String getNumber(int spousecode) {
+	public String getNumber(int spousecode) {
 		String spouseNumber;
 		if (spousecode == SpouseNumberMapping.ONE.getspouseCode()) {
 			spouseNumber = SpouseNumberMapping.ONE.getSpouseNumber();
@@ -186,4 +192,123 @@ public class SpouseDetailHelper {
 
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void updateSpouseDetails(RequestDTO requestDTO, DocumentContext inputData, DocumentContext dbData)
+			throws IdRepoAppException, IOException {
+
+		String removeSpouseDateOfMarriage = null;
+		String removeSpouseGivenNameValue = null;
+		boolean removed = false;
+		List removeSpouseDateOfMarriagePath = inputData
+				.read("." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEDATEOFMARRIRAGE));
+		if (removeSpouseDateOfMarriagePath != null && !removeSpouseDateOfMarriagePath.isEmpty()) {
+			removeSpouseDateOfMarriage = (String) removeSpouseDateOfMarriagePath.get(0);
+		}
+		List removeSpouseGivenNamePath = (List) inputData
+				.read("." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEGIVENNAME));
+		if ((removeSpouseGivenNamePath != null && !removeSpouseGivenNamePath.isEmpty())) {
+			List removeSpouseGivenName = (List) removeSpouseGivenNamePath.get(0);
+			Map<String, String> removeSpouseGivenNameMap = (Map<String, String>) removeSpouseGivenName.get(0);
+			removeSpouseGivenNameValue = removeSpouseGivenNameMap.get("value");
+		}
+		if (removeSpouseDateOfMarriage != null && removeSpouseGivenNameValue != null) {
+			for (int i = 1; i <= 4; i++) {
+				if (!removed) {
+					String spouseDateOfMarriage = getStringData(
+							"." + idRepoServiceHelper
+									.getMappingJsonValue("spouse" + getNumber(i) + "DateOfMarriage"),
+							dbData, null, false);
+					String spouseGivenName = getSpouseGivenName(
+							"." + idRepoServiceHelper
+									.getMappingJsonValue("spouse" + getNumber(i) + "GivenName"),
+							dbData);
+					if (spouseDateOfMarriage != null && spouseGivenName != null) {
+						if (spouseDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
+								&& spouseGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
+							removeSpouseDetails(dbData, getNumber(i));
+							removed = true;
+							break;
+						}
+					}
+				}
+			}
+			if (removed) {
+				dbData.delete(JsonPath.compile("$."
+						+ idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEDATEOFMARRIRAGE)));
+				dbData.delete(JsonPath.compile(
+						"$." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEGIVENNAME)));
+				inputData.delete(JsonPath.compile("$."
+						+ idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEDATEOFMARRIRAGE)));
+				inputData.delete(JsonPath.compile(
+						"$." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEGIVENNAME)));
+				List numberOfOtherSpousesPath = dbData
+						.read("." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES));
+				if (numberOfOtherSpousesPath != null && !numberOfOtherSpousesPath.isEmpty()) {
+					String numberOfOtherSpousesstr = (String) numberOfOtherSpousesPath.get(0);
+					int numberOfOtherSpouses = Integer.parseInt(numberOfOtherSpousesstr);
+					if (numberOfOtherSpouses != 0) {
+						numberOfOtherSpouses = numberOfOtherSpouses - 1;
+						if (numberOfOtherSpouses != 0) {
+							String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpouses);
+							dbData.put("$",
+									idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES),
+									numberOfOtherSpousesValue);
+						} else {
+							dbData.delete(JsonPath.compile("$." + idRepoServiceHelper
+									.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES)));
+						}
+
+					}
+				}
+
+			}
+			if (removed == false) {
+				throw new IdRepoAppException(SPOUSE_DETAILS_NOT_FOUND.getErrorCode(),
+						SPOUSE_DETAILS_NOT_FOUND.getErrorMessage());
+			}
+		}
+
+	}
+
+	private void removeSpouseDetails(DocumentContext dbData, String spouseNumber) throws IOException {
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "DateOfMarriage")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "GivenName")));
+		dbData.delete(
+				JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "Surname")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "OtherNames")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "MaidenName")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "PreviousName")));
+		dbData.delete(
+				JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "NIN")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "CitizenshipType")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "PlaceOfMarriage")));
+		dbData.delete(JsonPath
+				.compile("$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "TypeOfMarriage")));
+		dbData.delete(JsonPath.compile(
+				"$." + idRepoServiceHelper.getMappingJsonValue("spouse" + spouseNumber + "MarriageCertificateNumber")));
+	}
+
+	private String getSpouseGivenName(String spouseGivenNameLabel, DocumentContext dbData) {
+		String spouseGivenName = null;
+
+		if (dbData.read(spouseGivenNameLabel) != null) {
+			List spouseGivenNamePath = (List) dbData.read(spouseGivenNameLabel);
+			if (!spouseGivenNamePath.isEmpty()) {
+				List spouseGivenNameList = (List) spouseGivenNamePath.get(0);
+				if (spouseGivenNameList != null && !spouseGivenNameList.isEmpty()) {
+					Map<String, String> spouseGivenNameMap = (Map<String, String>) spouseGivenNameList.get(0);
+					spouseGivenName = spouseGivenNameMap.get("value");
+				}
+			}
+		}
+
+		return spouseGivenName;
+	}
 }
