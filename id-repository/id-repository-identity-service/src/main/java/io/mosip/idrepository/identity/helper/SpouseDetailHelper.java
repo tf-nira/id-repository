@@ -215,11 +215,11 @@ public class SpouseDetailHelper {
 			for (int i = 1; i <= 4; i++) {
 				if (!removed) {
 					String spouseDateOfMarriage = getStringData(
-							"." + idRepoServiceHelper
+							idRepoServiceHelper
 									.getMappingJsonValue("spouse" + getNumber(i) + "DateOfMarriage"),
 							dbData, null, false);
 					String spouseGivenName = getSpouseGivenName(
-							"." + idRepoServiceHelper
+							idRepoServiceHelper
 									.getMappingJsonValue("spouse" + getNumber(i) + "GivenName"),
 							dbData);
 					if (spouseDateOfMarriage != null && spouseGivenName != null) {
@@ -298,8 +298,8 @@ public class SpouseDetailHelper {
 	private String getSpouseGivenName(String spouseGivenNameLabel, DocumentContext dbData) {
 		String spouseGivenName = null;
 
-		if (dbData.read(spouseGivenNameLabel) != null) {
-			List spouseGivenNamePath = (List) dbData.read(spouseGivenNameLabel);
+		if (dbData.read("." + spouseGivenNameLabel) != null) {
+			List spouseGivenNamePath = (List) dbData.read("." + spouseGivenNameLabel);
 			if (!spouseGivenNamePath.isEmpty()) {
 				List spouseGivenNameList = (List) spouseGivenNamePath.get(0);
 				if (spouseGivenNameList != null && !spouseGivenNameList.isEmpty()) {
