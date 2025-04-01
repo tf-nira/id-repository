@@ -1136,7 +1136,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	String nin=(String) data.get("nin");
 	Long card_number = (Long) data.get("card_number");
 	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
+			"Entered card details update card number");
+	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
+			"Entered card details update card number with " + nin);
 	if (!cardDetails.isEmpty()) {
+		mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
+				"Found out card details");
 		CardDetail cardDetail = cardDetails.get(0);
 		cardDetail.setCardNumber(String.valueOf(card_number));
 		cardDetail.setUpdatedBy(EnvUtil.getAppId());
