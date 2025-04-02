@@ -1134,7 +1134,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	@Override
 	public void updateCardNumber(Map<String, Object> data) {
 	String nin=(String) data.get("nin");
-	Long card_number = (Long) data.get("card_number");
+	Long card_number = (Long) data.get("cardNumber");
 	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
 	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
 			"Entered card details update card number");
