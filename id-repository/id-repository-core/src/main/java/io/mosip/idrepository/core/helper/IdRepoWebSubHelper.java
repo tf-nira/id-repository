@@ -29,6 +29,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -288,5 +289,12 @@ public class IdRepoWebSubHelper {
 			mosipLogger.warn(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
 					"subscribeForCardEvent", "Error subscribing topic: " + cardEventTopic + "\n" + e.getMessage());
 		}
+	}
+
+	@Scheduled(fixedDelayString = "${idrepo-websub-resubscription-delay-millisecs}", initialDelayString = "${mosip.event.delay-millisecs}")
+	public void initSubsriptions() {
+		mosipLogger.info("Initializing subscribptions... {} {}", this.getClass().getSimpleName(), "initSubsriptions");
+		tryRegisteringTopic(cardEventTopic);
+		subscribeForCardEvent();
 	}
 }
