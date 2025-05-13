@@ -241,8 +241,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	@Value("${mosip.idrepo.card.expiry.years:10}")
 	private int cardExpiryInyears;
 
-
-
 	@Value("${mosip.idrepo.dob.format}")
 	private String dobFormat;
 
