@@ -241,7 +241,8 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	@Value("${mosip.idrepo.card.expiry.years:10}")
 	private int cardExpiryInyears;
 
-	
+
+
 	@Value("${mosip.idrepo.dob.format}")
 	private String dobFormat;
 
@@ -325,6 +326,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			String ninHash = securityManager.hash(NIN.getBytes());
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
+			cardExpiryDate = cardExpiryDate.minusDays(1);
 			CardDetail cardDetail = new CardDetail();
 			cardDetail.setNin(ninHash);
 			cardDetail.setDateOfIssuance(Date.valueOf(cardIssuanceDate));
