@@ -32,9 +32,9 @@ public class SpouseDetailHelper {
 	public void addSpouseDetails(DocumentContext inputData, DocumentContext dbData) throws IOException {
 
 		String numberOfOtherSpousesInput = getStringData(
-				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), dbData, null, false);
-		String numberOfOtherSpousesDB = getStringData(
 				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
+		String numberOfOtherSpousesDB = getStringData(
+				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), dbData, null, false);
 		int numberOfOtherSpousesDBnumber = 0;
 		if (numberOfOtherSpousesDB != null) {
 			numberOfOtherSpousesDBnumber = Integer.parseInt(numberOfOtherSpousesDB);
@@ -58,7 +58,7 @@ public class SpouseDetailHelper {
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
-
+			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), "Married");
 		}
 
 	}
