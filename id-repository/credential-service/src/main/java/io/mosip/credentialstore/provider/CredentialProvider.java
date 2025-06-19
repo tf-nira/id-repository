@@ -506,9 +506,9 @@ public class CredentialProvider {
 				if (bdbSubTypeList != null) {
 					subType = getSubType(bdbSubTypeList);
 					if (subType.contains("Left")) {
-						leftSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+						leftSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
 					} else {
-						rightSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+						rightSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
 					}
 					subtypeBIRMap.put(subType, bir);
 
@@ -522,9 +522,9 @@ public class CredentialProvider {
 					subType = getSubType(bdbSubTypeList);
 					if (subTypeList.contains(subType)) {
 						if (subType.contains("Left")) {
-							leftSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+							leftSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
 						} else {
-							rightSubTypeScoreMap.put(subType, bdbInfo.getQuality().getScore());
+							rightSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
 						}
 						subtypeBIRMap.put(subType, bir);
 					}
