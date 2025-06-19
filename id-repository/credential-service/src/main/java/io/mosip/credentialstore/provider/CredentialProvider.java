@@ -478,8 +478,8 @@ public class CredentialProvider {
 	private List<BestFingerDto> getBestTwoFingers(String individualBiometricsValue, AllowedKycDto key)
 			throws Exception {
 		List<BestFingerDto> bestFingerList = new ArrayList<>();
-		Map<String, Long> leftSubTypeScoreMap = new HashMap<>();
-		Map<String, Long> rightSubTypeScoreMap = new HashMap<>();
+		Map<String, Double> leftSubTypeScoreMap = new HashMap<>();
+		Map<String, Double> rightSubTypeScoreMap = new HashMap<>();
 		Map<String, BIR> subtypeBIRMap = new HashMap<>();
 		Source source = key.getSource().get(0);
 
@@ -506,9 +506,9 @@ public class CredentialProvider {
 				if (bdbSubTypeList != null) {
 					subType = getSubType(bdbSubTypeList);
 					if (subType.contains("Left")) {
-						leftSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
+						leftSubTypeScoreMap.put(subType, Double.parseDouble(bir.getOthers().get("SDK_SCORE")));
 					} else {
-						rightSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
+						rightSubTypeScoreMap.put(subType, Double.parseDouble(bir.getOthers().get("SDK_SCORE")));
 					}
 					subtypeBIRMap.put(subType, bir);
 
@@ -522,9 +522,9 @@ public class CredentialProvider {
 					subType = getSubType(bdbSubTypeList);
 					if (subTypeList.contains(subType)) {
 						if (subType.contains("Left")) {
-							leftSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
+							leftSubTypeScoreMap.put(subType, Double.parseDouble(bir.getOthers().get("SDK_SCORE")));
 						} else {
-							rightSubTypeScoreMap.put(subType, Long.parseLong(bir.getOthers().get("SDK_SCORE")));
+							rightSubTypeScoreMap.put(subType, Double.parseDouble(bir.getOthers().get("SDK_SCORE")));
 						}
 						subtypeBIRMap.put(subType, bir);
 					}
@@ -536,7 +536,7 @@ public class CredentialProvider {
 		return bestFingerList;
 	}
 
-	private void getBestTwoFingersWithData(Map<String, Long> subTypeScoreMap, Map<String, BIR> subtypeBIRMap,
+	private void getBestTwoFingersWithData(Map<String, Double> subTypeScoreMap, Map<String, BIR> subtypeBIRMap,
 			List<BestFingerDto> bestFingerList)
 			throws Exception {
 		BestFingerDto bestFingerDto = null;
