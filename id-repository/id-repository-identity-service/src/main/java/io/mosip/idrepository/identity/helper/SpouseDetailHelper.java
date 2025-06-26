@@ -94,7 +94,7 @@ public class SpouseDetailHelper {
 				true);
 		getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + number + "NIN"), data, fieldMap,
 				true);
-		getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + number + "spouseDateOfMarriage"),
+		getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + number + "DateOfMarriage"),
 					data, fieldMap,
 				true);
 
