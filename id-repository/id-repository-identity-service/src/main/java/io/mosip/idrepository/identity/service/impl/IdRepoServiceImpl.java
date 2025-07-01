@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Resource;
 
+import io.mosip.idrepository.identity.constant.MappingJsonConstants;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -553,13 +554,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
 
-				boolean isAddSpouse = inputData.read("$.numberOfOtherSpouses") != null;
-				boolean isRemoveSpouse = inputData.read("$.removeSpouseGivenName") != null
-						&& inputData.read("$.removeSpouseDateOfMarriage") != null;
-
+				boolean isAddSpouse = numberOfOtherSpousesInput != null;
 				if (isAddSpouse) {
 					spouseDetailHelper.addSpouseDetails(inputData, dbData);
-				} else if (isRemoveSpouse) {
+				} else {
 					spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
 				}
 
