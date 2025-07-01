@@ -58,7 +58,18 @@ public class SpouseDetailHelper {
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
-			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), "Married");
+
+			List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
+			if (fieldnameList != null) {
+				for (Object obj : fieldnameList) {
+					if (obj instanceof Map) {
+						Map<String, Object> map = (Map<String, Object>) obj;
+						map.put("value", "Married");
+					}
+				}
+			}
+
+			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 		}
 
 	}
