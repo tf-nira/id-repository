@@ -550,17 +550,16 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						dbData.jsonString(), JSONCompareMode.LENIENT);
 				String numberOfOtherSpousesInput = spouseDetailHelper.getStringData(
 						idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
+				mosipLogger.info("numberOfOtherSpousesInput : " + numberOfOtherSpousesInput);
 				if (comparisonResult.failed() && numberOfOtherSpousesInput == null) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
+				String numberOfOtherSpousesInputNew = spouseDetailHelper.getStringData(
+						idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
+				mosipLogger.info("numberOfOtherSpousesInputNew : " + numberOfOtherSpousesInputNew);
 
-				boolean isAddSpouse = numberOfOtherSpousesInput != null;
-				if (isAddSpouse) {
-					spouseDetailHelper.addSpouseDetails(inputData, dbData);
-				} else {
-					spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
-				}
-
+				spouseDetailHelper.addSpouseDetails(inputData, dbData);
+				spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());

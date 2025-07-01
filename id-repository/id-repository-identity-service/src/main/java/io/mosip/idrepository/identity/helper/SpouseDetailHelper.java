@@ -42,19 +42,40 @@ public class SpouseDetailHelper {
 		if(numberOfOtherSpousesInput!=null) {
 			int numberOfOtherSpousesRequest = Integer.parseInt(numberOfOtherSpousesInput);
 			for (int i = 1; i <= numberOfOtherSpousesRequest; i++) {
-				for (int j = 1; j <= 4; j++) {
-					List givenNameCheck = getSimpleType(
-							idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"),
-							dbData,
-							null, false);
-					if (givenNameCheck == null) {
-						Map<String, Object> inputDataMap = getSpouseDetails(inputData, getNumber(i));
-						addSpouseDetailsToDb(dbData, getNumber(j), inputDataMap, getNumber(i));
-						numberOfOtherSpousesDBnumber++;
-						break;
-					}
-		       }
+				String dateOfMarriageInput = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "DateOfMarriage"),
+						inputData,
+						null, false);
+				List givenNameInput = getSimpleType(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "GivenName"),
+						inputData,
+						null, false);
+				Map<String, String> givenNameInputMap = (Map<String, String>) givenNameInput.get(0);
+				String givenNameInputValue = givenNameInputMap.get("value");
 
+				if (dateOfMarriageInput != null && givenNameInputValue != null) {
+					for (int j = 1; j <= 4; j++) {
+						List givenNameCheck = getSimpleType(
+								idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"),
+								dbData,
+								null, false);
+						Map<String, String> givenNameCheckMap = (Map<String, String>) givenNameCheck.get(0);
+						String givenNameCheckValue = givenNameCheckMap.get("value");
+
+						String dateOfMarriage = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "DateOfMarriage"),
+								dbData,
+								null, false);
+
+						if (dateOfMarriageInput.equalsIgnoreCase(dateOfMarriage) && givenNameInputValue.equalsIgnoreCase(givenNameCheckValue)) {
+							break;
+						}
+
+						if (givenNameCheck == null) {
+							Map<String, Object> inputDataMap = getSpouseDetails(inputData, getNumber(i));
+							addSpouseDetailsToDb(dbData, getNumber(j), inputDataMap, getNumber(i));
+							numberOfOtherSpousesDBnumber++;
+							break;
+						}
+					}
+				}
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
