@@ -267,6 +267,17 @@ public class SpouseDetailHelper {
 						} else {
 							dbData.delete(JsonPath.compile("$." + idRepoServiceHelper
 									.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES)));
+
+							List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
+							if (fieldnameList != null) {
+								for (Object obj : fieldnameList) {
+									if (obj instanceof Map) {
+										Map<String, Object> map = (Map<String, Object>) obj;
+										map.put("value", "Single");
+									}
+								}
+							}
+							dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 						}
 
 					}

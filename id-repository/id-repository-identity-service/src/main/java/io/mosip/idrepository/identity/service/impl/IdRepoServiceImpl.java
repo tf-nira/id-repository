@@ -552,8 +552,17 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				if (comparisonResult.failed() && numberOfOtherSpousesInput == null) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
-				spouseDetailHelper.addSpouseDetails(inputData, dbData);
-				spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
+
+				boolean isAddSpouse = inputData.read("$.numberOfOtherSpouses") != null;
+				boolean isRemoveSpouse = inputData.read("$.removeSpouseGivenName") != null
+						&& inputData.read("$.removeSpouseDateOfMarriage") != null;
+
+				if (isAddSpouse) {
+					spouseDetailHelper.addSpouseDetails(inputData, dbData);
+				} else if (isRemoveSpouse) {
+					spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
+				}
+
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
