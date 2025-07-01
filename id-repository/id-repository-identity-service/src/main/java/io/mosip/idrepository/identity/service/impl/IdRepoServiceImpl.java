@@ -558,8 +558,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
 				mosipLogger.info("numberOfOtherSpousesInputNew : " + numberOfOtherSpousesInputNew);
 
-				spouseDetailHelper.addSpouseDetails(inputData, dbData);
-				spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
+				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData("addSpouse", inputData, null, false), "Y");
+				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData("removeSpouse", inputData, null, false), "Y");
+
+				if (isAddSpouse) spouseDetailHelper.addSpouseDetails(inputData, dbData);
+				if (isRemoveSpouse) spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
+
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
