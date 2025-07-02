@@ -68,6 +68,7 @@ public class SpouseDetailHelper {
 						}
 					}
 				}
+				removeSpouseDetails(inputData, getNumber(i));
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
