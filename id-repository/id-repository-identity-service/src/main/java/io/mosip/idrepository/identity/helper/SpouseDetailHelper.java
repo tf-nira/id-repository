@@ -52,7 +52,7 @@ public class SpouseDetailHelper {
 						List givenNameCheck = getSimpleType(
 								idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"), dbData, null, false);
 
-						String givenNameCheckValue = getSpouseGivenName(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "GivenName"), dbData);
+						String givenNameCheckValue = getSpouseGivenName(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"), dbData);
 						String dateOfMarriage = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "DateOfMarriage"), dbData, null, false);
 
 						if (dateOfMarriageInput.equalsIgnoreCase(dateOfMarriage) && givenNameInputValue.equalsIgnoreCase(givenNameCheckValue)) {
