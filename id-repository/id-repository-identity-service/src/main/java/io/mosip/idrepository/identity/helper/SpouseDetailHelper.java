@@ -69,6 +69,7 @@ public class SpouseDetailHelper {
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
+			inputData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses")));
 
 			List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
 			if (fieldnameList != null) {
