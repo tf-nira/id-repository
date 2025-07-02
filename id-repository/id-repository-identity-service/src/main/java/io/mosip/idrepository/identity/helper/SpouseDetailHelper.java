@@ -43,7 +43,6 @@ public class SpouseDetailHelper {
 			int numberOfOtherSpousesRequest = Integer.parseInt(numberOfOtherSpousesInput);
 			for (int i = 1; i <= numberOfOtherSpousesRequest; i++) {
 				String dateOfMarriageInput = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "DateOfMarriage"), inputData, null, false);
-
 				String givenNameInputValue = getSpouseGivenName(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "GivenName"), inputData);
 
 				if (dateOfMarriageInput != null && givenNameInputValue != null) {
@@ -61,6 +60,7 @@ public class SpouseDetailHelper {
 						if (givenNameCheck == null) {
 							Map<String, Object> inputDataMap = getSpouseDetails(inputData, getNumber(i));
 							addSpouseDetailsToDb(dbData, getNumber(j), inputDataMap, getNumber(i));
+							removeSpouseDetails(inputData, getNumber(i));
 							numberOfOtherSpousesDBnumber++;
 							break;
 						}
