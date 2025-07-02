@@ -637,6 +637,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	 */
 	protected void updateJsonObject(String uinHash, DocumentContext inputData, DocumentContext dbData,
 			JSONCompareResult comparisonResult, boolean canPersistUpdateCount) throws JSONException, IOException, IdRepoAppException {
+
+		mosipLogger.info("Before updateJsonObject - dbData: " + dbData.jsonString());
+		mosipLogger.info("Before updateJsonObject - inputData: " + inputData.jsonString());
 		Entry<String, Map<String, Integer>> updateCountTracker = getUpdateCountTracker(uinHash, dbData);
 		Map<String, Integer> updateCountTrackerMap = updateCountTracker.getValue();
 		Set<String> attribute = new HashSet<>();

@@ -31,6 +31,8 @@ public class SpouseDetailHelper {
 
 	public void addSpouseDetails(DocumentContext inputData, DocumentContext dbData) throws IOException {
 
+		mosipLogger.info("Before addSpouseDetails - dbData: " + dbData.jsonString());
+		mosipLogger.info("Before addSpouseDetails - inputData: " + inputData.jsonString());
 		String numberOfOtherSpousesInput = getStringData(
 				idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), inputData, null, false);
 		String numberOfOtherSpousesDB = getStringData(
@@ -83,7 +85,8 @@ public class SpouseDetailHelper {
 
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 		}
-
+		mosipLogger.info("After addSpouseDetails - dbData: " + dbData.jsonString());
+		mosipLogger.info("After addSpouseDetails - inputData: " + inputData.jsonString());
 	}
 
 
@@ -219,6 +222,8 @@ public class SpouseDetailHelper {
 	public void updateSpouseDetails(RequestDTO requestDTO, DocumentContext inputData, DocumentContext dbData)
 			throws IdRepoAppException, IOException {
 
+		mosipLogger.info("Before updateSpouseDetails - dbData: " + dbData.jsonString());
+		mosipLogger.info("Before updateSpouseDetails - inputData: " + inputData.jsonString());
 		String removeSpouseDateOfMarriage = null;
 		String removeSpouseGivenNameValue = null;
 		boolean removed = false;
@@ -301,7 +306,8 @@ public class SpouseDetailHelper {
 						SPOUSE_DETAILS_NOT_FOUND.getErrorMessage());
 			}
 		}
-
+		mosipLogger.info("After updateSpouseDetails - dbData: " + dbData.jsonString());
+		mosipLogger.info("After updateSpouseDetails - inputData: " + inputData.jsonString());
 	}
 
 	private void removeSpouseDetails(DocumentContext dbData, String spouseNumber) throws IOException {
