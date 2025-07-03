@@ -255,6 +255,7 @@ public class SpouseDetailHelper {
 						if (spouseDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
 								&& spouseGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
 							removeSpouseDetails(dbData, getNumber(i));
+							removeSpouseDetails(inputData, getNumber(i));
 							removed = true;
 							break;
 						}
