@@ -42,25 +42,49 @@ public class SpouseDetailHelper {
 		if(numberOfOtherSpousesInput!=null) {
 			int numberOfOtherSpousesRequest = Integer.parseInt(numberOfOtherSpousesInput);
 			for (int i = 1; i <= numberOfOtherSpousesRequest; i++) {
-				for (int j = 1; j <= 4; j++) {
-					List givenNameCheck = getSimpleType(
-							idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"),
-							dbData,
-							null, false);
-					if (givenNameCheck == null) {
-						Map<String, Object> inputDataMap = getSpouseDetails(inputData, getNumber(i));
-						addSpouseDetailsToDb(dbData, getNumber(j), inputDataMap, getNumber(i));
-						numberOfOtherSpousesDBnumber++;
-						break;
-					}
-		       }
+				String dateOfMarriageInput = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "DateOfMarriage"), inputData, null, false);
+				String givenNameInputValue = getSpouseGivenName(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(i) + "GivenName"), inputData);
 
+				if (dateOfMarriageInput != null && givenNameInputValue != null) {
+					for (int j = 1; j <= 4; j++) {
+						List givenNameCheck = getSimpleType(
+								idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"), dbData, null, false);
+
+						String givenNameCheckValue = getSpouseGivenName(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "GivenName"), dbData);
+						String dateOfMarriage = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "DateOfMarriage"), dbData, null, false);
+
+						if (dateOfMarriageInput.equalsIgnoreCase(dateOfMarriage) && givenNameInputValue.equalsIgnoreCase(givenNameCheckValue)) {
+							removeSpouseDetails(inputData, getNumber(i));
+							break;
+						}
+
+						if (givenNameCheck == null) {
+							Map<String, Object> inputDataMap = getSpouseDetails(inputData, getNumber(i));
+							addSpouseDetailsToDb(dbData, getNumber(j), inputDataMap, getNumber(i));
+							removeSpouseDetails(inputData, getNumber(i));
+							numberOfOtherSpousesDBnumber++;
+							break;
+						}
+					}
+				}
+				removeSpouseDetails(inputData, getNumber(i));
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
-			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), "Married");
-		}
+			inputData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses")));
 
+			List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
+			if (fieldnameList != null) {
+				for (Object obj : fieldnameList) {
+					if (obj instanceof Map) {
+						Map<String, Object> map = (Map<String, Object>) obj;
+						map.put("value", "Married");
+					}
+				}
+			}
+
+			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
+		}
 	}
 
 
@@ -256,6 +280,17 @@ public class SpouseDetailHelper {
 						} else {
 							dbData.delete(JsonPath.compile("$." + idRepoServiceHelper
 									.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES)));
+
+							List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
+							if (fieldnameList != null) {
+								for (Object obj : fieldnameList) {
+									if (obj instanceof Map) {
+										Map<String, Object> map = (Map<String, Object>) obj;
+										map.put("value", "Single");
+									}
+								}
+							}
+							dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 						}
 
 					}
@@ -267,7 +302,6 @@ public class SpouseDetailHelper {
 						SPOUSE_DETAILS_NOT_FOUND.getErrorMessage());
 			}
 		}
-
 	}
 
 	private void removeSpouseDetails(DocumentContext dbData, String spouseNumber) throws IOException {
