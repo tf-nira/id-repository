@@ -56,6 +56,7 @@ public class SpouseDetailHelper {
 						String dateOfMarriage = getStringData(idRepoServiceHelper.getMappingJsonValue("spouse" + getNumber(j) + "DateOfMarriage"), dbData, null, false);
 
 						if (dateOfMarriageInput.equalsIgnoreCase(dateOfMarriage) && givenNameInputValue.equalsIgnoreCase(givenNameCheckValue)) {
+							removeSpouseDetails(inputData, getNumber(i));
 							break;
 						}
 
