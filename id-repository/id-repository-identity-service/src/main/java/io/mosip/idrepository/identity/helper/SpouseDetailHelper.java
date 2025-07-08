@@ -88,6 +88,7 @@ public class SpouseDetailHelper {
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 			inputData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 
+			dbData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("addSpouse")));
 			inputData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("addSpouse")));
 		}
 		mosipLogger.info("After addSpouseDetails - dbData: " + dbData.jsonString());
