@@ -87,6 +87,8 @@ public class SpouseDetailHelper {
 
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 			inputData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
+
+			inputData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("addSpouse")));
 		}
 		mosipLogger.info("After addSpouseDetails - dbData: " + dbData.jsonString());
 		mosipLogger.info("After addSpouseDetails - inputData: " + inputData.jsonString());
@@ -269,10 +271,14 @@ public class SpouseDetailHelper {
 						+ idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEDATEOFMARRIRAGE)));
 				dbData.delete(JsonPath.compile(
 						"$." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEGIVENNAME)));
+				dbData.delete(JsonPath.compile(
+						"$." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSESURNAME)));
 				inputData.delete(JsonPath.compile("$."
 						+ idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEDATEOFMARRIRAGE)));
 				inputData.delete(JsonPath.compile(
 						"$." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSEGIVENNAME)));
+				inputData.delete(JsonPath.compile(
+						"$." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.REMOVESPOUSESURNAME)));
 				List numberOfOtherSpousesPath = dbData
 						.read("." + idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES));
 				if (numberOfOtherSpousesPath != null && !numberOfOtherSpousesPath.isEmpty()) {
