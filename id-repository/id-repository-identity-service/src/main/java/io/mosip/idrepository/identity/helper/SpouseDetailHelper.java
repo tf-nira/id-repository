@@ -73,7 +73,7 @@ public class SpouseDetailHelper {
 			}
 			String numberOfOtherSpousesValue = Integer.toString(numberOfOtherSpousesDBnumber);
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
-			inputData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses")));
+			inputData.put("$", idRepoServiceHelper.getMappingJsonValue("numberOfOtherSpouses"), numberOfOtherSpousesValue);
 
 			List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
 			if (fieldnameList != null) {
@@ -86,6 +86,7 @@ public class SpouseDetailHelper {
 			}
 
 			dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
+			inputData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 		}
 		mosipLogger.info("After addSpouseDetails - dbData: " + dbData.jsonString());
 		mosipLogger.info("After addSpouseDetails - inputData: " + inputData.jsonString());
@@ -256,6 +257,7 @@ public class SpouseDetailHelper {
 						if (spouseDateOfMarriage.equalsIgnoreCase(removeSpouseDateOfMarriage)
 								&& spouseGivenName.equalsIgnoreCase(removeSpouseGivenNameValue)) {
 							removeSpouseDetails(dbData, getNumber(i));
+							removeSpouseDetails(inputData, getNumber(i));
 							removed = true;
 							break;
 						}
@@ -283,8 +285,13 @@ public class SpouseDetailHelper {
 							dbData.put("$",
 									idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES),
 									numberOfOtherSpousesValue);
+							inputData.put("$",
+									idRepoServiceHelper.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES),
+									numberOfOtherSpousesValue);
 						} else {
 							dbData.delete(JsonPath.compile("$." + idRepoServiceHelper
+									.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES)));
+							inputData.delete(JsonPath.compile("$." + idRepoServiceHelper
 									.getMappingJsonValue(MappingJsonConstants.NUMBEROFOTHERSPOUSES)));
 
 							List fieldnameList = getSimpleType("maritalStatus", dbData, null,false);
@@ -297,6 +304,7 @@ public class SpouseDetailHelper {
 								}
 							}
 							dbData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
+							inputData.put("$", idRepoServiceHelper.getMappingJsonValue("maritalStatus"), fieldnameList);
 						}
 
 					}
