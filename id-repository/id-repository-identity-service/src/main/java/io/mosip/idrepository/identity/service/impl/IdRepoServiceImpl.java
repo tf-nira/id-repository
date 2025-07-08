@@ -550,9 +550,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
 				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("removeSpouse"), inputData, null, false), "Y");
 
-				if (isRemoveSpouse) spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
 				if (isAddSpouse) spouseDetailHelper.addSpouseDetails(inputData, dbData);
-
+				if (isRemoveSpouse) spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
+				
 				JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(), JSONCompareMode.LENIENT);
 				if (comparisonResult.failed()) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
