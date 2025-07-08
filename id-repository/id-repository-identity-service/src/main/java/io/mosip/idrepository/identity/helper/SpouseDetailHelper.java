@@ -322,6 +322,9 @@ public class SpouseDetailHelper {
 						SPOUSE_DETAILS_NOT_FOUND.getErrorMessage());
 			}
 		}
+		dbData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("removeSpouse")));
+		inputData.delete(JsonPath.compile("$." + idRepoServiceHelper.getMappingJsonValue("removeSpouse")));
+
 		mosipLogger.info("After updateSpouseDetails - dbData: " + dbData.jsonString());
 		mosipLogger.info("After updateSpouseDetails - inputData: " + inputData.jsonString());
 	}
