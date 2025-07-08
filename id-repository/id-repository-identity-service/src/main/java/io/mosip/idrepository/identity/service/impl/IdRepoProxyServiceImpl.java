@@ -803,8 +803,6 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.getApplicantPlaceOfBirthVillage().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantPlaceOfBirthCity().getValue());
-			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
-					.getApplicantPlaceOfBirthHealthFacility().getValue());
 		}
 		if (applicantBirthPlace != null
 				&& (applicantBirthPlace.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
