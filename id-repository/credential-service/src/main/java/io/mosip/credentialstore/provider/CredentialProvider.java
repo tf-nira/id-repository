@@ -147,6 +147,9 @@ public class CredentialProvider {
 	@Value("${mosip.identity.mapping-file}")
 	private String identityMappingJson;
 
+	@Value("${credential.service.dob.filter.format:false}")
+	private boolean isDobFormatEnabled;
+
 	@PostConstruct
 	private void getMapping() throws IOException {
 		try (InputStream xsdBytes = new URL(identityMappingJson).openStream()) {
@@ -653,7 +656,12 @@ public class CredentialProvider {
 				: key.getFormat();
 		if (attribute.equals(CredentialConstants.DATEOFBIRTH)) {
 			if(attributeFormat!=null) {
-				formattedObject = formatDate(identity.get(CredentialConstants.DATEOFBIRTH), attributeFormat);
+				if (isDobFormatEnabled) {
+					formattedObject = formatDate(identity.get(CredentialConstants.DATEOFBIRTH), attributeFormat);
+				}else {
+					formattedObject = identity.get(CredentialConstants.DATEOFBIRTH);
+				}
+
 			}
 		} else if (isNameAttribute(attribute)) {
 			List<String> identityAttributesList = attributeFormat==null?List.of():Arrays.asList(attributeFormat.split(","));
