@@ -76,8 +76,7 @@ public class CredentialStatusManager {
 	
 	@Autowired
 	private DummyPartnerCheckUtil dummyPartner;
-	
-	@Async("credentialStatusManagerJobExecutor")
+		
 	public void triggerEventNotifications() {
 //		handleDeletedRequests();
 //		handleExpiredRequests();
