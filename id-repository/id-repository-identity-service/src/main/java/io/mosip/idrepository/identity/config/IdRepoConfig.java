@@ -325,12 +325,15 @@ public class IdRepoConfig extends IdRepoDataSourceConfig
 		if (StringUtils.isNotBlank(EnvUtil.getMonitorAsyncThreadQueue())) {
 			ThreadPoolTaskExecutor threadPoolTaskExecutor = (ThreadPoolTaskExecutor) executor();
 			ThreadPoolTaskExecutor webSubHelperExecutor = (ThreadPoolTaskExecutor) webSubHelperExecutor();
-			ThreadPoolTaskExecutor credentialStatusManagerJobExecutor = (ThreadPoolTaskExecutor) credentialStatusManagerJobExecutor();
+			// ThreadPoolTaskExecutor credentialStatusManagerJobExecutor =
+			// (ThreadPoolTaskExecutor) credentialStatusManagerJobExecutor();
 			ThreadPoolTaskExecutor anonymousProfileExecutor = (ThreadPoolTaskExecutor) anonymousProfileExecutor();
 			String monitoringLog = "Thread Name : {} Thread Active Count: {} Thread Task count: {} Thread queue count: {}";
 			logThreadQueueDetails(threadPoolTaskExecutor, threadPoolTaskExecutor.getThreadPoolExecutor().getQueue().size(), monitoringLog);
 			logThreadQueueDetails(webSubHelperExecutor, webSubHelperExecutor.getThreadPoolExecutor().getQueue().size(), monitoringLog);
-			logThreadQueueDetails(credentialStatusManagerJobExecutor, credentialStatusManagerJobExecutor.getThreadPoolExecutor().getQueue().size(), monitoringLog);
+			// logThreadQueueDetails(credentialStatusManagerJobExecutor,
+			// credentialStatusManagerJobExecutor.getThreadPoolExecutor().getQueue().size(),
+			// monitoringLog);
 			logThreadQueueDetails(anonymousProfileExecutor, anonymousProfileExecutor.getThreadPoolExecutor().getQueue().size(), monitoringLog);
 		}
 	}
