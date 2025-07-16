@@ -306,19 +306,7 @@ public class IdRepoConfig extends IdRepoDataSourceConfig
 	    executor.setWaitForTasksToCompleteOnShutdown(true);
 	    executor.initialize();
 	    return executor;
-	}
-	
-	@Bean
-	@Qualifier("credentialStatusManagerJobExecutor")
-	public Executor credentialStatusManagerJobExecutor() {
-	    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-	    executor.setCorePoolSize(Math.floorDiv(EnvUtil.getActiveAsyncThreadCount(), 4));
-	    executor.setMaxPoolSize(EnvUtil.getActiveAsyncThreadCount());
-	    executor.setThreadNamePrefix("idrepo-cred-status-job-");
-	    executor.setWaitForTasksToCompleteOnShutdown(true);
-	    executor.initialize();
-	    return executor;
-	}
+	}	
 	
 	@Bean
 	@Qualifier("anonymousProfileExecutor")
