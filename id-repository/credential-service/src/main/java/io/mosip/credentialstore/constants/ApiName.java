@@ -34,5 +34,7 @@ public enum ApiName {
 
 	GENERATE_VID,
 
-	RETRIEVE_VID;
+	RETRIEVE_VID,
+	
+	PRINT_STORE;
 }

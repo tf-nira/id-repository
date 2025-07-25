@@ -13,10 +13,12 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.mosip.credentialstore.constants.ApiName;
 import io.mosip.credentialstore.constants.CredentialConstants;
 import io.mosip.credentialstore.constants.CredentialFormatter;
 import io.mosip.credentialstore.constants.CredentialServiceErrorCodes;
@@ -46,6 +48,7 @@ import io.mosip.credentialstore.util.EncryptionUtil;
 import io.mosip.credentialstore.util.IdrepositaryUtil;
 import io.mosip.credentialstore.util.JsonUtil;
 import io.mosip.credentialstore.util.PolicyUtil;
+import io.mosip.credentialstore.util.RestUtil;
 import io.mosip.credentialstore.util.Utilities;
 import io.mosip.credentialstore.util.WebSubUtil;
 import io.mosip.idrepository.core.constant.AuditEvents;
@@ -121,6 +124,9 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 
 	@Value("${credential.service.credentialtype.file}")
 	private String credentialTypefile;
+	
+	@Value("${credential.service.issuance.type:websub}")
+	private String issuanceType;
 
 	@Autowired
 	Utilities utilities;
@@ -145,6 +151,9 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 
 	@Autowired
 	EncryptionUtil encryptionUtil;
+	
+	@Autowired
+	RestUtil restUtil;
 	
 	/*
 	 * (non-Javadoc)
@@ -211,9 +220,15 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 			signature = digitalSignatureUtil.sign(encodedData, credentialServiceRequestDto.getRequestId());
 			EventModel eventModel = getEventModel(dataShare, credentialServiceRequestDto,
 					jsonData, signature);
-			String topic = credentialServiceRequestDto.getIssuer() + "/" + IDAEventType.CREDENTIAL_ISSUED;
-			webSubUtil.registerTopic(topic, credentialServiceRequestDto.getRequestId());
-			webSubUtil.publishSuccess(topic, eventModel);
+			
+			if (credentialServiceRequestDto.getIssuer().equals("mpartner-default-print") && "api".equalsIgnoreCase(issuanceType)) {
+				sendToPrint(eventModel, credentialServiceRequestDto.getRequestId());
+			} else {
+				String topic = credentialServiceRequestDto.getIssuer() + "/" + IDAEventType.CREDENTIAL_ISSUED;
+				webSubUtil.registerTopic(topic, credentialServiceRequestDto.getRequestId());
+				webSubUtil.publishSuccess(topic, eventModel);
+			}
+			
 			credentialServiceResponse.setSignature(signature);
 			credentialServiceResponse.setStatus("ISSUED");
 			credentialServiceResponse.setCredentialId(dataProviderResponse.getCredentialId());
@@ -483,6 +498,21 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 		CredentialTypeResponse CredentialTypeResponse = new CredentialTypeResponse();
 		CredentialTypeResponse.setCredentialTypes(credentialTypes);
 		return CredentialTypeResponse;
+	}
+	
+	private void sendToPrint(EventModel eventModel, String requestId) {
+		try {
+			LOGGER.info(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
+					"Sending data to print");
+			String response = restUtil.postApi(ApiName.PRINT_STORE, null, "", "", MediaType.APPLICATION_JSON,
+					eventModel, String.class);
+			LOGGER.info(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
+					"Data sent to print, response: " + response);
+		} catch (Exception e) {
+			LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(),
+					" Sending to print service failed for id:" + requestId,
+					ExceptionUtils.getStackTrace(e));
+		}
 	}
 
 }
