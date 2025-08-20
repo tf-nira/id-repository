@@ -98,11 +98,11 @@ public class BatchConfigurationTest {
 	}
 
 
-//	@Test
-//	public void alterAnnotationTest() throws Exception {
-//		String res = batchConfiguration.alterAnnotation();
-//		assertEquals("", res);
-//	}
+	@Test
+	public void alterAnnotationTest() throws Exception {
+		String res = batchConfiguration.alterAnnotation();
+		assertEquals("", res);
+	}
 
 	@Test
 	public void afterburnerModuleTest() {

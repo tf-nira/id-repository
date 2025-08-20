@@ -44,8 +44,8 @@ public interface CredentialRepositary<T extends CredentialEntity, E> extends Bas
 			Pageable pageable);
 	
 	@Transactional
-//	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
-//	@QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "1") })
+	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
+	@QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "1") })
 //	@Query("select c from CredentialEntity c where c.statusCode=:statusCode")
 	@Query(value = "SELECT * FROM credential_transaction c WHERE c.status_code = :statusCode ORDER BY c.cr_dtimes FOR UPDATE SKIP LOCKED",
 		countQuery = "SELECT count(*) FROM credential_transaction c WHERE c.status_code = :statusCode", nativeQuery = true)
