@@ -35,6 +35,9 @@ public class CredentialDao {
     @Value("${credential.request.reprocess.statuscodes}")
     private String reprocessStatusCodes;
     
+    @Value("${credential.request.reprocess.issuers:mpartner-default-print}")
+    private String reprocessIssuers;
+    
 
     private static final Logger LOGGER = IdRepoLogger.getLogger(CredentialDao.class);
 
@@ -55,7 +58,9 @@ public class CredentialDao {
                 "Inside getCredentials() method");
 //        Sort sort = Sort.by(Sort.Direction.ASC, "createDateTime");
 //        Pageable pageable=PageRequest.of(0, pageSize,sort);
-        List<CredentialEntity> credentialEntities = crdentialRepo.findCredentialByStatusCode(status, pageSize);
+//        List<CredentialEntity> credentialEntities = crdentialRepo.findCredentialByStatusCode(status, pageSize);
+        String[] issuers = reprocessIssuers.split(",");
+        List<CredentialEntity> credentialEntities = crdentialRepo.findCredentialByStatusCodeAndIssuers(status, issuers, pageSize);
 //		if (pagecredentialEntities != null && pagecredentialEntities.getContent() != null && !pagecredentialEntities.getContent().isEmpty()) {
 //	      credentialEntities=	pagecredentialEntities.getContent();
 //		}
