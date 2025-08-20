@@ -53,13 +53,12 @@ public class CredentialDao {
     public List<CredentialEntity> getCredentials(String batchId) {
         LOGGER.info(IdRepoSecurityManager.getUser(), "CredentialDao", "batchid = " + batchId,
                 "Inside getCredentials() method");
-        Sort sort = Sort.by(Sort.Direction.ASC, "createDateTime");
-        Pageable pageable=PageRequest.of(0, pageSize,sort);
-        List<CredentialEntity> credentialEntities=new ArrayList<>();
-        Page<CredentialEntity> pagecredentialEntities= crdentialRepo.findCredentialByStatusCode(status, pageable);
-		if (pagecredentialEntities != null && pagecredentialEntities.getContent() != null && !pagecredentialEntities.getContent().isEmpty()) {
-	      credentialEntities=	pagecredentialEntities.getContent();
-		}
+//        Sort sort = Sort.by(Sort.Direction.ASC, "createDateTime");
+//        Pageable pageable=PageRequest.of(0, pageSize,sort);
+        List<CredentialEntity> credentialEntities = crdentialRepo.findCredentialByStatusCode(status, pageSize);
+//		if (pagecredentialEntities != null && pagecredentialEntities.getContent() != null && !pagecredentialEntities.getContent().isEmpty()) {
+//	      credentialEntities=	pagecredentialEntities.getContent();
+//		}
 
         LOGGER.info(IdRepoSecurityManager.getUser(), "CredentialDao", "batchid = " + batchId,
                 "Total records picked from credential_transaction table for processing is " + credentialEntities.size());

@@ -179,7 +179,7 @@ public class BatchConfiguration {
 	public String alterAnnotation() throws Exception {
 
 		Method findCredentialByStatusCode = CredentialRepositary.class.getDeclaredMethod("findCredentialByStatusCode",
-				String.class, Pageable.class);
+				String.class, int.class);
 		findCredentialByStatusCode.setAccessible(true);
 		QueryHints queryHints = findCredentialByStatusCode.getDeclaredAnnotation(QueryHints.class);
 		QueryHint queryHint = (QueryHint) queryHints.value()[0];

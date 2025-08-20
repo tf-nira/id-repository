@@ -92,8 +92,8 @@ public class CredentialDaoTest {
 		credentialEntity.setCreateDateTime(LocalDateTime.now(ZoneId.of("UTC")));
 		credentialEntity.setUpdateDateTime(LocalDateTime.now(ZoneId.of("UTC")));
 		credentialList.add(credentialEntity);
-		Page<CredentialEntity> page = new PageImpl<>(credentialList);
-		Mockito.when(crdentialRepo.findCredentialByStatusCode(Mockito.any(), Mockito.any())).thenReturn(page);
+//		Page<CredentialEntity> page = new PageImpl<>(credentialList);
+		Mockito.when(crdentialRepo.findCredentialByStatusCode(Mockito.any(), Mockito.anyInt())).thenReturn(credentialList);
 		credentialDao.getCredentials("1234");
 	}
 	

@@ -1,6 +1,7 @@
 package io.mosip.credential.request.generator.repositary;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.LockModeType;
 import javax.persistence.QueryHint;
@@ -47,9 +48,8 @@ public interface CredentialRepositary<T extends CredentialEntity, E> extends Bas
 //	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
 	@QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "1") })
 //	@Query("select c from CredentialEntity c where c.statusCode=:statusCode")
-	@Query(value = "SELECT * FROM credential_transaction c WHERE c.status_code = :statusCode ORDER BY c.cr_dtimes FOR UPDATE SKIP LOCKED",
-		countQuery = "SELECT count(*) FROM credential_transaction c WHERE c.status_code = :statusCode", nativeQuery = true)
-	Page<CredentialEntity> findCredentialByStatusCode(@Param("statusCode")String statusCode, Pageable pageable);
+	@Query(value = "SELECT * FROM credential_transaction c WHERE c.status_code = :statusCode ORDER BY c.cr_dtimes FOR UPDATE SKIP LOCKED LIMIT :batchSize", nativeQuery = true)
+	List<CredentialEntity> findCredentialByStatusCode(@Param("statusCode")String statusCode, @Param("batchSize") int batchSize);
 
 	/**
 	 * Find credential by status codes.
