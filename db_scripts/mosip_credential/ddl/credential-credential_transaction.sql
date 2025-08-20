@@ -30,6 +30,7 @@ CREATE TABLE credential.credential_transaction(
 	is_deleted boolean DEFAULT FALSE,
 	del_dtimes timestamp,
 	status_comment character varying(512),
+	issuer character varying(256),
 	CONSTRAINT pk_credtrn_id PRIMARY KEY (id)
 
 );

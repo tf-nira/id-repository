@@ -35,7 +35,7 @@ public class CredentialDao {
     @Value("${credential.request.reprocess.statuscodes}")
     private String reprocessStatusCodes;
     
-    @Value("${credential.request.reprocess.issuers:mpartner-default-print}")
+    @Value("${credential.request.reprocess.issuers:mpartner-default-auth}")
     private String reprocessIssuers;
     
 
