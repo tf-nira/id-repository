@@ -42,6 +42,9 @@ public interface CredentialRequestStatusRepo extends JpaRepository<CredentialReq
 	
 	List<CredentialRequestStatus> findByStatus(String status);
 	
+	@Query(value = "SELECT * FROM credential_request_status c WHERE c.status = :status ORDER BY c.cr_dtimes LIMIT :batchSize", nativeQuery = true)
+	List<CredentialRequestStatus> findByStatusAndLimit(@Param("status") String status, @Param("batchSize") int batchSize);
+	
 	List<CredentialRequestStatus> findByIdExpiryTimestampBefore(LocalDateTime idExpiryTimestamp);
 	
 	@Query(value = "SELECT new CredentialRequestStatus( individualId, idExpiryTimestamp, idTransactionLimit, tokenId, partnerId ) "

@@ -74,6 +74,9 @@ public class CredentialStatusManager {
 	@Value("${" + CREDENTIAL_STATUS_UPDATE_TOPIC + "}")
 	private String credentailStatusUpdateTopic;
 	
+	@Value("${mosip.idrepo.credential-job.batch.size:100}")
+	private int batchSize;
+	
 	@Autowired
 	private DummyPartnerCheckUtil dummyPartner;
 		
@@ -120,7 +123,7 @@ public class CredentialStatusManager {
 			mosipLogger.info("Starting batch job for New or Updated requests");
 			String activeStatus = EnvUtil.getUinActiveStatus();
 			List<CredentialRequestStatus> newIssueRequestList = statusRepo
-					.findByStatus(CredentialRequestStatusLifecycle.NEW.toString());
+					.findByStatusAndLimit(CredentialRequestStatusLifecycle.NEW.toString(), batchSize);
 			mosipLogger.info("Picked records to issue credential: " + newIssueRequestList.size());
 			for (CredentialRequestStatus credentialRequestStatus : newIssueRequestList) {
 				mosipLogger.info("Sending request for issuing");
