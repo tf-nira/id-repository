@@ -78,9 +78,11 @@ public class CredentialStatusManager {
 	private DummyPartnerCheckUtil dummyPartner;
 		
 	public void triggerEventNotifications() {
-//		handleDeletedRequests();
-//		handleExpiredRequests();
-//		handleNewOrUpdatedRequests();
+		mosipLogger.info("Starting batch job");
+		handleDeletedRequests();
+		handleExpiredRequests();
+		handleNewOrUpdatedRequests();
+		mosipLogger.info("Batch job completed");
 	}
 
 	private void handleDeletedRequests() {
@@ -115,10 +117,13 @@ public class CredentialStatusManager {
 
 	public void handleNewOrUpdatedRequests() {
 		try {
+			mosipLogger.info("Starting batch job for New or Updated requests");
 			String activeStatus = EnvUtil.getUinActiveStatus();
 			List<CredentialRequestStatus> newIssueRequestList = statusRepo
 					.findByStatus(CredentialRequestStatusLifecycle.NEW.toString());
+			mosipLogger.info("Picked records to issue credential: " + newIssueRequestList.size());
 			for (CredentialRequestStatus credentialRequestStatus : newIssueRequestList) {
+				mosipLogger.info("Sending request for issuing");
 				cancelIssuedRequest(credentialRequestStatus.getRequestId());
 				String idvId = decryptId(credentialRequestStatus.getIndividualId());
 				credManager.notifyUinCredential(idvId, credentialRequestStatus.getIdExpiryTimestamp(), activeStatus,
@@ -126,6 +131,7 @@ public class CredentialStatusManager {
 						uinHashSaltRepo::retrieveSaltById, this::credentialRequestResponseConsumer,
 						this::idaEventConsumer, List.of(credentialRequestStatus.getPartnerId()),credentialRequestStatus.getRequestId());
 				deleteDummyPartner(credentialRequestStatus);
+				mosipLogger.info("Request sent for issuing");
 			}
 		} catch (Exception e) {
 			mosipLogger.error(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), "handleNewOrUpdatedRequests", ExceptionUtils.getStackTrace(e));
