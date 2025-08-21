@@ -151,11 +151,13 @@ public class CredentialStatusManager {
 	@WithRetry
 	public void credentialRequestResponseConsumer(CredentialIssueRequestWrapperDto request, Map<String, Object> response) {
 		try {
+			mosipLogger.info("Changing status to REQUESTED");
 			CredentialIssueResponse credResponse = mapper.convertValue(response.get("response"), CredentialIssueResponse.class);
 			Map<String, Object> additionalData = request.getRequest().getAdditionalData();
 			Optional<CredentialRequestStatus> credStatusOptional = statusRepo
 					.findByIndividualIdHashAndPartnerId((String) additionalData.get(ID_HASH), request.getRequest().getIssuer());
 			if (credStatusOptional.isPresent()) {
+				mosipLogger.info("Changing status to REQUESTED for : " + credResponse.getRequestId());
 				CredentialRequestStatus credStatus = credStatusOptional.get();
 				if (Objects.nonNull(credResponse))
 					credStatus.setRequestId(credResponse.getRequestId());
@@ -168,7 +170,9 @@ public class CredentialStatusManager {
 				credStatus.setUpdatedBy(IdRepoSecurityManager.getUser());
 				credStatus.setUpdDTimes(DateUtils.getUTCCurrentDateTime());
 				statusRepo.saveAndFlush(credStatus);
+				mosipLogger.info("Updated status");
 			} else {
+				mosipLogger.info("Adding new record with status as REQUESTED for : " + credResponse.getRequestId());
 				CredentialRequestStatus credStatus = new CredentialRequestStatus();
 				// Encryption is done using identity service encryption salts for all id types
 				credStatus.setIndividualId(encryptId(request.getRequest().getId()));
@@ -188,6 +192,7 @@ public class CredentialStatusManager {
 				credStatus.setCreatedBy(IdRepoSecurityManager.getUser());
 				credStatus.setCrDTimes(DateUtils.getUTCCurrentDateTime());
 				statusRepo.saveAndFlush(credStatus);
+				mosipLogger.info("Added with status");
 			}
 		} catch (Exception e) {
 			mosipLogger.error(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(), "credentialRequestResponseConsumer", ExceptionUtils.getStackTrace(e));
