@@ -148,6 +148,12 @@ public class IdRepoConstants {
 	public static final String CARD_EVENT_TOPIC = "mosip.idrepo.websub.card-number-update.topic";
 
 	public static final String CARD_EVENT_CALLBACK_URL = "mosip.idrepo.websub.card-number-update.callback-url";
+	
+	public static final String CREDENTIAL_EVENT_SECRET = "mosip.idrepo.websub.ondemand-credential.secret";
+
+	public static final String CREDENTIAL_EVENT_TOPIC = "mosip.idrepo.websub.ondemand-credential.topic";
+	
+	public static final String CREDENTIAL_EVENT_CALLBACK_URL = "mosip.idrepo.websub.ondemand-credential.callback-url";
 
 	
 	/** The value. */
