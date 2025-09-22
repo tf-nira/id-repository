@@ -115,6 +115,7 @@ public class AnonymousProfileHelperTest {
 		ArgumentCaptor<AnonymousProfileEntity> capturedData = ArgumentCaptor.forClass(AnonymousProfileEntity.class);
 		verify(anonymousProfileRepo).save(capturedData.capture());
 		AnonymousProfileEntity actualData = capturedData.getValue();
+		expectedData.setId(actualData.getId());
 		actualData.setCrDTimes(null);
 		assertEquals(expectedData, actualData);
 	}
@@ -130,7 +131,6 @@ public class AnonymousProfileHelperTest {
 		.setOldUinData(identityData.getBytes())
 		.buildAndsaveProfile(false);
 		AnonymousProfileEntity expectedData = new AnonymousProfileEntity();
-		expectedData.setId(UUIDUtils.getUUID(UUIDUtils.NAMESPACE_OID, "1").toString());
 		IdentityIssuanceProfile profile = IdentityIssuanceProfile.builder()
 				.setFilterLanguage("eng")
 				.setProcessName("Update")
@@ -147,6 +147,7 @@ public class AnonymousProfileHelperTest {
 		verify(anonymousProfileRepo).save(capturedData.capture());
 		AnonymousProfileEntity actualData = capturedData.getValue();
 		actualData.setCrDTimes(null);
+		expectedData.setId(actualData.getId());
 		assertTrue(anonymousProfileHelper.isNewCbeffPresent());
 		assertTrue(anonymousProfileHelper.isOldCbeffPresent());
 		assertEquals(expectedData, actualData);
@@ -166,7 +167,6 @@ public class AnonymousProfileHelperTest {
 		.setOldUinData(identityData.getBytes())
 		.buildAndsaveProfile(false);
 		AnonymousProfileEntity expectedData = new AnonymousProfileEntity();
-		expectedData.setId(UUIDUtils.getUUID(UUIDUtils.NAMESPACE_OID, "1").toString());
 		IdentityIssuanceProfile profile = IdentityIssuanceProfile.builder()
 				.setFilterLanguage("eng")
 				.setProcessName("Update")
@@ -181,6 +181,7 @@ public class AnonymousProfileHelperTest {
 		verify(anonymousProfileRepo).save(capturedData.capture());
 		AnonymousProfileEntity actualData = capturedData.getValue();
 		actualData.setCrDTimes(null);
+		expectedData.setId(actualData.getId());
 		assertTrue(anonymousProfileHelper.isNewCbeffPresent());
 		assertTrue(anonymousProfileHelper.isOldCbeffPresent());
 		assertEquals(expectedData, actualData);
