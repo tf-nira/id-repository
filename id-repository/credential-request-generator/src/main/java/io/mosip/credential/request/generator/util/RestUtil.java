@@ -35,7 +35,6 @@ import io.mosip.idrepository.core.dto.Metadata;
 import io.mosip.idrepository.core.dto.SecretKeyRequest;
 import io.mosip.idrepository.core.dto.TokenRequestDTO;
 import io.mosip.idrepository.core.util.EnvUtil;
-import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
 import io.mosip.kernel.core.util.StringUtils;
 import io.mosip.kernel.core.util.TokenHandlerUtil;
@@ -63,9 +62,6 @@ public class RestUtil {
 	private int totalMaxConnection;
 
 	private RestTemplate restTemplate;
-
-	@Autowired
-	private CryptoUtil cryptoUtil;
 
 	/**
 	 * Post api.
