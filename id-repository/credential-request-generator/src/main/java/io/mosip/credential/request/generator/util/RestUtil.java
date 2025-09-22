@@ -1,14 +1,11 @@
 package io.mosip.credential.request.generator.util;
 
-import com.google.gson.Gson;
-import io.mosip.credential.request.generator.constants.ApiName;
-import io.mosip.idrepository.core.dto.Metadata;
-import io.mosip.idrepository.core.dto.SecretKeyRequest;
-import io.mosip.idrepository.core.dto.TokenRequestDTO;
-import io.mosip.idrepository.core.util.EnvUtil;
-import io.mosip.kernel.core.util.DateUtils;
-import io.mosip.kernel.core.util.StringUtils;
-import io.mosip.kernel.core.util.TokenHandlerUtil;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -31,12 +28,17 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Objects;
+import com.google.gson.Gson;
+
+import io.mosip.credential.request.generator.constants.ApiName;
+import io.mosip.idrepository.core.dto.Metadata;
+import io.mosip.idrepository.core.dto.SecretKeyRequest;
+import io.mosip.idrepository.core.dto.TokenRequestDTO;
+import io.mosip.idrepository.core.util.EnvUtil;
+import io.mosip.kernel.core.util.CryptoUtil;
+import io.mosip.kernel.core.util.DateUtils;
+import io.mosip.kernel.core.util.StringUtils;
+import io.mosip.kernel.core.util.TokenHandlerUtil;
 
 
 /**
@@ -61,6 +63,9 @@ public class RestUtil {
 	private int totalMaxConnection;
 
 	private RestTemplate restTemplate;
+
+	@Autowired
+	private CryptoUtil cryptoUtil;
 
 	/**
 	 * Post api.

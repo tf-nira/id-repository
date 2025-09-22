@@ -17,6 +17,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import io.mosip.credential.request.generator.entity.CredentialEntity;
 import io.mosip.credential.request.generator.interceptor.CredentialTransactionInterceptor;
 import io.mosip.credential.request.generator.repositary.CredentialRepositary;
+import io.mosip.credential.request.generator.util.CryptoUtil;
 import io.mosip.credential.request.generator.util.RestUtil;
 import io.mosip.idrepository.core.builder.RestRequestBuilder;
 import io.mosip.idrepository.core.constant.RestServicesConstants;
@@ -41,12 +42,15 @@ public class CredentialRequestGeneratorConfig extends HibernateDaoConfig {
 	private RestUtil restUtil;
 	
 	@Autowired
+	private CryptoUtil cryptoUtil;
+
+	@Autowired
 	private OpenApiProperties openApiProperties;
 	
 	@Override
 	public Map<String, Object> jpaProperties() {
 		Map<String, Object> jpaProperties = super.jpaProperties();
-		jpaProperties.put("hibernate.ejb.interceptor", new CredentialTransactionInterceptor(restUtil));
+		jpaProperties.put("hibernate.ejb.interceptor", new CredentialTransactionInterceptor(restUtil, cryptoUtil));
 		return jpaProperties;
 	}
 
