@@ -48,6 +48,13 @@ public interface CredentialRepositary<T extends CredentialEntity, E> extends Bas
 //	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
 	@QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "1") })
 //	@Query("select c from CredentialEntity c where c.statusCode=:statusCode")
+	@Query(value = "SELECT * FROM credential_transaction c WHERE c.status_code = :statusCode ORDER BY c.cr_dtimes FOR UPDATE SKIP LOCKED LIMIT :batchSize", nativeQuery = true)
+	List<CredentialEntity> findCredentialByStatusCode(@Param("statusCode")String statusCode, @Param("batchSize") int batchSize);
+
+	@Transactional
+//	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
+	@QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "1") })
+//	@Query("select c from CredentialEntity c where c.statusCode=:statusCode")
 	@Query(value = "SELECT * FROM credential_transaction c WHERE c.status_code = :statusCode and c.issuer in :issuers ORDER BY c.cr_dtimes FOR UPDATE SKIP LOCKED LIMIT :batchSize", nativeQuery = true)
 	List<CredentialEntity> findCredentialByStatusCodeAndIssuers(@Param("statusCode")String statusCode, @Param("issuers") String[] issuers, @Param("batchSize") int batchSize);
 
@@ -65,15 +72,4 @@ public interface CredentialRepositary<T extends CredentialEntity, E> extends Bas
 	@Query("SELECT crdn FROM CredentialEntity crdn WHERE crdn.statusCode in :statusCodes")
 	Page<CredentialEntity> findCredentialByStatusCodes(@Param("statusCodes") String[] statusCodes, Pageable pageable);
 
-	@Transactional
-	@Query(value = "SELECT * FROM credential_transaction ct"
-			+ " WHERE ct.status_code=:statusCode ORDER BY cr_dtimes FOR UPDATE SKIP LOCKED LIMIT :pageSize", nativeQuery = true)
-	List<CredentialEntity> findCredentialByStatusCode(@Param("statusCode") String statusCode,
-			@Param("pageSize") int pageSize);
-
-	@Transactional
-	@Query(value = "SELECT * FROM credential_transaction ct"
-			+ " WHERE ct.status_code in :statusCodes ORDER BY upd_dtimes FOR UPDATE SKIP LOCKED LIMIT :pageSize", nativeQuery = true)
-	List<CredentialEntity> findCredentialByStatusCodes(@Param("statusCodes") String[] statusCodes,
-			@Param("pageSize") int pageSize);
 }
