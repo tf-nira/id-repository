@@ -43,13 +43,6 @@ public interface CredentialRepositary<T extends CredentialEntity, E> extends Bas
 	Page<CredentialEntity> findByStatusCodeWithEffectiveDtimes(@Param("statusCode") String statusCode,
 			@Param("effectiveDTimes") LocalDateTime effectiveDTimes,
 			Pageable pageable);
-	
-	@Transactional
-//	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
-	@QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "1") })
-//	@Query("select c from CredentialEntity c where c.statusCode=:statusCode")
-	@Query(value = "SELECT * FROM credential_transaction c WHERE c.status_code = :statusCode ORDER BY c.cr_dtimes FOR UPDATE SKIP LOCKED LIMIT :batchSize", nativeQuery = true)
-	List<CredentialEntity> findCredentialByStatusCode(@Param("statusCode")String statusCode, @Param("batchSize") int batchSize);
 
 	@Transactional
 //	@Lock(value = LockModeType.PESSIMISTIC_WRITE) 
