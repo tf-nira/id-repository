@@ -15,16 +15,8 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_CO
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -434,10 +426,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	private void addBiometricDocuments(String uinHash, String uinRefId, List<UinBiometric> bioList, DocumentsDTO doc,
 			JsonNode docType, boolean isDraft, int index) throws IdRepoAppException {
 		byte[] data = null;
-		String fileRefId = UUIDUtils
-				.getUUID(UUIDUtils.NAMESPACE_OID,
-						docType.get(FILE_NAME_ATTRIBUTE).asText() + SPLITTER + DateUtils.getUTCCurrentDateTime())
-				.toString() + DOT + docType.get(FILE_FORMAT_ATTRIBUTE).asText();
+		String fileRefId = getFileRefId(docType);
 
 		data = CryptoUtil.decodeURLSafeBase64(doc.getValue());
 		try {
@@ -472,10 +461,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	 */
 	private void addDemographicDocuments(String uinHash, String uinRefId, List<UinDocument> docList, DocumentsDTO doc,
 			JsonNode docType, boolean isDraft) throws IdRepoAppException {
-		String fileRefId = UUIDUtils
-				.getUUID(UUIDUtils.NAMESPACE_OID,
-						docType.get(FILE_NAME_ATTRIBUTE).asText() + SPLITTER + DateUtils.getUTCCurrentDateTime())
-				.toString() + DOT + docType.get(FILE_FORMAT_ATTRIBUTE).asText();
+		String fileRefId = getFileRefId(docType);
 
 		byte[] data = CryptoUtil.decodeURLSafeBase64(doc.getValue());
 		objectStoreHelper.putDemographicObject(uinHash, fileRefId, data);
@@ -1152,5 +1138,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		cardDetail.setUpdDTimes(DateUtils.getUTCCurrentDateTime());
 		cardDetailRepository.saveAndFlush(cardDetail);
 	}
+	}
+
+	private String getFileRefId(JsonNode docType) {
+		return UUID.randomUUID().toString() + DOT + docType.get(FILE_FORMAT_ATTRIBUTE).asText();
 	}
 }
