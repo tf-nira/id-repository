@@ -12,11 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.mosip.idrepository.core.exception.BiometricExtractionException;
+import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.kernel.biometrics.constant.BiometricFunction;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.entities.BIR;
 import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
 import io.mosip.kernel.biosdk.provider.spi.iBioProviderApi;
+import io.mosip.kernel.core.logger.spi.Logger;
 
 /**
  * The Class BioExtractionHelper.
@@ -25,6 +27,8 @@ import io.mosip.kernel.biosdk.provider.spi.iBioProviderApi;
  */
 @Component
 public class BioExtractionHelper {
+	
+	private static final Logger logger = IdRepoLogger.getLogger(BioExtractionHelper.class);
 	
 	/** The bio api factory. */
 	@Autowired
@@ -48,7 +52,11 @@ public class BioExtractionHelper {
 				BiometricType modality = entry.getKey();
 				iBioProviderApi bioProvider = bioApiFactory.getBioProvider(BiometricType.fromValue(modality.value()),
 						BiometricFunction.EXTRACT);
+				logger.info("Sending request to biosdk");
+				long start = System.currentTimeMillis();
 				List<BIR> extractedTemplates = bioProvider.extractTemplate(entry.getValue(), extractionFormats);
+				long end = System.currentTimeMillis();
+				logger.info("Received response from biosdk, time taken: " + (end - start) + "ms");
 				allExtractedTemplates.addAll(extractedTemplates);
 			}
 			
