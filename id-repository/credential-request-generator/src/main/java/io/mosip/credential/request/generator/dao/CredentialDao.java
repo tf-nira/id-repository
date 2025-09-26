@@ -1,26 +1,22 @@
 package io.mosip.credential.request.generator.dao;
-import io.mosip.credential.request.generator.entity.CredentialEntity;
-import io.mosip.credential.request.generator.repositary.CredentialRepositary;
-import io.mosip.idrepository.core.logger.IdRepoLogger;
-import io.mosip.idrepository.core.security.IdRepoSecurityManager;
-import io.mosip.kernel.core.logger.spi.Logger;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.math3.stat.descriptive.moment.SemiVariance.Direction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+
+import io.mosip.credential.request.generator.entity.CredentialEntity;
+import io.mosip.credential.request.generator.repositary.CredentialRepositary;
+import io.mosip.idrepository.core.logger.IdRepoLogger;
+import io.mosip.idrepository.core.security.IdRepoSecurityManager;
+import io.mosip.kernel.core.logger.spi.Logger;
 
 @Component
 public class CredentialDao {
@@ -45,6 +41,9 @@ public class CredentialDao {
     @Autowired
     private CredentialRepositary<CredentialEntity, String> crdentialRepo;
 
+	@Autowired
+	private EncryptedCredentialDao encryptedCredentialDao;
+
 
     public void update(String batchId, List<CredentialEntity> credentialEntities) {
         crdentialRepo.saveAll(credentialEntities);
@@ -60,7 +59,8 @@ public class CredentialDao {
 //        Pageable pageable=PageRequest.of(0, pageSize,sort);
 //        List<CredentialEntity> credentialEntities = crdentialRepo.findCredentialByStatusCode(status, pageSize);
         String[] issuers = reprocessIssuers.split(",");
-        List<CredentialEntity> credentialEntities = crdentialRepo.findCredentialByStatusCodeAndIssuers(status, issuers, pageSize);
+		List<CredentialEntity> credentialEntities = encryptedCredentialDao.getCredentialByStatus(status, issuers,
+				pageSize);
 //		if (pagecredentialEntities != null && pagecredentialEntities.getContent() != null && !pagecredentialEntities.getContent().isEmpty()) {
 //	      credentialEntities=	pagecredentialEntities.getContent();
 //		}

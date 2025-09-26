@@ -1,8 +1,14 @@
 package io.mosip.credential.request.generator.dao;
 
-import io.mosip.credential.request.generator.entity.CredentialEntity;
-import io.mosip.credential.request.generator.dao.EncryptedCredentialDao;
-import io.mosip.credential.request.generator.repositary.CredentialRepositary;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,14 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import io.mosip.credential.request.generator.entity.CredentialEntity;
+import io.mosip.credential.request.generator.repositary.CredentialRepositary;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CredentialDaoTest {
