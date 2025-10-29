@@ -247,13 +247,15 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	 */
 	@Override
 	public Uin addIdentity(IdRequestDTO request, String uin) throws IdRepoAppException {
+		mosipLogger.info("addIdentity called");
 		String uinRefId = UUIDUtils.getUUID(UUIDUtils.NAMESPACE_OID, uin + SPLITTER + DateUtils.getUTCCurrentDateTime())
 				.toString();
 		ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 		identityObject.putPOJO(VERIFIED_ATTRIBUTES, request.getRequest().getVerifiedAttributes());
 		if (identityObject.get("NINGenerationNeeded") != null
 				&& identityObject.get("NINGenerationNeeded").asBoolean()) {
-			
+
+			mosipLogger.info("generation need" + uin +"for this");
 			// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
 			String applicantCitizenshipType = identityObject.path("userServiceType").get(0).get("value").asText();
 			String gender = identityObject.path("gender").get(0).get("value").asText();
@@ -266,11 +268,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			identityObject.put("NIN", constructedNIN);
 			request.getRequest().setIdentity(identityObject);
 		}
+		mosipLogger.info("after generation check");
 		byte[] identityInfo = convertToBytes(identityObject);
 		String uinHash = getUinHash(uin);
 		String uinHashWithSalt = uinHash.split(SPLITTER)[1];
 		String uinToEncrypt = getUinToEncrypt(uin);
-
+		mosipLogger.info("requset" + request );
 		Map<String, HandleDto> selectedUniqueHandlesMap = checkAndGetHandles(request);
 
 		anonymousProfileHelper
@@ -1054,6 +1057,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 	private Map<String, HandleDto> checkAndGetHandles(IdRequestDTO request) throws IdRepoAppException {
 		Map<String, HandleDto> handles = idRepoServiceHelper.getSelectedHandles(request.getRequest());
+		mosipLogger.info("check handle called" + handles);
 		if (handles != null && !handles.isEmpty()) {
 			List<String> duplicateHandles = handles.keySet()
 					.stream()

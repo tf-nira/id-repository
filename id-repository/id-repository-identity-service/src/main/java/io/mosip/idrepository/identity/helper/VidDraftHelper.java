@@ -44,6 +44,7 @@ public class VidDraftHelper {
 	public String generateDraftVid(String uin) throws IdRepoAppException {
 		try {
 			if (EnvUtil.getIsDraftVidTypePresent()) {
+				mosipLogger.info("getIsDraftVidTypePresent");
 				VidRequestDTO vidCreationRequest = new VidRequestDTO();
 				vidCreationRequest.setUin(uin);
 				vidCreationRequest.setVidType(EnvUtil.getDraftVidType());

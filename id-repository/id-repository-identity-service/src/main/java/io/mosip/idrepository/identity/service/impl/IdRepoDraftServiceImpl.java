@@ -505,10 +505,12 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			String draftVid = null;
 			Optional<UinDraft> uinDraft = uinDraftRepo.findByRegId(regId);
 			if (uinDraft.isEmpty()) {
+				idrepoDraftLogger.info("uindraftemptyAIN");
 				idrepoDraftLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_DRAFT_SERVICE_IMPL, PUBLISH_DRAFT,
 						DRAFT_RECORD_NOT_FOUND);
 				throw new IdRepoAppException(NO_RECORD_FOUND);
 			} else {
+				idrepoDraftLogger.info("uindraft not emptyAIN");
 				UinDraft draft = uinDraft.get();
 				anonymousProfileHelper
 				.setNewCbeff(draft.getUinHash().split("_")[1],
@@ -519,11 +521,15 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				IdRequestDTO idRequest = buildRequest(regId, draft);
 				validateRequest(idRequest.getRequest());
 				String uin = decryptUin(draft.getUin(), draft.getUinHash());
+				idrepoDraftLogger.info("decrypteduin"+ uin);
 				final Uin uinObject;
 				if (uinRepo.existsByUinHash(draft.getUinHash())) {
+					idrepoDraftLogger.info("existsByUinHashAIN");
 					uinObject = super.updateIdentity(idRequest, uin);
 				} else {
+					idrepoDraftLogger.info("notexistsByUinHashAIN");
 					draftVid = vidDraftHelper.generateDraftVid(uin);
+					idrepoDraftLogger.info("draftvid "+draftVid+" this");
 					uinObject = super.addIdentity(idRequest, uin);
 					vidDraftHelper.activateDraftVid(draftVid);
 				}
