@@ -162,6 +162,8 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 
 	private static final String NIN = "NIN";
 
+	private static final String AIN = "AIN";
+
 	private static final String UIN = "UIN";
 	
 	@Override
@@ -343,6 +345,25 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
         
 	}
 
+	private String constructAin(String uin, String dateOfBirth) {
+
+		StringBuilder formattedAin = new StringBuilder();
+
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(dobFormat);
+		LocalDate date = formatter.parseLocalDate(dateOfBirth);
+
+		// Extract month and last two digits of year
+		int month = date.getMonthOfYear();
+		int year = date.getYear() % 100;
+
+		// Append UIN + MM + YY
+		formattedAin.append(uin);
+		formattedAin.append(String.format("%02d", month));
+		formattedAin.append(String.format("%02d", year));
+		idrepoDraftLogger.info("formattedAIN : " +formattedAin.toString());
+		return formattedAin.toString();
+	}
+
 	private void updateDemographicData(IdRequestDTO request, UinDraft draftToUpdate) throws JSONException, IdRepoAppException, IOException {
 		if (Objects.nonNull(request.getRequest()) && Objects.nonNull(request.getRequest().getIdentity())) {
 			RequestDTO requestDTO = request.getRequest();
@@ -350,8 +371,21 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					.mappingProvider(new JacksonMappingProvider()).build();
 			/* Update request object */
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-			
-			if (identityObject.get(NIN) == null) {
+
+			if (identityObject.has("userServiceType") && "Alien New Registration".equals(identityObject.get("userServiceType").asText())){
+				idrepoDraftLogger.info("registrationId123alien" +"updatedemographic");
+
+				String dateOfBirth = identityObject.get("dateOfBirth").asText();
+
+				String uinDecrypted = decryptUin(draftToUpdate.getUin(), draftToUpdate.getUinHash());
+
+				// We update UIN based on AIN format for Alien
+				String constructedAIN =  constructAin(uinDecrypted,dateOfBirth);
+				// Update request object with new NIN
+				identityObject.put(AIN, constructedAIN);
+				idrepoDraftLogger.info("AIN ADDED : "+ constructedAIN);
+			}
+			else if (identityObject.get(NIN) == null) {
 				idrepoDraftLogger.info("registrationId123" +"updatedemographic");
 				
 				// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
