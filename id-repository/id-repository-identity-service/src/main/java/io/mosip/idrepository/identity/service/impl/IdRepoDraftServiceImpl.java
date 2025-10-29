@@ -243,14 +243,16 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 		try {
 			Optional<UinDraft> uinDraft = uinDraftRepo.findByRegId(registrationId);
 			if (uinDraft.isPresent()) {
+				idrepoDraftLogger.info(registrationId +" uin draft present");
 				UinDraft draftToUpdate = uinDraft.get();
 				if (Objects.isNull(draftToUpdate.getUinData())) {
+					idrepoDraftLogger.info(registrationId +" uin data present");
 					ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 					identityObject.putPOJO(VERIFIED_ATTRIBUTES, request.getRequest().getVerifiedAttributes());
 					
 					ObjectNode identityObject1 = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
-					
 					if (identityObject1.get(NIN) == null) {
+						idrepoDraftLogger.info(registrationId +" get nin null");
 						
 						// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
 						String applicantCitizenshipType = identityObject1.path("userServiceType").get(0).get("value")
@@ -274,6 +276,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					draftToUpdate.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 					uinDraftRepo.save(draftToUpdate);
 				} else {
+					idrepoDraftLogger.info(registrationId +" else case passed");
 					updateDemographicData(request, draftToUpdate);
 					updateDocuments(request.getRequest(), draftToUpdate);
 
@@ -349,6 +352,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
 			
 			if (identityObject.get(NIN) == null) {
+				idrepoDraftLogger.info("registrationId123" +"updatedemographic");
 				
 				// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
 				String applicantCitizenshipType = identityObject.path("userServiceType").get(0).get("value").asText();
