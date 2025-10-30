@@ -339,6 +339,24 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
         return formattedNin.toString();
         
 	}
+	private String constructAin(String uin, String dateOfBirth) {
+
+		StringBuilder formattedAin = new StringBuilder();
+
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(dobFormat);
+		LocalDate date = formatter.parseLocalDate(dateOfBirth);
+
+		// Extract month and last two digits of year
+		int month = date.getMonthOfYear();
+		int year = date.getYear() % 100;
+
+		// Append UIN + MM + YY
+		formattedAin.append(uin);
+		formattedAin.append(String.format("%02d", month));
+		formattedAin.append(String.format("%02d", year));
+		idrepoDraftLogger.info("formattedAIN : " +formattedAin.toString());
+		return formattedAin.toString();
+	}
 
 	private void updateDemographicData(IdRequestDTO request, UinDraft draftToUpdate) throws JSONException, IdRepoAppException, IOException {
 		if (Objects.nonNull(request.getRequest()) && Objects.nonNull(request.getRequest().getIdentity())) {
@@ -347,8 +365,18 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					.mappingProvider(new JacksonMappingProvider()).build();
 			/* Update request object */
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-			
-			if (identityObject.get(NIN) == null) {
+			if (identityObject.has("userServiceType") && "Alien New Registration".equals(identityObject.get("userServiceType").asText())){
+
+				String dateOfBirth = identityObject.get("dateOfBirth").asText();
+
+				String uinDecrypted = decryptUin(draftToUpdate.getUin(), draftToUpdate.getUinHash());
+
+				// We update UIN based on AIN format for Alien
+				String constructedAIN =  constructAin(uinDecrypted,dateOfBirth);
+				// Update request object with new NIN
+				identityObject.put(NIN, constructedAIN);
+			}
+			else if (identityObject.get(NIN) == null) {
 				
 				// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
 				String applicantCitizenshipType = identityObject.path("userServiceType").get(0).get("value").asText();
