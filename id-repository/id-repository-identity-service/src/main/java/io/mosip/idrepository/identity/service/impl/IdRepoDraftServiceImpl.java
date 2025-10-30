@@ -365,8 +365,8 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					.mappingProvider(new JacksonMappingProvider()).build();
 			/* Update request object */
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-			if (identityObject.has("userServiceType") && "Alien New Registration".equals(identityObject.get("userServiceType").asText())){
-
+			String  userServiceType = identityObject.path("userServiceType").get(0).get("value").asText();
+			if (userServiceType != null && !userServiceType.isEmpty() && "Alien New Registration".equals(userServiceType)){
 				String dateOfBirth = identityObject.get("dateOfBirth").asText();
 
 				String uinDecrypted = decryptUin(draftToUpdate.getUin(), draftToUpdate.getUinHash());
