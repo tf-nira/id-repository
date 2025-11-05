@@ -54,10 +54,9 @@ ARG container_user_uid=1001
 ARG container_user_gid=1001
 
 # install packages and create user
-RUN apt-get -y update \
-&& apt-get install -y unzip \
-&& groupadd -g ${container_user_gid} ${container_user_group} \
-&& useradd -u ${container_user_uid} -g ${container_user_group} -s /bin/sh -m ${container_user}
+RUN apt-get -y update && apt-get install -y unzip
+#&& groupadd -g ${container_user_gid} ${container_user_group} \
+#&& useradd -u ${container_user_uid} -g ${container_user_group} -s /bin/sh -m ${container_user}
 
 # set working directory for the user
 WORKDIR /home/${container_user}
@@ -97,3 +96,4 @@ CMD if [ "$is_glowroot_env" = "present" ]; then \
 
 
 #CMD ["java","-Dspring.cloud.config.label=${spring_config_label_env}","-Dspring.profiles.active=${active_profile_env}","-Dspring.cloud.config.uri=${spring_config_url_env}","-jar","credential-request-generator.jar"]
+
