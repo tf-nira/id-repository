@@ -507,6 +507,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 						? draft.getBiometrics().get(draft.getBiometrics().size() - 1).getBioFileId()
 								: null);
 				IdRequestDTO idRequest = buildRequest(regId, draft);
+				idrepoDraftLogger.info("id Request :{} ",idRequest);
+				idrepoDraftLogger.info("id Request get Request:{} ",idRequest.getRequest());
+				idrepoDraftLogger.info("id Request get Request get status :{} ",idRequest.getRequest().getStatus());
 				validateRequest(idRequest.getRequest());
 				String uin = decryptUin(draft.getUin(), draft.getUinHash());
 				final Uin uinObject;
