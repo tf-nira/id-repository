@@ -247,7 +247,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				if (Objects.isNull(draftToUpdate.getUinData())) {
 					ObjectNode identityObject = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 					identityObject.putPOJO(VERIFIED_ATTRIBUTES, request.getRequest().getVerifiedAttributes());
-					
+					if (request.getRequest().getStatus() != null) {
+						identityObject.put("status", request.getRequest().getStatus());
+					}
 					ObjectNode identityObject1 = mapper.convertValue(request.getRequest().getIdentity(), ObjectNode.class);
 					
 					if (identityObject1.get(NIN) == null) {
@@ -265,8 +267,8 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 						// Update request object with new NIN
 						identityObject1.put(NIN, constructedNIN);
 					}
-					
-					byte[] uinData = super.convertToBytes(request.getRequest().getIdentity());
+					idrepoDraftLogger.info("entire request json: {}", request.getRequest());
+					byte[] uinData = super.convertToBytes(request.getRequest());
 					draftToUpdate.setUinData(uinData);
 					draftToUpdate.setUinDataHash(securityManager.hash(uinData));
 					updateDocuments(request.getRequest(), draftToUpdate);
