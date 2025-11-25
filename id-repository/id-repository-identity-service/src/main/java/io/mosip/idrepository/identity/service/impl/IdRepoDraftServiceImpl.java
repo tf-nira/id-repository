@@ -502,6 +502,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				throw new IdRepoAppException(NO_RECORD_FOUND);
 			} else {
 				UinDraft draft = uinDraft.get();
+				idrepoDraftLogger.info("Draft =========================================:{} ",draft);
 				anonymousProfileHelper
 				.setNewCbeff(draft.getUinHash().split("_")[1],
 						!anonymousProfileHelper.isNewCbeffPresent() && Objects.nonNull(draft.getBiometrics())
