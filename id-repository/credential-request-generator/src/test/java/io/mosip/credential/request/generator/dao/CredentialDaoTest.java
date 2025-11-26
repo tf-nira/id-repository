@@ -1,6 +1,7 @@
 package io.mosip.credential.request.generator.dao;
 
 import io.mosip.credential.request.generator.entity.CredentialEntity;
+import io.mosip.credential.request.generator.dao.EncryptedCredentialDao;
 import io.mosip.credential.request.generator.repositary.CredentialRepositary;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,9 @@ public class CredentialDaoTest {
 
     @InjectMocks
     private CredentialDao credentialDao;
+    
+    @Mock
+	private EncryptedCredentialDao encryptedCredentialDao;
 
     @Before
     public void setUp() {
