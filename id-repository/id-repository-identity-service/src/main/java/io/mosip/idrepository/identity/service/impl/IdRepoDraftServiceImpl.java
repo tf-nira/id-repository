@@ -339,21 +339,23 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
         return formattedNin.toString();
         
 	}
-	private String constructAin(String uin, String dateOfBirth) {
+	private String constructAin(String uin, String dateOfBirth, String gender) {
 
 		StringBuilder formattedAin = new StringBuilder();
+
+		char genderChar = gender.charAt(0);
 
 		DateTimeFormatter formatter = DateTimeFormat.forPattern(dobFormat);
 		LocalDate date = formatter.parseLocalDate(dateOfBirth);
 
-		// Extract month and last two digits of year
-		int month = date.getMonthOfYear();
+		// Extract last two digits of year
 		int year = date.getYear() % 100;
 
-		// Append UIN + MM + YY
-		formattedAin.append(uin);
-		formattedAin.append(String.format("%02d", month));
+		// Append alien_code + gender + dob_year_last_2 + uin
+		formattedAin.append("A");
+		formattedAin.append(genderChar);
 		formattedAin.append(String.format("%02d", year));
+		formattedAin.append(uin);
 		idrepoDraftLogger.info("formattedAIN : " +formattedAin.toString());
 		return formattedAin.toString();
 	}
@@ -370,9 +372,10 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				String dateOfBirth = identityObject.get("dateOfBirth").asText();
 
 				String uinDecrypted = decryptUin(draftToUpdate.getUin(), draftToUpdate.getUinHash());
+				String gender = identityObject.path("gender").get(0).get("value").asText();
 
 				// We update UIN based on AIN format for Alien
-				String constructedAIN =  constructAin(uinDecrypted,dateOfBirth);
+				String constructedAIN =  constructAin(uinDecrypted,dateOfBirth,gender);
 				// Update request object with new NIN
 				identityObject.put(NIN, constructedAIN);
 			}
