@@ -557,6 +557,18 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				}));
 		identityData.remove(VERIFIED_ATTRIBUTES);
 		request.setIdentity(identityData);
+		String userService=null ;
+		List userList = (List) identityData.get("userServiceType");
+		if (userList != null && !userList.isEmpty()) {
+			Map<String, String> userServiceMap = (Map<String, String>) userList.get(0);
+			userService = userServiceMap.get("value");
+		}
+		if (userService.equalsIgnoreCase("Deactivate")) {
+			request.setStatus("DEACTIVATED");
+		}
+		else {
+			request.setStatus("ACTIVATED");
+		}
 		idRequest.setRequest(request);
 		return idRequest;
 	}
