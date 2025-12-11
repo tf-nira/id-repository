@@ -563,7 +563,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			Map<String, String> userServiceMap = (Map<String, String>) userList.get(0);
 			userService = userServiceMap.get("value");
 		}
-		if (userService.equalsIgnoreCase("Deactivate")) {
+		if (userService.equalsIgnoreCase("Deactivated")) {
 			request.setStatus("DEACTIVATED");
 		}
 		else {
