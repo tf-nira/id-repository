@@ -367,7 +367,11 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					.mappingProvider(new JacksonMappingProvider()).build();
 			/* Update request object */
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-			String  userServiceType = identityObject.path("userServiceType").get(0).get("value").asText();
+			JsonNode valueNode = identityObject.path("userServiceType").path(0).path("value");
+			String userServiceType = null;
+			if (!valueNode.isMissingNode() && !valueNode.isNull()) {
+				userServiceType = valueNode.asText();
+			}
 			if (userServiceType != null && !userServiceType.isEmpty() && "Alien New Registration".equals(userServiceType)){
 				String dateOfBirth = identityObject.get("dateOfBirth").asText();
 
@@ -549,6 +553,18 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				mapper.convertValue(identityData.get(VERIFIED_ATTRIBUTES), new TypeReference<List<String>>() {
 				}));
 		identityData.remove(VERIFIED_ATTRIBUTES);
+		String userService=null ;
+		List userList = (List) identityData.get("userServiceType");
+		if (userList != null && !userList.isEmpty()) {
+			Map<String, String> userServiceMap = (Map<String, String>) userList.get(0);
+			userService = userServiceMap.get("value");
+		}
+		if (userService.equalsIgnoreCase("Deactivated")) {
+			request.setStatus("DEACTIVATED");
+		}
+		else {
+			request.setStatus("ACTIVATED");
+		}
 		request.setIdentity(identityData);
 		idRequest.setRequest(request);
 		return idRequest;
