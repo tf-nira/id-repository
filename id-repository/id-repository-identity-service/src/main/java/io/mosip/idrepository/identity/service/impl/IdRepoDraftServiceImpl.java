@@ -284,6 +284,13 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 						"RID NOT FOUND IN DB");
 				throw new IdRepoAppException(NO_RECORD_FOUND);
 			}
+		} catch (RestServiceException e) {
+			String errorDetails = e.getResponseBodyAsString()
+					.map(body -> " Response body: " + body)
+					.orElse(" No response body available");
+			idrepoDraftLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_DRAFT_SERVICE_IMPL, UPDATE_DRAFT,
+					"Exception occured updating idrepo draft. " + e.getErrorCode() + " --> " + e.getErrorText() + errorDetails);
+			throw e;
 		} catch (JSONException | IOException | InvalidJsonException e) {
 			idrepoDraftLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_DRAFT_SERVICE_IMPL, UPDATE_DRAFT, e.getMessage());
 			throw new IdRepoAppException(UNKNOWN_ERROR, e);
