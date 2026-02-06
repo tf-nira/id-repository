@@ -15,8 +15,17 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_CO
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -313,7 +322,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		if (identityObject.get("NIN") != null) {
 			String NIN = identityObject.get("NIN").asText();
-			String ninHash = securityManager.hash(NIN.getBytes());
+			String ninHash = securityManager.hash(NIN.toLowerCase().getBytes());
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
 			cardExpiryDate = cardExpiryDate.minusDays(1);
@@ -1124,7 +1133,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	public void updateCardNumber(Map<String, Object> data) {
 	String nin=(String) data.get("nin");
 	String cardNumber = (String) data.get("cardNumber");
-	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.toLowerCase().getBytes()));
+	if (cardDetails.isEmpty()) {
+		cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+	}
 	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
 			"Entered card details update card number");
 	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
