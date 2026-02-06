@@ -706,7 +706,10 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 						.getCardDetail(securityManager.hash(NIN.toLowerCase().getBytes()));
 				if (cardDetails.isEmpty()) {
 					 cardDetails = cardDetailRepository
-							.getCardDetail(securityManager.hash(NIN.getBytes()));
+								.getCardDetail(securityManager.hash(NIN.toUpperCase().getBytes()));
+				}
+				if (cardDetails.isEmpty()) {
+					cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.getBytes()));
 				}
 				List<CardDetailDto> cardDetailDtos = new ArrayList<CardDetailDto>();
 				if (!cardDetails.isEmpty()) {
