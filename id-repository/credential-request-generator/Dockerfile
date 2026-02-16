@@ -1,4 +1,5 @@
-FROM openjdk:11
+#FROM openjdk:11
+FROM eclipse-temurin:11-jdk
 
 ARG SOURCE
 ARG COMMIT_HASH
@@ -97,3 +98,4 @@ CMD if [ "$is_glowroot_env" = "present" ]; then \
 
 
 #CMD ["java","-Dspring.cloud.config.label=${spring_config_label_env}","-Dspring.profiles.active=${active_profile_env}","-Dspring.cloud.config.uri=${spring_config_url_env}","-jar","credential-request-generator.jar"]
+
