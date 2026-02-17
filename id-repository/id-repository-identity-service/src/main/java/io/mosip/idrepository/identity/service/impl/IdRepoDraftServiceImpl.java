@@ -553,18 +553,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				mapper.convertValue(identityData.get(VERIFIED_ATTRIBUTES), new TypeReference<List<String>>() {
 				}));
 		identityData.remove(VERIFIED_ATTRIBUTES);
-		String userService=null ;
-		List userList = (List) identityData.get("userServiceType");
-		if (userList != null && !userList.isEmpty()) {
-			Map<String, String> userServiceMap = (Map<String, String>) userList.get(0);
-			userService = userServiceMap.get("value");
-		}
-		if (userService.equalsIgnoreCase("Deactivated")) {
-			request.setStatus("DEACTIVATED");
-		}
-		else {
-			request.setStatus("ACTIVATED");
-		}
 		request.setIdentity(identityData);
 		idRequest.setRequest(request);
 		return idRequest;
