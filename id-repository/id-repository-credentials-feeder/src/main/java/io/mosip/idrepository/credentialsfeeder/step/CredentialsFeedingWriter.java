@@ -1,20 +1,26 @@
 package io.mosip.idrepository.credentialsfeeder.step;
 
+import static io.mosip.idrepository.core.constant.IdRepoConstants.SPLITTER;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.UIN_REFID;
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED;
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.MOSIP_IDREPO_VID_ACTIVE_STATUS;
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.PROP_ONLINE_VERIFICATION_PARTNER_IDS;
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.UNLOCK_EXP_TIMESTAMP;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.mosip.idrepository.core.dto.*;
+import io.mosip.idrepository.core.entity.Handle;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +30,7 @@ import org.springframework.stereotype.Component;
 import io.mosip.idrepository.core.builder.RestRequestBuilder;
 import io.mosip.idrepository.core.constant.IDAEventType;
 import io.mosip.idrepository.core.constant.IdRepoErrorConstants;
+import io.mosip.idrepository.core.constant.IdType;
 import io.mosip.idrepository.core.constant.RestServicesConstants;
 import io.mosip.idrepository.core.exception.IdRepoAppException;
 import io.mosip.idrepository.core.exception.IdRepoAppUncheckedException;
@@ -34,7 +41,10 @@ import io.mosip.idrepository.core.helper.RestHelper;
 import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.idrepository.core.manager.CredentialServiceManager;
 import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.idrepository.core.manager.CredentialStatusManager;
+import io.mosip.idrepository.core.repository.HandleRepo;
+import io.mosip.idrepository.core.repository.UinEncryptSaltRepo;
 import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.credentialsfeeder.entity.AuthtypeLock;
@@ -88,7 +98,18 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	
 	@Autowired
 	private AuthLockRepository authLockRepo;
+	
+	@Autowired(required = false)
+	private HandleRepo handleRepo;
+	
+	@Autowired
+	private UinEncryptSaltRepo uinEncryptSaltRepo;
+	
+	@Value("${" + UIN_REFID + "}")
+	private String uinRefId;
 
+	private static final String SEND_REQUEST_TO_CRED_SERVICE = "sendRequestToCredService";
+	
 	/**
 	 * For each Uin in the list, decrypt it, and then issue a credential for it
 	 * 
@@ -139,7 +160,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 							+ " | response: " + response);
 			credentialStatusManager.credentialRequestResponseConsumer(request, response);
 		};
-		credentialServiceManager.sendUinEventsToCredService(uin, null, false, null, null,
+		credentialServiceManager.sendUinEventsToCredService(uin, null, false, null, getHandles(uin, uinHashSaltRepo::retrieveSaltById),
 				Arrays.asList(onlineVerificationPartnerIds), uinHashSaltRepo::retrieveSaltById,
 				loggingConsumer);
 		if (credentialCount.get() == 0) {
@@ -235,5 +256,39 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 							+ " | error: " + ExceptionUtils.getStackTrace(e));
 			throw new IdRepoAppUncheckedException(e.getErrorCode(), e.getErrorText(), e);
 		}
+	}
+	
+	private List<HandleInfoDTO> getHandles(String uin, IntFunction<String> saltRetreivalFunction) {
+		if(handleRepo == null) {
+			mosipLogger.error(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "getHandles",
+					"HandleRepo is NULL");
+			return List.of();
+		}
+
+		int modResult = securityManager.getSaltKeyForId(uin);
+		String hashSalt = uinHashSaltRepo.retrieveSaltById(modResult);
+		String uinHash = modResult + SPLITTER + securityManager.hashwithSalt(uin.getBytes(), hashSalt.getBytes());
+		List<Handle> list = handleRepo.findByUinHash(uinHash);
+
+		List<HandleInfoDTO> handleInfoDTOS = new ArrayList<>();
+		for(Handle entity : list) {
+			HandleInfoDTO handleInfoDTO = new HandleInfoDTO();
+			String encryptSalt = uinEncryptSaltRepo
+					.retrieveSaltById(Integer.valueOf(io.mosip.kernel.core.util.StringUtils.substringBefore(entity.getHandle(), SPLITTER)));
+			try {
+				handleInfoDTO.setHandle(new String(securityManager.decryptWithSalt(
+						CryptoUtil.decodeURLSafeBase64(io.mosip.kernel.core.util.StringUtils.substringAfter(entity.getHandle(), SPLITTER)),
+						CryptoUtil.decodePlainBase64(encryptSalt), uinRefId)));
+
+				handleInfoDTO.setAdditionalData(securityManager.getIdHashAndAttributesWithSaltModuloByPlainIdHash(handleInfoDTO.getHandle(),
+						saltRetreivalFunction));
+				handleInfoDTO.getAdditionalData().put("idType", IdType.HANDLE.getIdType());
+				handleInfoDTOS.add(handleInfoDTO);
+			} catch (IdRepoAppException e) {
+				mosipLogger.error(IdRepoSecurityManager.getUser(), SEND_REQUEST_TO_CRED_SERVICE, "getHandles",
+						"\n Failed to decrypt handle due to " + e.getMessage());
+			}
+		}
+		return handleInfoDTOS;
 	}
 }
