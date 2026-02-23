@@ -178,7 +178,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 		String uinHash = securityManager.hash(uin.getBytes());
 		List<AuthtypeLock> records = authLockRepo.findByHashedUin(uinHash);
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "PUBLISH AUTH LOCK",
-				"Auth-lock records found: " + records.size() + " for UIN: " + uin));
+				"Auth-lock records found: " + records.size() + " for UIN: " + uin);
 		List<AuthtypeStatus> authTypeStatusList = records.stream()
 				.map(authLock -> new AuthtypeStatus(authLock.getAuthtypecode(),
 						Boolean.valueOf(authLock.getStatuscode()),
