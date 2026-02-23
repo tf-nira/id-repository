@@ -35,11 +35,11 @@ public class BatchJobListener extends JobExecutionListenerSupport {
 	@Override
 	public void beforeJob(JobExecution jobExecution) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "BatchJobListener", "BATCH JOB STARTED",
-				"Job Name: " + jobExecution.getJobInstance().getJobName()
+				"Job Name: " + (jobExecution.getJobInstance() != null ? jobExecution.getJobInstance().getJobName() : "N/A")
 						+ " | Job ID: " + jobExecution.getJobId()
 						+ " | Start Time: " + jobExecution.getStartTime()
 						+ " | Status: " + jobExecution.getStatus().name()
-						+ " | Job Parameters: " + jobExecution.getJobParameters());
+						+ " | Job Parameters: " + (jobExecution.getJobParameters() != null ? jobExecution.getJobParameters() : "N/A"));
 	}
 
 	/* (non-Javadoc)
@@ -48,7 +48,7 @@ public class BatchJobListener extends JobExecutionListenerSupport {
 	@Override
 	public void afterJob(JobExecution jobExecution) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "BatchJobListener", "BATCH JOB COMPLETED",
-				"Job Name: " + jobExecution.getJobInstance().getJobName()
+				"Job Name: " + (jobExecution.getJobInstance() != null ? jobExecution.getJobInstance().getJobName() : "N/A")
 						+ " | Job ID: " + jobExecution.getJobId()
 						+ " | Start Time: " + jobExecution.getStartTime()
 						+ " | End Time: " + jobExecution.getEndTime()
