@@ -31,8 +31,10 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import io.mosip.idrepository.credentialsfeeder.entity.Uin;
+import io.mosip.idrepository.credentialsfeeder.logger.IdRepoLogger;
 import io.mosip.idrepository.credentialsfeeder.repository.UinRepo;
 import io.mosip.idrepository.credentialsfeeder.step.CredentialsFeedingWriter;
+import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.DateUtils;
 
 /**
@@ -44,6 +46,10 @@ import io.mosip.kernel.core.util.DateUtils;
 @Configuration
 @DependsOn({ "credentialsFeederConfig" })
 public class CredentialsFeederJobConfig {
+
+	private static final String CREDENTIALS_FEEDER = "CREDENTIALS_FEEDER";
+
+	private static final Logger mosipLogger = IdRepoLogger.getLogger(CredentialsFeederJobConfig.class);
 
 	@Value("${" + IDREPO_CREDENTIAL_FEEDER_CHUNK_SIZE + ":" + DEFAULT_CHUNCK_SIZE + "}")
 	private int chunkSize;
@@ -59,6 +65,8 @@ public class CredentialsFeederJobConfig {
 	 */
 	@Bean
 	public Job job(Step step, JobBuilderFactory jobBuilderFactory, JobExecutionListener listener) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "BUILDING JOB",
+				"Building credentials feeder job with chunkSize: " + chunkSize);
 		return jobBuilderFactory
 				.get("job")
 				.incrementer(new RunIdIncrementer())
@@ -75,6 +83,11 @@ public class CredentialsFeederJobConfig {
 	 */
 	@Bean
 	public Step step(StepBuilderFactory stepBuilderFactory, CredentialsFeedingWriter writer, UinRepo uinRepo) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "BUILDING STEP",
+				"Building credentials feeder step with chunkSize: " + chunkSize
+						+ " | reader: credentialEventReader"
+						+ " | processor: asyncItemProcessor"
+						+ " | writer: CredentialsFeedingWriter");
 		return stepBuilderFactory
 				.get("step")
 				.<Uin, Future<Uin>>chunk(chunkSize)
@@ -94,6 +107,13 @@ public class CredentialsFeederJobConfig {
 	 */
 	@Bean
 	public ItemReader<Uin> credentialEventReader(UinRepo uinRepo) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
+				"Initializing credentialEventReader"
+						+ " | method: findByStatusCodeAndCreatedDateTimeBefore"
+						+ " | uinActiveStatus: " + uinActiveStatus
+						+ " | readBeforeDateTime: " + DateUtils.getUTCCurrentDateTime()
+						+ " | pageSize/chunkSize: " + chunkSize
+						+ " | sortBy: createdDateTime ASC");
 		RepositoryItemReader<Uin> reader = new RepositoryItemReader<>();
 		reader.setRepository(uinRepo);
 		reader.setMethodName("findByStatusCodeAndCreatedDateTimeBefore");
@@ -139,6 +159,12 @@ public class CredentialsFeederJobConfig {
 	 */
 	@Bean
 	public TaskExecutor taskExecutor() {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "TASK EXECUTOR INIT",
+				"Initializing ThreadPoolTaskExecutor"
+						+ " | corePoolSize: " + chunkSize
+						+ " | maxPoolSize: " + chunkSize
+						+ " | queueCapacity: " + chunkSize
+						+ " | threadNamePrefix: credential-feeder-");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(chunkSize);
 		executor.setMaxPoolSize(chunkSize);

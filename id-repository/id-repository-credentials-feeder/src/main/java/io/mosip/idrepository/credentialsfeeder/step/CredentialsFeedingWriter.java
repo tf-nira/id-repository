@@ -31,6 +31,7 @@ import io.mosip.idrepository.core.helper.IdRepoWebSubHelper;
 import io.mosip.idrepository.core.helper.RestHelper;
 import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.idrepository.core.manager.CredentialServiceManager;
+import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.idrepository.core.manager.CredentialStatusManager;
 import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
@@ -47,6 +48,10 @@ import io.mosip.idrepository.credentialsfeeder.repository.AuthLockRepository;
  */
 @Component
 public class CredentialsFeedingWriter implements ItemWriter<Uin> {
+
+	private static final String CREDENTIALS_FEEDER = "CREDENTIALS_FEEDER";
+
+	private static final Logger mosipLogger = IdRepoLogger.getLogger(CredentialsFeedingWriter.class);
 
 	@Value("${" + PROP_ONLINE_VERIFICATION_PARTNER_IDS + "}")
 	private String[] onlineVerificationPartnerIds;
@@ -89,7 +94,11 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 */
 	@Override
 	public void write(List<? extends Uin> requestIdEntities) throws Exception {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE START",
+				"Starting write for chunk | item count: " + requestIdEntities.size());
 		requestIdEntities.stream().map(this::decryptUin).forEach(this::issueCredential);
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE END",
+				"Write completed for chunk | item count: " + requestIdEntities.size());
 	}
 
 	/**
@@ -98,9 +107,14 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * @param uin The Aadhaar number of the resident.
 	 */
 	private void issueCredential(String uin) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE CREDENTIAL START",
+				"Issuing UIN credential, VID credential and publishing auth-lock for UIN: "
+						+ uin);
 		issueUinCredential(uin);
 		issueVidCredential(uin);
 		publishAuthLock(uin);
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE CREDENTIAL END",
+				"Credential issuance and auth-lock publish completed for UIN: " + uin);
 	}
 
 	/**
@@ -109,9 +123,15 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * @param uin The UIN of the resident
 	 */
 	private void issueUinCredential(String uin) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL",
+				"Sending UIN events to credential service"
+						+ " | partners: " + Arrays.toString(onlineVerificationPartnerIds)
+						+ " | UIN:  " + uin);
 		credentialServiceManager.sendUinEventsToCredService(uin, null, false, null, null,
 				Arrays.asList(onlineVerificationPartnerIds), uinHashSaltRepo::retrieveSaltById,
 				credentialStatusManager::credentialRequestResponseConsumer);
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL DONE",
+				"UIN events sent to credential service successfully for UIN: " + uin);
 	}
 
 	/**
@@ -120,17 +140,28 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * @param uin The UIN of the resident
 	 */
 	private void issueVidCredential(String uin) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE VID CREDENTIAL",
+				"Fetching VIDs and sending VID events to credential service"
+						+ " | partners: " + Arrays.toString(onlineVerificationPartnerIds)
+						+ " | UIN: " + uin);
 		try {
 			RestRequestDTO restRequest = restBuilder.buildRequest(RestServicesConstants.RETRIEVE_VIDS_BY_UIN, null,
 					VidsInfosDTO.class);
 			restRequest.setUri(restRequest.getUri().replace("{uin}", uin));
 			VidsInfosDTO response = restHelper.requestSync(restRequest);
 			List<VidInfoDTO> vidInfoDtos = response.getResponse();
+			mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE VID CREDENTIAL",
+					"Retrieved VIDs for UIN: " + uin
+							+ " | VID count: " + (vidInfoDtos == null ? 0 : vidInfoDtos.size()));
 			credentialServiceManager.sendVidEventsToCredService(uin, vidActiveStatus, vidInfoDtos, false,
 					Arrays.asList(onlineVerificationPartnerIds), uinHashSaltRepo::retrieveSaltById,
 					credentialStatusManager::credentialRequestResponseConsumer);
+			mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE VID CREDENTIAL DONE",
+					"VID events sent to credential service successfully for UIN: " + uin);
 		} catch (RestServiceException | IdRepoDataValidationException e) {
-			IdRepoLogger.getLogger(CredentialsFeedingWriter.class).error(ExceptionUtils.getStackTrace(e));
+			mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE VID CREDENTIAL ERROR",
+					"Failed to issue VID credential for UIN: " + uin
+							+ " | error: " + ExceptionUtils.getStackTrace(e));
 			throw new IdRepoAppUncheckedException(IdRepoErrorConstants.UNKNOWN_ERROR, e);
 		}
 	}
@@ -142,8 +173,12 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * @param uin The UIN of the resident
 	 */
 	private void publishAuthLock(String uin) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "PUBLISH AUTH LOCK",
+				"Publishing auth-lock status to WebSub for UIN: " + uin);
 		String uinHash = securityManager.hash(uin.getBytes());
 		List<AuthtypeLock> records = authLockRepo.findByHashedUin(uinHash);
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "PUBLISH AUTH LOCK",
+				"Auth-lock records found: " + records.size() + " for UIN: " + uin));
 		List<AuthtypeStatus> authTypeStatusList = records.stream()
 				.map(authLock -> new AuthtypeStatus(authLock.getAuthtypecode(),
 						Boolean.valueOf(authLock.getStatuscode()),
@@ -153,8 +188,13 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 		Stream.of(onlineVerificationPartnerIds).filter(partnerId -> !authTypeStatusList.isEmpty())
 				.forEach(partnerId -> {
 					String topic = partnerId + "/" + IDAEventType.AUTH_TYPE_STATUS_UPDATE.name();
+					mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "PUBLISH AUTH LOCK",
+							"Publishing auth-type status update event to topic: " + topic
+									+ " | status count: " + authTypeStatusList.size());
 					webSubHelper.publishAuthTypeStatusUpdateEvent(uinHash, authTypeStatusList, topic, partnerId);
 				});
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "PUBLISH AUTH LOCK DONE",
+				"Auth-lock status publish completed for UIN: " + uin);
 	}
 
 	/**
@@ -165,9 +205,17 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * @return The decrypted UIN
 	 */
 	private String decryptUin(Uin entity) {
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "DECRYPT UIN",
+				"Decrypting UIN entity with createdDateTime: " + entity.getCreatedDateTime());
 		try {
-			return credentialStatusManager.decryptId(entity.getUin());
+			String decryptedUin = credentialStatusManager.decryptId(entity.getUin());
+			mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "DECRYPT UIN DONE",
+					"UIN decryption successful for entity with createdDateTime: " + entity.getCreatedDateTime());
+			return decryptedUin;
 		} catch (IdRepoAppException e) {
+			mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "DECRYPT UIN ERROR",
+					"Failed to decrypt UIN for entity with createdDateTime: " + entity.getCreatedDateTime()
+							+ " | error: " + ExceptionUtils.getStackTrace(e));
 			throw new IdRepoAppUncheckedException(e.getErrorCode(), e.getErrorText(), e);
 		}
 	}
