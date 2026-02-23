@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -127,11 +129,26 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 				"Sending UIN events to credential service"
 						+ " | partners: " + Arrays.toString(onlineVerificationPartnerIds)
 						+ " | UIN:  " + uin);
+		AtomicInteger credentialCount = new AtomicInteger(0);
+		BiConsumer<CredentialIssueRequestWrapperDto, Map<String, Object>> loggingConsumer = (request, response) -> {
+			int count = credentialCount.incrementAndGet();
+			mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "CREDENTIAL ISSUED",
+					"Credential request #" + count + " issued"
+							+ " | partner: " + (request.getRequest() != null ? request.getRequest().getIssuer() : "N/A")
+							+ " | requestId: " + (request.getRequest() != null ? request.getRequest().getRequestId() : "N/A")
+							+ " | response: " + response);
+			credentialStatusManager.credentialRequestResponseConsumer(request, response);
+		};
 		credentialServiceManager.sendUinEventsToCredService(uin, null, false, null, null,
 				Arrays.asList(onlineVerificationPartnerIds), uinHashSaltRepo::retrieveSaltById,
-				credentialStatusManager::credentialRequestResponseConsumer);
-		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL DONE",
-				"UIN events sent to credential service successfully for UIN: " + uin);
+				loggingConsumer);
+		if (credentialCount.get() == 0) {
+			mosipLogger.warn(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL WARNING",
+					"No UIN credentials were issued — disableUINBasedCredentialRequest may be true or vidInfoDtos/handleList are null. UIN: " + uin);
+		} else {
+			mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL DONE",
+					credentialCount.get() + " UIN credential(s) issued successfully for UIN: " + uin);
+		}
 	}
 
 	/**
