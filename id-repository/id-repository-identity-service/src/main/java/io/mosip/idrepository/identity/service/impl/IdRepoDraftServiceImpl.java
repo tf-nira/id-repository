@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -121,8 +120,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 	private static final String COMMA = ",";
 
 	private static final String DEFAULT_ATTRIBUTE_LIST = "UIN,verifiedAttributes,IDSchemaVersion";
-	
-	private static final Set<String> VALID_STATUS = Set.of("ACTIVATED", "DEACTIVATED");
 
 	@Value("${" + MOSIP_KERNEL_IDREPO_JSON_PATH + "}")
 	private String uinPath;
@@ -279,13 +276,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				} else {
 					updateDemographicData(request, draftToUpdate);
 					updateDocuments(request.getRequest(), draftToUpdate);
-					
-					String status = request.getRequest().getStatus();
-					
-					if (status != null && VALID_STATUS.contains(status)) {
-						draftToUpdate.setStatusCode(status);
-					}
-					
+
 					uinDraftRepo.save(draftToUpdate);
 				}
 			} else {
@@ -563,11 +554,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				}));
 		identityData.remove(VERIFIED_ATTRIBUTES);
 		request.setIdentity(identityData);
-		
-		if (draft.getStatusCode() != null && VALID_STATUS.contains(draft.getStatusCode())) {
-		    request.setStatus(draft.getStatusCode());
-		}
-		
 		idRequest.setRequest(request);
 		return idRequest;
 	}
