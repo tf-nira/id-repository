@@ -281,6 +281,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		Map<String, HandleDto> selectedUniqueHandlesMap = checkAndGetHandles(request);
 
+		if(identityInfo==null){
+			mosipLogger.info("AddIdentity identityInfo null for the uin: {} and rid: {}",
+					uin, request.getRequest().getRegistrationId());
+		}
 		anonymousProfileHelper
 			.setRegId(request.getRequest().getRegistrationId())
 			.setNewUinData(identityInfo);
@@ -538,6 +542,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
+				if (Objects.isNull(dbData)) {
+					mosipLogger.info("updateIdentity dbData for oldUinData is null for the uin: {} and rid: {}",
+							uin, request.getRequest().getRegistrationId());
+				}
 				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 
@@ -571,6 +579,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			}
 			
 			uinObject = uinRepo.save(uinObject);
+			if (Objects.isNull(uinObject.getUinData())) {
+				mosipLogger.info("updateIdentity uinObject for NewUinData is null for the uin: {} and rid: {}",
+						uin, request.getRequest().getRegistrationId());
+			}
 			anonymousProfileHelper.setNewUinData(uinObject.getUinData());
 			uinHistoryRepo.save(new UinHistory(uinObject.getUinRefId(), DateUtils.getUTCCurrentDateTime(),
 					uinObject.getUin(), uinObject.getUinHash(), uinObject.getUinData(), uinObject.getUinDataHash(),
