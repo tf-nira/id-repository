@@ -129,7 +129,7 @@ public class AnonymousProfileHelper {
 							.setNewDocuments(newDocList)
 							.build();
 				} else {
-					mosipLogger.info("Both oldUinData and newUinData are null for the id: {}", id);
+					mosipLogger.info("Both oldUinData and newUinData are null for the regId :: {}", regId);
 				}
 
 				AnonymousProfileEntity anonymousProfile = AnonymousProfileEntity.builder()
