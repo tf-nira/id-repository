@@ -1,3 +1,4 @@
+#FROM openjdk:11
 FROM eclipse-temurin:11-jdk
 
 ARG SOURCE
