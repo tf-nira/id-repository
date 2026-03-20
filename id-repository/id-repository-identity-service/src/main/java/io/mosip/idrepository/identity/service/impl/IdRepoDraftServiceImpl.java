@@ -339,7 +339,27 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
         return formattedNin.toString();
         
 	}
+	private String constructAin(String uin, String dateOfBirth, String gender) {
 
+		StringBuilder formattedAin = new StringBuilder();
+
+		char genderChar = gender.charAt(0);
+
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(dobFormat);
+		LocalDate date = formatter.parseLocalDate(dateOfBirth);
+
+		// Extract last two digits of year
+		int year = date.getYear() % 100;
+
+		// Append alien_code + gender + dob_year_last_2 + uin
+		formattedAin.append("A");
+		formattedAin.append(genderChar);
+		formattedAin.append(String.format("%02d", year));
+		formattedAin.append(uin);
+		idrepoDraftLogger.info("formattedAIN : " +formattedAin.toString());
+		return formattedAin.toString();
+	}
+	
 	private void updateDemographicData(IdRequestDTO request, UinDraft draftToUpdate) throws JSONException, IdRepoAppException, IOException {
 		if (Objects.nonNull(request.getRequest()) && Objects.nonNull(request.getRequest().getIdentity())) {
 			RequestDTO requestDTO = request.getRequest();
@@ -347,8 +367,23 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					.mappingProvider(new JacksonMappingProvider()).build();
 			/* Update request object */
 			ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-			
-			if (identityObject.get(NIN) == null) {
+			JsonNode valueNode = identityObject.path("userServiceType").path(0).path("value");
+			String userServiceType = null;
+			if (!valueNode.isMissingNode() && !valueNode.isNull()) {
+				userServiceType = valueNode.asText();
+			}
+			if (userServiceType != null && !userServiceType.isEmpty() && "Alien New Registration".equals(userServiceType)){
+				String dateOfBirth = identityObject.get("dateOfBirth").asText();
+
+				String uinDecrypted = decryptUin(draftToUpdate.getUin(), draftToUpdate.getUinHash());
+				String gender = identityObject.path("gender").get(0).get("value").asText();
+
+				// We update UIN based on AIN format for Alien
+				String constructedAIN =  constructAin(uinDecrypted,dateOfBirth,gender);
+				// Update request object with new NIN
+				identityObject.put(NIN, constructedAIN);
+			}
+			else if (identityObject.get(NIN) == null) {
 				
 				// Extract applicantCitizenshipType, gender, dateOfBirth from identityObject
 				String applicantCitizenshipType = identityObject.path("userServiceType").get(0).get("value").asText();
