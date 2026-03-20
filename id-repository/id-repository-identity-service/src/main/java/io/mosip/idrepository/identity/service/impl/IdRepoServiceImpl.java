@@ -15,8 +15,17 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_CO
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -272,6 +281,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		Map<String, HandleDto> selectedUniqueHandlesMap = checkAndGetHandles(request);
 
+		if(identityInfo==null){
+			mosipLogger.info("AddIdentity identityInfo null for the uin: {} and rid: {}",
+					uin, request.getRequest().getRegistrationId());
+		}
 		anonymousProfileHelper
 			.setRegId(request.getRequest().getRegistrationId())
 			.setNewUinData(identityInfo);
@@ -313,7 +326,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		if (identityObject.get("NIN") != null) {
 			String NIN = identityObject.get("NIN").asText();
-			String ninHash = securityManager.hash(NIN.getBytes());
+			String ninHash = securityManager.hash(NIN.toLowerCase().getBytes());
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
 			cardExpiryDate = cardExpiryDate.minusDays(1);
@@ -529,6 +542,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
+				if (Objects.isNull(dbData)) {
+					mosipLogger.info("updateIdentity dbData for oldUinData is null for the uin: {} and rid: {}",
+							uin, request.getRequest().getRegistrationId());
+				}
 				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 
@@ -562,6 +579,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			}
 			
 			uinObject = uinRepo.save(uinObject);
+			if (Objects.isNull(uinObject.getUinData())) {
+				mosipLogger.info("updateIdentity uinObject for NewUinData is null for the uin: {} and rid: {}",
+						uin, request.getRequest().getRegistrationId());
+			}
 			anonymousProfileHelper.setNewUinData(uinObject.getUinData());
 			uinHistoryRepo.save(new UinHistory(uinObject.getUinRefId(), DateUtils.getUTCCurrentDateTime(),
 					uinObject.getUin(), uinObject.getUinHash(), uinObject.getUinData(), uinObject.getUinDataHash(),
@@ -1124,7 +1145,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	public void updateCardNumber(Map<String, Object> data) {
 	String nin=(String) data.get("nin");
 	String cardNumber = (String) data.get("cardNumber");
-	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+	List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.toLowerCase().getBytes()));
+	if (cardDetails.isEmpty()) {
+		cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.toUpperCase().getBytes()));
+	}
+	if (cardDetails.isEmpty()) {
+		cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+	}
 	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,
 			"Entered card details update card number");
 	mosipLogger.info(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, ADD_IDENTITY_HANDLE,

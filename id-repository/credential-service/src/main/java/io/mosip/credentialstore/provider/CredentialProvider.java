@@ -427,8 +427,7 @@ public class CredentialProvider {
 					"end preparing demo and bio sharable attributes");
 			return attributesMap;
 		} catch (Exception e) {
-			LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
-					ExceptionUtils.getStackTrace(e));
+			LOGGER.error(requestId, e);
 			throw new CredentialFormatterException(e);
 		}
 	}

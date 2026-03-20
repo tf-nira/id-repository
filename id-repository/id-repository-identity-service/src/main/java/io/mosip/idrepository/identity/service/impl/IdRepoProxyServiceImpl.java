@@ -703,7 +703,14 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			if (identityObject.get("NIN") != null) {
 				String NIN = identityObject.get("NIN").asText();
 				List<CardDetail> cardDetails = cardDetailRepository
-						.getCardDetail(securityManager.hash(NIN.getBytes()));
+						.getCardDetail(securityManager.hash(NIN.toLowerCase().getBytes()));
+				if (cardDetails.isEmpty()) {
+					 cardDetails = cardDetailRepository
+								.getCardDetail(securityManager.hash(NIN.toUpperCase().getBytes()));
+				}
+				if (cardDetails.isEmpty()) {
+					cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.getBytes()));
+				}
 				List<CardDetailDto> cardDetailDtos = new ArrayList<CardDetailDto>();
 				if (!cardDetails.isEmpty()) {
 					for (CardDetail cardDetail : cardDetails) {

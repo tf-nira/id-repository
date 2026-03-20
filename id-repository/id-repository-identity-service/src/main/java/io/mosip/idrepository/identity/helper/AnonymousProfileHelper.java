@@ -102,13 +102,42 @@ public class AnonymousProfileHelper {
 					newDocList = List.of(new DocumentsDTO(IdentityIssuanceProfileBuilder.getIdentityMapping()
 							.getIdentity().getIndividualBiometrics().getValue(), newCbeff));
 				String id = UUID.randomUUID().toString();
-				IdentityIssuanceProfile profile = IdentityIssuanceProfile.builder()
-						.setFilterLanguage(EnvUtil.getAnonymousProfileFilterLanguage())
-						.setProcessName(Objects.isNull(oldUinData) ? "New" : "Update").setOldIdentity(oldUinData)
-						.setOldDocuments(oldDocList).setNewIdentity(newUinData).setNewDocuments(newDocList).build();
-				AnonymousProfileEntity anonymousProfile = AnonymousProfileEntity.builder().id(id)
-						.profile(mapper.writeValueAsString(profile)).createdBy(IdRepoSecurityManager.getUser())
-						.crDTimes(DateUtils.getUTCCurrentDateTime()).build();
+//				IdentityIssuanceProfile profile = IdentityIssuanceProfile.builder()
+//						.setFilterLanguage(EnvUtil.getAnonymousProfileFilterLanguage())
+//						.setProcessName(Objects.isNull(oldUinData) ? "New" : "Update").setOldIdentity(oldUinData)
+//						.setOldDocuments(oldDocList).setNewIdentity(newUinData).setNewDocuments(newDocList).build();
+//				AnonymousProfileEntity anonymousProfile = AnonymousProfileEntity.builder().id(id)
+//						.profile(mapper.writeValueAsString(profile)).createdBy(IdRepoSecurityManager.getUser())
+//						.crDTimes(DateUtils.getUTCCurrentDateTime()).build();
+				IdentityIssuanceProfile profile = null;
+				if (Objects.nonNull(oldUinData)) {
+					profile = IdentityIssuanceProfile.builder()
+							.setFilterLanguage(EnvUtil.getAnonymousProfileFilterLanguage())
+							.setProcessName("Update")
+							.setOldIdentity(oldUinData)
+							.setOldDocuments(oldDocList)
+							.setNewIdentity(newUinData)
+							.setNewDocuments(newDocList)
+							.build();
+				} else if (Objects.nonNull(newUinData)) {
+					profile = IdentityIssuanceProfile.builder()
+							.setFilterLanguage(EnvUtil.getAnonymousProfileFilterLanguage())
+							.setProcessName("New")
+							.setOldIdentity(oldUinData)
+							.setOldDocuments(oldDocList)
+							.setNewIdentity(newUinData)
+							.setNewDocuments(newDocList)
+							.build();
+				} else {
+					mosipLogger.info("Both oldUinData and newUinData are null for the regId :: {}", regId);
+				}
+
+				AnonymousProfileEntity anonymousProfile = AnonymousProfileEntity.builder()
+						.id(id)
+						.profile(mapper.writeValueAsString(profile))
+						.createdBy(IdRepoSecurityManager.getUser())
+						.crDTimes(DateUtils.getUTCCurrentDateTime())
+						.build();
 				anonymousProfileRepo.save(anonymousProfile);
 				updateChannelInfo();
 			} catch (Exception e) {
