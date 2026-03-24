@@ -60,10 +60,10 @@ public class CredentialsFeederJobConfig {
 	@Value("${" + MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED + "}")
 	private String uinActiveStatus;
 
-	@Value("${idrepo.credential.feeder.instance1.from-date}")
+	@Value("${idrepo.credential.feeder.instance2.from-date}")
 	private String fromDateStr;
 	
-	@Value("${idrepo.credential.feeder.instance1.to-date:}")
+	@Value("${idrepo.credential.feeder.instance2.to-date:}")
 	private String toDateStr;
 	
 	/**
