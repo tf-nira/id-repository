@@ -24,6 +24,7 @@ on:
       - tf_nira_dev
       - tf_nira_dev_instance1
       - tf_nira_dev_instance2
+      - tf_nira_dev_instance3
 
 jobs:
   build-maven-id-repository:
