@@ -6,6 +6,7 @@ import static io.mosip.idrepository.credentialsfeeder.constant.Constants.MOSIP_I
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,11 +116,32 @@ public class CredentialsFeederJobConfig {
 	 */
 	@Bean
 	public ItemReader<Uin> credentialEventReader(UinRepo uinRepo) {
+		LocalDateTime fromDate;
+		LocalDateTime effectiveToDate;
 		
-		LocalDateTime fromDate = LocalDateTime.parse(fromDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		LocalDateTime effectiveToDate = (toDateStr != null && !toDateStr.isBlank()) 
-				? LocalDateTime.parse(toDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-				: DateUtils.getUTCCurrentDateTime();
+		try {
+			if (fromDateStr == null || fromDateStr.isBlank()) {
+				throw new DateTimeParseException("fromDateStr is null or blank", "", 0);
+	        }
+	        fromDate = LocalDateTime.parse(fromDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			
+		} catch (DateTimeParseException e) {
+			 mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
+		                "Invalid or missing fromDateStr: '" + fromDateStr + "' - " + e.getMessage());
+		        throw new IllegalStateException(
+		                "Credentials feeder job cannot start: invalid fromDateStr '" + fromDateStr + "'", e);
+		}
+		
+		try {
+	        effectiveToDate = (toDateStr != null && !toDateStr.isBlank())
+	                ? LocalDateTime.parse(toDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+	                : DateUtils.getUTCCurrentDateTime();
+	    } catch (DateTimeParseException e) {
+	        mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
+	                "Invalid toDateStr: '" + toDateStr + "' - " + e.getMessage());
+	        throw new IllegalStateException(
+	                "Credentials feeder job cannot start: invalid toDateStr '" + toDateStr + "'", e);
+	    }
 		
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
 				"Initializing credentialEventReader"
