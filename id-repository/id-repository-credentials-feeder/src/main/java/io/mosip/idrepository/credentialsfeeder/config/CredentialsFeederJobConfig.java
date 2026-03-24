@@ -59,10 +59,10 @@ public class CredentialsFeederJobConfig {
 	@Value("${" + MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED + "}")
 	private String uinActiveStatus;
 
-	@Value("${idrepo.credential.feeder.from-date}")
+	@Value("${idrepo.credential.feeder.instance1.from-date}")
 	private String fromDateStr;
 	
-	@Value("${idrepo.credential.feeder.to-date:}")
+	@Value("${idrepo.credential.feeder.instance1.to-date:}")
 	private String toDateStr;
 	
 	/**
@@ -76,7 +76,7 @@ public class CredentialsFeederJobConfig {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "BUILDING JOB",
 				"Building credentials feeder job with chunkSize: " + chunkSize);
 		return jobBuilderFactory
-				.get("job")
+				.get("job" + fromDateStr)  //job name updated based on instance
 				.incrementer(new RunIdIncrementer())
 				.listener(listener)
 				.flow(step)
@@ -115,18 +115,20 @@ public class CredentialsFeederJobConfig {
 	 */
 	@Bean
 	public ItemReader<Uin> credentialEventReader(UinRepo uinRepo) {
-		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
-				"Initializing credentialEventReader"
-						+ " | method: findByStatusCodeAndCreatedDateTimeBefore"
-						+ " | uinActiveStatus: " + uinActiveStatus
-						+ " | readBeforeDateTime: " + DateUtils.getUTCCurrentDateTime()
-						+ " | pageSize/chunkSize: " + chunkSize
-						+ " | sortBy: createdDateTime ASC");
 		
 		LocalDateTime fromDate = LocalDateTime.parse(fromDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		LocalDateTime effectiveToDate = (toDateStr != null && !toDateStr.isBlank()) 
 				? LocalDateTime.parse(toDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 				: DateUtils.getUTCCurrentDateTime();
+		
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
+				"Initializing credentialEventReader"
+						+ " | method: findByStatusCodeAndCreatedDateTimeBetween"
+						+ " | uinActiveStatus: " + uinActiveStatus
+						 + " | fromDate: " + fromDate
+		                    + " | toDate: " + effectiveToDate
+						+ " | pageSize/chunkSize: " + chunkSize
+						+ " | sortBy: createdDateTime ASC");
 		
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
 	            "Initializing credentialEventReader"
