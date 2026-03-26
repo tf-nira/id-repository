@@ -33,8 +33,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import io.mosip.idrepository.credentialsfeeder.entity.CredentialFeederProgress;
 import io.mosip.idrepository.credentialsfeeder.entity.Uin;
 import io.mosip.idrepository.credentialsfeeder.logger.IdRepoLogger;
+import io.mosip.idrepository.credentialsfeeder.repository.CredentialFeederProgressRepo;
 import io.mosip.idrepository.credentialsfeeder.repository.UinRepo;
 import io.mosip.idrepository.credentialsfeeder.step.CredentialsFeedingWriter;
 import io.mosip.kernel.core.logger.spi.Logger;
@@ -60,11 +62,8 @@ public class CredentialsFeederJobConfig {
 	@Value("${" + MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED + "}")
 	private String uinActiveStatus;
 
-	@Value("${idrepo.credential.feeder.instance1.from-date}")
-	private String fromDateStr;
-	
-	@Value("${idrepo.credential.feeder.instance1.to-date:}")
-	private String toDateStr;
+	@Value("${idrepo.credential.feeder.instance-id}")
+	String instanceId;
 	
 	/**
 	 * Job.
@@ -77,7 +76,7 @@ public class CredentialsFeederJobConfig {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "BUILDING JOB",
 				"Building credentials feeder job with chunkSize: " + chunkSize);
 		return jobBuilderFactory
-				.get("job" + fromDateStr)  //job name updated based on instance
+				.get("job" + instanceId)  //job name updated based on instance
 				.incrementer(new RunIdIncrementer())
 				.listener(listener)
 				.flow(step)
@@ -91,7 +90,7 @@ public class CredentialsFeederJobConfig {
 	 * @return the step
 	 */
 	@Bean
-	public Step step(StepBuilderFactory stepBuilderFactory, CredentialsFeedingWriter writer, UinRepo uinRepo) {
+	public Step step(StepBuilderFactory stepBuilderFactory, CredentialsFeedingWriter writer, UinRepo uinRepo, CredentialFeederProgressRepo progressRepo) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "BUILDING STEP",
 				"Building credentials feeder step with chunkSize: " + chunkSize
 						+ " | reader: credentialEventReader"
@@ -100,7 +99,7 @@ public class CredentialsFeederJobConfig {
 		return stepBuilderFactory
 				.get("step")
 				.<Uin, Future<Uin>>chunk(chunkSize)
-				.reader(credentialEventReader(uinRepo))
+				.reader(credentialEventReader(uinRepo, progressRepo))
 				.processor(asyncItemProcessor())
 				.writer(asyncItemWriter(writer))
 				.build();
@@ -115,52 +114,26 @@ public class CredentialsFeederJobConfig {
 	 * @return A list of Uin objects
 	 */
 	@Bean
-	public ItemReader<Uin> credentialEventReader(UinRepo uinRepo) {
-		LocalDateTime fromDate;
-		LocalDateTime effectiveToDate;
+	public ItemReader<Uin> credentialEventReader(UinRepo uinRepo, CredentialFeederProgressRepo progressRepo) {
 		
-		try {
-			if (fromDateStr == null || fromDateStr.isBlank()) {
-				throw new DateTimeParseException("fromDateStr is null or blank", "", 0);
-	        }
-	        fromDate = LocalDateTime.parse(fromDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-			
-		} catch (DateTimeParseException e) {
-			 mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
-		                "Invalid or missing fromDateStr: '" + fromDateStr + "' - " + e.getMessage());
-		        throw new IllegalStateException(
-		                "Credentials feeder job cannot start: invalid fromDateStr '" + fromDateStr + "'", e);
-		}
+		CredentialFeederProgress progress = progressRepo.findById(instanceId)
+				.orElseThrow(() -> new IllegalStateException(
+						"No credentail_feeder_progress row found for instance id: " + instanceId));
 		
-		try {
-	        effectiveToDate = (toDateStr != null && !toDateStr.isBlank())
-	                ? LocalDateTime.parse(toDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-	                : DateUtils.getUTCCurrentDateTime();
-	    } catch (DateTimeParseException e) {
-	        mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
-	                "Invalid toDateStr: '" + toDateStr + "' - " + e.getMessage());
-	        throw new IllegalStateException(
-	                "Credentials feeder job cannot start: invalid toDateStr '" + toDateStr + "'", e);
-	    }
+		LocalDateTime fromDate = progress.getFromDate();
+		LocalDateTime toDate = progress.getToDate();
 		
-		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
-				"Initializing credentialEventReader"
-						+ " | method: findByStatusCodeAndCreatedDateTimeBetween"
-						+ " | uinActiveStatus: " + uinActiveStatus
-						 + " | fromDate: " + fromDate
-		                    + " | toDate: " + effectiveToDate
-						+ " | pageSize/chunkSize: " + chunkSize
-						+ " | sortBy: createdDateTime ASC");
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT", 
+				"instanceId:"+ instanceId
+                + " | fromDate (from DB): " + fromDate
+                + " | toDate: " + toDate
+                + " | pageSize: " + chunkSize
+                + " | sortBy: createdDateTime ASC");
 		
-		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
-	            "Initializing credentialEventReader"
-	                    + " | fromDate: " + fromDate
-	                    + " | toDate: " + effectiveToDate);
-
 		RepositoryItemReader<Uin> reader = new RepositoryItemReader<>();
 		reader.setRepository(uinRepo);
 		reader.setMethodName("findByStatusCodeAndCreatedDateTimeBetween");
-		reader.setArguments(List.of(uinActiveStatus, fromDate, effectiveToDate));
+		reader.setArguments(List.of(uinActiveStatus, fromDate, toDate));
 		final Map<String, Sort.Direction> sorts = new HashMap<>();
 		sorts.put("createdDateTime", Direction.ASC); // then try processing Least failed entries first
 		reader.setSort(sorts);
