@@ -7,6 +7,7 @@ import static io.mosip.idrepository.credentialsfeeder.constant.Constants.MOSIP_I
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.PROP_ONLINE_VERIFICATION_PARTNER_IDS;
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.UNLOCK_EXP_TIMESTAMP;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,8 +49,10 @@ import io.mosip.idrepository.core.repository.UinEncryptSaltRepo;
 import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.credentialsfeeder.entity.AuthtypeLock;
+import io.mosip.idrepository.credentialsfeeder.entity.CredentialFeederProgress;
 import io.mosip.idrepository.credentialsfeeder.entity.Uin;
 import io.mosip.idrepository.credentialsfeeder.repository.AuthLockRepository;
+import io.mosip.idrepository.credentialsfeeder.repository.CredentialFeederProgressRepo;
 
 /**
  * The Class CredentialsFeedingWriter - Class to feed credentials using
@@ -105,6 +108,12 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	@Autowired
 	private UinEncryptSaltRepo uinEncryptSaltRepo;
 	
+	@Autowired
+	private CredentialFeederProgressRepo progressRepo;
+	
+	@Value("${idrepo.credential.feeder.instance-id}")
+	private String instanceId; 
+	
 	@Value("${" + UIN_REFID + "}")
 	private String uinRefId;
 
@@ -120,6 +129,21 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE START",
 				"Starting write for chunk | item count: " + requestIdEntities.size());
 		requestIdEntities.stream().map(this::decryptUin).forEach(this::issueCredential);
+		
+		if (!requestIdEntities.isEmpty()) {
+			LocalDateTime maxProcessedDate = requestIdEntities.stream()
+					.map(Uin::getCreatedDateTime)
+					.max(LocalDateTime::compareTo)
+					.orElse(null);
+			
+			if (maxProcessedDate != null) {
+				CredentialFeederProgress progress = progressRepo.findById(instanceId).orElseThrow();
+				progress.setFromDate(maxProcessedDate);
+				progress.setUpdateDateTime(LocalDateTime.now());
+				progressRepo.save(progress);
+			}
+		}
+		
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE END",
 				"Write completed for chunk | item count: " + requestIdEntities.size());
 	}
