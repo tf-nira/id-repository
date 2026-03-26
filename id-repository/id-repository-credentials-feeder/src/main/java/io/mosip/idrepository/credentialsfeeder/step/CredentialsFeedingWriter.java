@@ -133,6 +133,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 		if (!requestIdEntities.isEmpty()) {
 			LocalDateTime maxProcessedDate = requestIdEntities.stream()
 					.map(Uin::getCreatedDateTime)
+					.filter(Objects::nonNull)
 					.max(LocalDateTime::compareTo)
 					.orElse(null);
 			
