@@ -3,6 +3,7 @@ package io.mosip.idrepository.credentialsfeeder.step.test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.Before;
@@ -34,8 +35,10 @@ import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.core.util.EnvUtil;
 import io.mosip.idrepository.credentialsfeeder.entity.AuthtypeLock;
+import io.mosip.idrepository.credentialsfeeder.entity.CredentialFeederProgress;
 import io.mosip.idrepository.credentialsfeeder.entity.Uin;
 import io.mosip.idrepository.credentialsfeeder.repository.AuthLockRepository;
+import io.mosip.idrepository.credentialsfeeder.repository.CredentialFeederProgressRepo;
 import io.mosip.idrepository.credentialsfeeder.step.CredentialsFeedingWriter;
 import io.mosip.kernel.core.util.DateUtils;
 
@@ -76,6 +79,9 @@ public class CredentialsFeedingWriterTest {
 
 	@Mock
 	private AuthLockRepository authLockRepo;
+	
+	@Mock
+	private CredentialFeederProgressRepo progressRepo;
 
 	@Before
 	public void init() {
@@ -83,6 +89,12 @@ public class CredentialsFeedingWriterTest {
 				new String[] { "onlineVerificationPartnerIds" });
 		ReflectionTestUtils.setField(writer, "uinActiveStatus", "uinActiveStatus");
 		ReflectionTestUtils.setField(writer, "vidActiveStatus", "vidActiveStatus");
+		ReflectionTestUtils.setField(writer, "instanceId", "instance1");
+		
+		CredentialFeederProgress progress = new CredentialFeederProgress();
+	    progress.setInstanceId("instance1");
+	    progress.setFromDate(LocalDateTime.now());
+	    when(progressRepo.findById("instance1")).thenReturn(java.util.Optional.of(progress));
 	}
 
 	@Test
