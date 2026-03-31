@@ -6,7 +6,7 @@ import static io.mosip.idrepository.core.constant.IdRepoConstants.ALL;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.BIO;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.BIOMETRICS;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.CREATE;
-import static io.mosip.idrepository.core.constant.IdRepoConstants.DEMO;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.DfEMO;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.DEMOGRAPHICS;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.GET_FILES;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.ID_HASH;
@@ -658,6 +658,12 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 */
 	private String getUinHash(String individualId, IdType idType)
 			throws IdRepoDataValidationException, IdRepoAppException {
+		
+	   if (individualId != null && 
+	    (individualId.toLowerCase().contains("@nin") || 
+	     (idType != null && "HANDLE".equalsIgnoreCase(idType.name())))) {
+	     return idRepoServiceHelper.getHandleHash(individualId);
+		}
 		switch (idType) {
 			case VID:
 				individualId = getUinByVid(individualId);
