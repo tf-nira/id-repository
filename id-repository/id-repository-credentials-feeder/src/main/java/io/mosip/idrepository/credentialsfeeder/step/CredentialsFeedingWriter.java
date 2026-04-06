@@ -140,6 +140,8 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 			if (maxProcessedDate != null) {
 				CredentialFeederProgress progress = progressRepo.findById(instanceId).orElseThrow();
 				progress.setFromDate(maxProcessedDate);
+				progress.setProcessedCount(progress.getProcessedCount() == null ? 0
+						: progress.getProcessedCount() + requestIdEntities.size());
 				progress.setUpdateDateTime(LocalDateTime.now());
 				progressRepo.save(progress);
 			}
