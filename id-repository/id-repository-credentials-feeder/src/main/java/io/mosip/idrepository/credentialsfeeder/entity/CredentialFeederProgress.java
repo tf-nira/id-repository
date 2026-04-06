@@ -33,4 +33,7 @@ public class CredentialFeederProgress {
 	
 	@Column(name = "cr_dtimes")
 	private LocalDateTime createdDateTime;
+	
+	@Column(name = "processed_count")
+	private Integer processedCount;
 }
