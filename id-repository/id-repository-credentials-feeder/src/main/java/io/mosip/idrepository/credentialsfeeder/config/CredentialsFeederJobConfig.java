@@ -62,7 +62,7 @@ public class CredentialsFeederJobConfig {
 	@Value("${" + MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED + "}")
 	private String uinActiveStatus;
 
-	@Value("${idrepo.credential.feeder.instance-id1}")
+	@Value("${idrepo.credential.feeder.instance-id4}")
 	String instanceId;
 	
 	/**
