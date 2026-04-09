@@ -22,7 +22,7 @@ on:
       - MOSIP*
       - nira_1.2.1
       - tf_nira_dev
-      - tf_nira_dev_instance1
+      - tf_nira_dev_instance4
 
 jobs:
   build-maven-id-repository:
