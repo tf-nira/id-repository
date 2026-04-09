@@ -111,7 +111,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	@Autowired
 	private CredentialFeederProgressRepo progressRepo;
 	
-	@Value("${idrepo.credential.feeder.instance-id4}")
+	@Value("${idrepo.credential.feeder.instance-id5}")
 	private String instanceId; 
 	
 	@Value("${" + UIN_REFID + "}")
