@@ -558,12 +558,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 
 				if (Objects.nonNull(requestDTO.getDocuments()) && !requestDTO.getDocuments().isEmpty()) {
+					updateDocuments(uinHashWithSalt, uinObject, requestDTO, false);
 					anonymousProfileHelper
 							.setNewCbeff(uinObject.getUinHash(),
 									!anonymousProfileHelper.isNewCbeffPresent() ?
 									uinObject.getBiometrics().get(uinObject.getBiometrics().size() - 1).getBioFileId()
 											: null);
-					updateDocuments(uinHashWithSalt, uinObject, requestDTO, false);
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
