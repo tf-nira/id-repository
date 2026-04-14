@@ -65,7 +65,7 @@ public class AuditHelper {
 	 * @param desc   the desc
 	 */
 	public void audit(AuditModules module, AuditEvents event, String id, IdType idType, String desc) {
-		String requestId = null;
+	/*	String requestId = null;
 		if(id !=null) {
 			requestId = securityManager.hash(id.getBytes());
 		}
@@ -82,7 +82,7 @@ public class AuditHelper {
 		} catch (Exception e) {
 			mosipLogger.error(IdRepoSecurityManager.getUser(), "AuditRequestBuilder", "audit",
 					"Exception : " + ExceptionUtils.getStackTrace(e));
-		}
+		}*/
 	}
 	
 	/**
@@ -95,12 +95,12 @@ public class AuditHelper {
 	 * @param e the e
 	 */
 	public void auditError(AuditModules module, AuditEvents event, String id, IdType idType, Throwable e) {
-		try {
+		/*try {
 			this.audit(module, event, id, idType, mapper.writeValueAsString(IdRepoExceptionHandler.getAllErrors(e)));
 		} catch (JsonProcessingException ex) {
 			mosipLogger.error(IdRepoSecurityManager.getUser(), "AuditRequestBuilder", "auditError",
 					"Exception : " + ExceptionUtils.getStackTrace(ex));
-		}
+		}*/
 	}
 
 }
