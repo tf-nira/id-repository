@@ -8,10 +8,14 @@ import org.springframework.stereotype.Component;
 
 import io.mosip.idrepository.core.constant.IdRepoErrorConstants;
 import io.mosip.idrepository.core.exception.IdRepoAppUncheckedException;
+import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.kernel.core.util.HMACUtils2;
+import io.mosip.kernel.core.logger.spi.Logger;
 
 @Component
 public class TokenIDGenerator {
+
+	private static Logger mosipLogger = IdRepoLogger.getLogger(TokenIDGenerator.class);
 
 	@Value("${mosip.kernel.tokenid.uin.salt}")
 	private String uinSalt;
@@ -24,9 +28,26 @@ public class TokenIDGenerator {
 
 	public String generateTokenID(String uin, String partnerCode) {
 		try {
-			String uinHash = HMACUtils2.digestAsPlainText((uin + uinSalt).getBytes());
-			String hash = HMACUtils2.digestAsPlainText((partnerCodeSalt + partnerCode + uinHash).getBytes());
-			return new BigInteger(hash.getBytes()).toString().substring(0, tokenIDLength);
+			String uinWithSalt = uin + uinSalt;
+			String uinHash = HMACUtils2.digestAsPlainText(uinWithSalt.getBytes());
+
+			String partnerWithSalt = partnerCodeSalt + partnerCode;
+			String hash = HMACUtils2.digestAsPlainText((partnerWithSalt + uinHash).getBytes());
+
+			String token = new BigInteger(hash.getBytes()).toString().substring(0, tokenIDLength);
+
+			mosipLogger.info("TOKEN_GEN", "TokenIDGenerator.generateTokenID", "GENERATING_TOKEN",
+					"uin=" + uin +
+							", uinSalt=" + uinSalt +
+							", uinWithSalt=" + uinWithSalt +
+							", uinHash=" + uinHash +
+							", partnerCode=" + partnerCode +
+							", partnerCodeSalt=" + partnerCodeSalt +
+							", partnerWithSalt=" + partnerWithSalt +
+							", hashInput=" + (partnerWithSalt + uinHash) +
+							", finalToken=" + token);
+
+			return token;
 		} catch (NoSuchAlgorithmException e) {
 			// TODO to be removed
 			throw new IdRepoAppUncheckedException(IdRepoErrorConstants.UNKNOWN_ERROR, e);
