@@ -144,6 +144,19 @@ public class IdRepoWebSubHelper {
 	@SuppressWarnings("unchecked")
 	public void publishAuthTypeStatusUpdateEvent(String individualId, List<AuthtypeStatus> authTypeStatusList,
 			String topic, String partnerId) {
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+				"publishAuthTypeStatusUpdateEvent", "========== WRITE (LOCK) FLOW START ==========");
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+				"publishAuthTypeStatusUpdateEvent", "individualId (UIN): " + individualId);
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+				"publishAuthTypeStatusUpdateEvent", "partnerId from request: " + partnerId);
+		String idaTokenId = tokenIdGenerator.generateTokenID(individualId, partnerId);
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+				"publishAuthTypeStatusUpdateEvent", "Token will be stored with IDA token: " + idaTokenId);
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+				"publishAuthTypeStatusUpdateEvent", "Auth types being locked: " + authTypeStatusList);
+		mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getSimpleName(),
+				"publishAuthTypeStatusUpdateEvent", "========== WRITE (LOCK) FLOW END ==========");
 		AuthTypeStatusEventDTO event = new AuthTypeStatusEventDTO();
 		event.setTokenId(tokenIdGenerator.generateTokenID(individualId, partnerId));
 		event.setAuthTypeStatusList(authTypeStatusList);
