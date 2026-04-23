@@ -385,6 +385,9 @@ public class CredentialServiceManager {
 		if(!disableUINBasedCredentialRequest) {
 		eventRequestsList.addAll(partnerIds.stream().map(partnerId -> {
 			String token = tokenIDGenerator.generateTokenID(uin, partnerId);
+			mosipLogger.info("CRED_TOKEN_GEN", "CredentialServiceManager.sendUinEventsToCredService",
+					"Generating token for UIN",
+					"uin=" + uin + ", partnerId=" + partnerId + ", token=" + token);
 			return createCredReqDto(uin, partnerId, expiryTimestamp, null, token,
 					securityManager.getIdHashAndAttributesWithSaltModuloByPlainIdHash(uin, saltRetreivalFunction), requestId);
 		}).collect(Collectors.toList()));
@@ -395,6 +398,9 @@ public class CredentialServiceManager {
 				LocalDateTime vidExpiryTime = Objects.isNull(expiryTimestamp) ? vidInfoDTO.getExpiryTimestamp() : expiryTimestamp;
 				return partnerIds.stream().map(partnerId -> {
 					String token = tokenIDGenerator.generateTokenID(uin, partnerId);
+					mosipLogger.info("CRED_TOKEN_GEN", "CredentialServiceManager.sendUinEventsToCredService",
+							"Generating token for UIN via VID",
+							"uin=" + uin + ", partnerId=" + partnerId + ", vid=" + vidInfoDTO.getVid() + ", token=" + token);
 					return createCredReqDto(vidInfoDTO.getVid(), partnerId, vidExpiryTime, vidInfoDTO.getTransactionLimit(),
 							token, vidInfoDTO.getHashAttributes());
 				});
@@ -408,6 +414,9 @@ public class CredentialServiceManager {
 			List<CredentialIssueRequestDto> handleRequests = handleList.stream().flatMap(handleInfoDTO -> {
 				return partnerIds.stream().map(partnerId -> {
 					String token = tokenIDGenerator.generateTokenID(uin, partnerId);
+					mosipLogger.info("CRED_TOKEN_GEN", "CredentialServiceManager.sendUinEventsToCredService",
+							"Generating token for UIN via Handle",
+							"uin=" + uin + ", partnerId=" + partnerId + ", handle=" + handleInfoDTO.getHandle() + ", token=" + token);
 					//Given requestId and the handle value is hashed together to generate a unique requestId for handle credential.
 					//Credential issuance status check systems should generate the handle requestId in the same way to get latest issuance status.
 					//String handleRequestId = requestId.concat(handleInfoDTO.getHandle());
@@ -441,6 +450,9 @@ public class CredentialServiceManager {
 					: DateUtils.getUTCCurrentDateTime();
 			return partnerIds.stream().map(partnerId -> {
 				String token = tokenIDGenerator.generateTokenID(uin, partnerId);
+				mosipLogger.info("CRED_TOKEN_GEN", "CredentialServiceManager.sendVidEventsToCredService",
+						"Generating token for VID",
+						"uin=" + uin + ", partnerId=" + partnerId + ", vid=" + vid.getVid() + ", token=" + token);
 				return createCredReqDto(vid.getVid(), partnerId, expiryTimestamp, vid.getTransactionLimit(), token,
 						securityManager.getIdHashAndAttributesWithSaltModuloByPlainIdHash(vid.getVid(), saltRetreivalFunction));
 			});
