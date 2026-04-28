@@ -136,7 +136,7 @@ public class CredentialProvider {
 	VariableResolverFactory functionFactory;
 
 	@Autowired
-	RestUtil restUtil;
+	private IdrepositaryUtil idrepositaryUtil;
 
 	@Value("${credential.service.dob.format}")
 	private String dobFormat;
@@ -414,23 +414,7 @@ public class CredentialProvider {
 						// Make a separate raw fetch (no extraction format) so we always get the
 						// original CBEFF regardless of what extraction formats were used for other
 						// biometric attributes in the main credential request.
-						List<String> pathsegments = new ArrayList<>();
-						pathsegments.add(credentialServiceRequestDto.getId());
-
-						String responseString = restUtil.getApi(ApiName.IDREPOGETIDBYID, pathsegments, "type", "all", String.class);
-						IdResponseDTO responseObject = mapper.readValue(responseString, IdResponseDTO.class);
-
-						if (responseObject == null) {
-							LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
-									CredentialServiceErrorCodes.IPREPO_EXCEPTION.getErrorMessage());
-							throw new IdRepoException();
-						}
-						if (responseObject.getErrors() != null && !responseObject.getErrors().isEmpty()) {
-							ServiceError error = responseObject.getErrors().get(0);
-							LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
-									error.getMessage());
-							throw new IdRepoException(error.getMessage());
-						}
+						IdResponseDTO responseObject = idrepositaryUtil.getData(credentialServiceRequestDto, null);
 
 						String rawBiometrics = null;
 						for (DocumentsDTO doc : responseObject.getResponse().getDocuments()) {
