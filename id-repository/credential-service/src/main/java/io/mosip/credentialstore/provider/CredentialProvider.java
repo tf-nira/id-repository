@@ -103,7 +103,6 @@ public class CredentialProvider {
 
 	private static final String PHOTO = "photo";
 
-	private static final String FACE_RAW_IMAGE = "faceRawImage";
 
 	private static final String DEFAULT = "default";
 
@@ -482,7 +481,7 @@ public class CredentialProvider {
 	}
 
 	private boolean isFaceRawImageAttribute(String attrName) {
-		return FACE_RAW_IMAGE.equalsIgnoreCase(attrName);
+		return CredentialConstants.FACE_RAW_IMAGE.equalsIgnoreCase(attrName);
 	}
 
 	private boolean isAttributeInProperty(String attrName, String propName, String defaultValue) {

@@ -119,7 +119,11 @@ public class IdAuthProvider extends CredentialProvider {
 					zkDataAttribute.setIdentifier(attributeName);
 					zkDataAttribute.setValue(valueStr);
 					if (allowedKycDto.getGroup() != null
-							&& allowedKycDto.getGroup().equalsIgnoreCase(CredentialConstants.CBEFF)) {
+							&& allowedKycDto.getGroup().equalsIgnoreCase(CredentialConstants.CBEFF)
+							&& !CredentialConstants.FACE_RAW_IMAGE.equalsIgnoreCase(attributeName)) {
+						// faceRawImage is group=CBEFF (so it goes through biometric extraction in
+						// CredentialProvider) but its value is raw BDB bytes, not a CBEFF XML document,
+						// so it must NOT be passed to splitCbeff. Encrypt it as a demo attribute instead.
 						bioZkDataAttributes.addAll(splitCbeff(zkDataAttribute.getValue()));
 					} else {
 						demoZkDataAttributes.add(zkDataAttribute);
