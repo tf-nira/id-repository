@@ -1,4 +1,4 @@
-## id-repository-credentials-feeder
+## id-repository-credentials-feeder.
 
 Credentials Feeder Job is a one-time job which is run to request credentials for the specified list of partners. The partner list is specified as VM argument as comma separated partner IDs.
 
