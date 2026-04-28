@@ -40,6 +40,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import io.mosip.credentialstore.constants.*;
+import io.mosip.credentialstore.exception.IdRepoException;
+import io.mosip.credentialstore.util.*;
+import io.mosip.kernel.core.exception.ServiceError;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -55,10 +59,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.mosip.credentialstore.constants.CredentialConstants;
-import io.mosip.credentialstore.constants.JsonConstants;
-import io.mosip.credentialstore.constants.LoggerFileConstant;
-import io.mosip.credentialstore.constants.Position;
 import io.mosip.credentialstore.dto.AllowedKycDto;
 import io.mosip.credentialstore.dto.BestFingerDto;
 import io.mosip.credentialstore.dto.DataProviderResponse;
@@ -70,10 +70,6 @@ import io.mosip.credentialstore.dto.Source;
 import io.mosip.credentialstore.exception.ApiNotAccessibleException;
 import io.mosip.credentialstore.exception.CredentialFormatterException;
 import io.mosip.credentialstore.exception.DataEncryptionFailureException;
-import io.mosip.credentialstore.util.EncryptionUtil;
-import io.mosip.credentialstore.util.JsonUtil;
-import io.mosip.credentialstore.util.Utilities;
-import io.mosip.credentialstore.util.VIDUtil;
 import io.mosip.idrepository.core.builder.IdentityIssuanceProfileBuilder;
 import io.mosip.idrepository.core.dto.CardDetailDto;
 import io.mosip.idrepository.core.dto.CredentialServiceRequestDto;
@@ -85,10 +81,13 @@ import io.mosip.idrepository.core.dto.VidResponseDTO;
 import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.core.util.EnvUtil;
+import io.mosip.kernel.biometrics.constant.BiometricFunction;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.entities.BDBInfo;
 import io.mosip.kernel.biometrics.entities.BIR;
 import io.mosip.kernel.biometrics.spi.CbeffUtil;
+import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
+import io.mosip.kernel.biosdk.provider.spi.iBioProviderApi;
 import io.mosip.kernel.core.exception.ExceptionUtils;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
@@ -103,6 +102,8 @@ import io.mosip.kernel.core.util.DateUtils;
 public class CredentialProvider {
 
 	private static final String PHOTO = "photo";
+
+	private static final String FACE_RAW_IMAGE = "faceRawImage";
 
 	private static final String DEFAULT = "default";
 
@@ -127,9 +128,15 @@ public class CredentialProvider {
 	@Autowired
 	VIDUtil vidUtil;
 
+	@Autowired
+	private BioAPIFactory bioApiFactory;
+
 	@Autowired(required = true)
 	@Qualifier("varres")
 	VariableResolverFactory functionFactory;
+
+	@Autowired
+	RestUtil restUtil;
 
 	@Value("${credential.service.dob.format}")
 	private String dobFormat;
@@ -403,7 +410,54 @@ public class CredentialProvider {
 					}
 				}
 				if (individualBiometricsValue != null) {
-					if ((key.getFormat() != null)
+					if (isFaceRawImageAttribute(key.getAttributeName())) {
+						// Make a separate raw fetch (no extraction format) so we always get the
+						// original CBEFF regardless of what extraction formats were used for other
+						// biometric attributes in the main credential request.
+						List<String> pathsegments = new ArrayList<>();
+						pathsegments.add(credentialServiceRequestDto.getId());
+
+						String responseString = restUtil.getApi(ApiName.IDREPOGETIDBYID, pathsegments, "type", "all", String.class);
+						IdResponseDTO responseObject = mapper.readValue(responseString, IdResponseDTO.class);
+
+						if (responseObject == null) {
+							LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
+									CredentialServiceErrorCodes.IPREPO_EXCEPTION.getErrorMessage());
+							throw new IdRepoException();
+						}
+						if (responseObject.getErrors() != null && !responseObject.getErrors().isEmpty()) {
+							ServiceError error = responseObject.getErrors().get(0);
+							LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
+									error.getMessage());
+							throw new IdRepoException(error.getMessage());
+						}
+
+						String rawBiometrics = null;
+						for (DocumentsDTO doc : responseObject.getResponse().getDocuments()) {
+							if (doc.getCategory().equals(CredentialConstants.INDIVIDUAL_BIOMETRICS)) {
+								rawBiometrics = doc.getValue();
+								break;
+							}
+						}
+
+						if (rawBiometrics != null) {
+							BIR faceBir = extractFaceBir(rawBiometrics, key);
+							if (faceBir != null) {
+								iBioProviderApi bioProvider = bioApiFactory.getBioProvider(
+										BiometricType.FACE, BiometricFunction.EXTRACT);
+								// null extractionFormats → SDK applies its own default compression
+								List<BIR> compressedBirs = bioProvider.extractTemplate(
+										Collections.singletonList(faceBir), null);
+								if (compressedBirs != null && !compressedBirs.isEmpty()
+										&& compressedBirs.get(0) != null
+										&& compressedBirs.get(0).getBdb() != null) {
+									String compressedFaceImage = CryptoUtil.encodeToURLSafeBase64(
+											compressedBirs.get(0).getBdb());
+									attributesMap.put(key, compressedFaceImage);
+								}
+							}
+						}
+					} else if ((key.getFormat() != null)
 							&& CredentialConstants.BESTTWOFINGERS.equalsIgnoreCase(key.getFormat())) {
 						List<BestFingerDto> bestFingerList = getBestTwoFingers(individualBiometricsValue, key);
 						if (!bestFingerList.isEmpty()) {
@@ -441,7 +495,11 @@ public class CredentialProvider {
 	private boolean isPhotoAttribute(String attrName) {
 		return isAttributeInProperty(attrName, CREDENTIAL_PHOTO_ATTRIBUTE_NAMES, PHOTO);
 	}
-	
+
+	private boolean isFaceRawImageAttribute(String attrName) {
+		return FACE_RAW_IMAGE.equalsIgnoreCase(attrName);
+	}
+
 	private boolean isAttributeInProperty(String attrName, String propName, String defaultValue) {
 		return Stream.of(env.getProperty(propName, "").split(","))
 				.anyMatch(attrName::equalsIgnoreCase);
@@ -462,7 +520,7 @@ public class CredentialProvider {
 		AllowedKycDto allowedKycDto = new AllowedKycDto();
 		allowedKycDto.setAttributeName(attrName);
 		Source source = new Source();
-		if (isPhotoAttribute(attrName)) {
+		if (isPhotoAttribute(attrName) || isFaceRawImageAttribute(attrName)) {
 			allowedKycDto.setGroup(CredentialConstants.CBEFF);
 			source.setAttribute(CredentialConstants.INDIVIDUAL_BIOMETRICS);
 			Filter filter = new Filter();
@@ -632,6 +690,32 @@ public class CredentialProvider {
 			return individualBiometricsValue;
 		}
 
+	}
+
+	/**
+	 * Locate and return the face {@link BIR} from a base64url-encoded CBEFF
+	 * document. Policy source filters (type / subtype) are honoured via
+	 * {@link #filterBiometric}. Returns {@code null} if no face BIR is found.
+	 */
+	private BIR extractFaceBir(String individualBiometricsValue, AllowedKycDto key) throws Exception {
+		// Apply policy-defined type/subtype filters first.
+		String filteredCbeff = filterBiometric(individualBiometricsValue, key);
+		if (filteredCbeff == null) {
+			return null;
+		}
+		List<BIR> birList = cbeffutil.getBIRDataFromXML(CryptoUtil.decodeURLSafeBase64(filteredCbeff));
+		for (BIR bir : birList) {
+			if (bir == null || bir.getBdbInfo() == null
+					|| bir.getBdbInfo().getType() == null
+					|| bir.getBdbInfo().getType().isEmpty()) {
+				continue;
+			}
+			if (BiometricType.FACE.value().equalsIgnoreCase(bir.getBdbInfo().getType().get(0).value())
+					&& bir.getBdb() != null) {
+				return bir;
+			}
+		}
+		return null;
 	}
 
 	/**
