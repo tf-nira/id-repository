@@ -414,7 +414,8 @@ public class CredentialProvider {
 						// Make a separate raw fetch (no extraction format) so we always get the
 						// original CBEFF regardless of what extraction formats were used for other
 						// biometric attributes in the main credential request.
-						IdResponseDTO responseObject = idrepositaryUtil.getData(credentialServiceRequestDto, null);
+						// Empty map → no extraction formats sent → ID repo returns raw CBEFF biometrics
+					IdResponseDTO responseObject = idrepositaryUtil.getData(credentialServiceRequestDto, Collections.emptyMap());
 
 						String rawBiometrics = null;
 						for (DocumentsDTO doc : responseObject.getResponse().getDocuments()) {
