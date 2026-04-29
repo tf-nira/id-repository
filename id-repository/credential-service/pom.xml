@@ -202,9 +202,9 @@
 			<version>2.12.0</version>
 		</dependency>
 		<dependency>
-			<groupId>io.mosip.kernel</groupId>
-			<artifactId>kernel-biosdk-provider</artifactId>
-			<version>1.2.0.1</version>
+			<groupId>io.mosip.image.compressor</groupId>
+			<artifactId>image-compressor</artifactId>
+			<version>0.0.9</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
