@@ -43,6 +43,7 @@ import javax.annotation.PostConstruct;
 import io.mosip.credentialstore.constants.*;
 import io.mosip.credentialstore.exception.IdRepoException;
 import io.mosip.credentialstore.util.*;
+import io.mosip.image.compressor.sdk.impl.ImageCompressorSDKV2;
 import io.mosip.kernel.core.exception.ServiceError;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONArray;
@@ -81,13 +82,10 @@ import io.mosip.idrepository.core.dto.VidResponseDTO;
 import io.mosip.idrepository.core.logger.IdRepoLogger;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.core.util.EnvUtil;
-import io.mosip.kernel.biometrics.constant.BiometricFunction;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.entities.BDBInfo;
 import io.mosip.kernel.biometrics.entities.BIR;
 import io.mosip.kernel.biometrics.spi.CbeffUtil;
-import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
-import io.mosip.kernel.biosdk.provider.spi.iBioProviderApi;
 import io.mosip.kernel.core.exception.ExceptionUtils;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
@@ -126,9 +124,6 @@ public class CredentialProvider {
 
 	@Autowired
 	VIDUtil vidUtil;
-
-	@Autowired
-	private BioAPIFactory bioApiFactory;
 
 	@Autowired(required = true)
 	@Qualifier("varres")
@@ -414,7 +409,7 @@ public class CredentialProvider {
 						// original CBEFF regardless of what extraction formats were used for other
 						// biometric attributes in the main credential request.
 						// Empty map → no extraction formats sent → ID repo returns raw CBEFF biometrics
-					IdResponseDTO responseObject = idrepositaryUtil.getData(credentialServiceRequestDto, Collections.emptyMap());
+						IdResponseDTO responseObject = idrepositaryUtil.getData(credentialServiceRequestDto, Collections.emptyMap());
 
 						String rawBiometrics = null;
 						for (DocumentsDTO doc : responseObject.getResponse().getDocuments()) {
@@ -427,21 +422,22 @@ public class CredentialProvider {
 						if (rawBiometrics != null) {
 							BIR faceBir = extractFaceBir(rawBiometrics, key);
 							if (faceBir != null) {
-								iBioProviderApi bioProvider = bioApiFactory.getBioProvider(
-										BiometricType.FACE, BiometricFunction.EXTRACT);
+								// Wrap the BIR in a BiometricRecord and call the SDK with the correct IBioApiV2 signature
+								ImageCompressorSDKV2 imageCompressor = new ImageCompressorSDKV2();
+								io.mosip.kernel.biometrics.entities.BiometricRecord biometricRecord = new io.mosip.kernel.biometrics.entities.BiometricRecord();
+								biometricRecord.setSegments(Collections.singletonList(faceBir));
 
-								LOGGER.info("BioProvider class name: " + bioProvider.getClass());
-								LOGGER.info("BioProvider class name: " + bioProvider.getClass().toString());
+								io.mosip.kernel.biometrics.model.Response<io.mosip.kernel.biometrics.entities.BiometricRecord> response = imageCompressor.extractTemplate(biometricRecord,
+												Collections.singletonList(BiometricType.FACE), null);
 
-								// null extractionFormats → SDK applies its own default compression
-								List<BIR> compressedBirs = bioProvider.extractTemplate(
-										Collections.singletonList(faceBir), null);
-								if (compressedBirs != null && !compressedBirs.isEmpty()
-										&& compressedBirs.get(0) != null
-										&& compressedBirs.get(0).getBdb() != null) {
-									String compressedFaceImage = CryptoUtil.encodeToURLSafeBase64(
-											compressedBirs.get(0).getBdb());
-									attributesMap.put(key, compressedFaceImage);
+								if (response != null && response.getResponse() != null) {
+									List<BIR> compressedBirs = response.getResponse().getSegments();
+									if (compressedBirs != null && !compressedBirs.isEmpty()
+											&& compressedBirs.get(0) != null
+											&& compressedBirs.get(0).getBdb() != null) {
+										String compressedFaceImage = CryptoUtil.encodeToURLSafeBase64(compressedBirs.get(0).getBdb());
+										attributesMap.put(key, compressedFaceImage);
+									}
 								}
 							}
 						}
