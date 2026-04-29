@@ -430,7 +430,8 @@ public class CredentialProvider {
 								iBioProviderApi bioProvider = bioApiFactory.getBioProvider(
 										BiometricType.FACE, BiometricFunction.EXTRACT);
 
-								LOGGER.info("BioProvider class name: ", bioProvider.getClass());
+								LOGGER.info("BioProvider class name: " + bioProvider.getClass());
+								LOGGER.info("BioProvider class name: " + bioProvider.getClass().toString());
 
 								// null extractionFormats → SDK applies its own default compression
 								List<BIR> compressedBirs = bioProvider.extractTemplate(
