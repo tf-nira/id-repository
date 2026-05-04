@@ -119,7 +119,8 @@ public class IdAuthProvider extends CredentialProvider {
 					zkDataAttribute.setIdentifier(attributeName);
 					zkDataAttribute.setValue(valueStr);
 					if (allowedKycDto.getGroup() != null
-							&& allowedKycDto.getGroup().equalsIgnoreCase(CredentialConstants.CBEFF)) {
+							&& allowedKycDto.getGroup().equalsIgnoreCase(CredentialConstants.CBEFF)
+							&& !CredentialConstants.FACE_RAW_IMAGE.equalsIgnoreCase(attributeName)) {
 						bioZkDataAttributes.addAll(splitCbeff(zkDataAttribute.getValue()));
 					} else {
 						demoZkDataAttributes.add(zkDataAttribute);
