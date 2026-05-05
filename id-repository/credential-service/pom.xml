@@ -207,6 +207,12 @@
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
 			<version>2.12.0</version>
 		</dependency>
+		<dependency>
+			<groupId>io.mosip.image.compressor</groupId>
+			<artifactId>image-compressor</artifactId>
+			<version>0.0.9</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 	<repositories>
 		<repository>
