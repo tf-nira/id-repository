@@ -11,7 +11,8 @@ public class CredentialConstants {
 	public static final String ACTIVE_STATUS = "active";
 	
 	public static final String FACE = "face";
-	
+
+	public static final String FACE_RAW_IMAGE = "faceRawImage";
 	
 	public static final String FINGER = "finger";
 	
