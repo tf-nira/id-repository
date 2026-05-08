@@ -1,6 +1,7 @@
 package io.mosip.idrepository.credentialsfeeder.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.sql.DataSource;
 
@@ -74,6 +75,11 @@ public class CredentialsFeederConfig extends IdRepoDataSourceConfig {
 	    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 	    executor.setCorePoolSize(Math.floorDiv(EnvUtil.getActiveAsyncThreadCount(), 3));
 	    executor.setMaxPoolSize(EnvUtil.getActiveAsyncThreadCount());
+	    // Bound the task queue to prevent unbounded memory growth when WebSub publish
+	    // tasks accumulate faster than they are processed. CallerRunsPolicy provides
+	    // back-pressure by making the submitter run the task when the queue is full.
+	    executor.setQueueCapacity(EnvUtil.getActiveAsyncThreadCount());
+	    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 	    executor.setThreadNamePrefix("idauth-websub-");
 	    executor.setWaitForTasksToCompleteOnShutdown(true);
 	    executor.initialize();

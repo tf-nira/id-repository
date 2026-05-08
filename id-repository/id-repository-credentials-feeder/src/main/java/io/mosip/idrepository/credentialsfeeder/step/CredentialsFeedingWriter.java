@@ -48,7 +48,6 @@ import io.mosip.idrepository.core.repository.UinEncryptSaltRepo;
 import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.credentialsfeeder.entity.AuthtypeLock;
-import io.mosip.idrepository.credentialsfeeder.entity.Uin;
 import io.mosip.idrepository.credentialsfeeder.repository.AuthLockRepository;
 
 /**
@@ -59,7 +58,7 @@ import io.mosip.idrepository.credentialsfeeder.repository.AuthLockRepository;
  * @author Manoj SP
  */
 @Component
-public class CredentialsFeedingWriter implements ItemWriter<Uin> {
+public class CredentialsFeedingWriter implements ItemWriter<String> {
 
 	private static final String CREDENTIALS_FEEDER = "CREDENTIALS_FEEDER";
 
@@ -111,17 +110,18 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	private static final String SEND_REQUEST_TO_CRED_SERVICE = "sendRequestToCredService";
 	
 	/**
-	 * For each Uin in the list, decrypt it, and then issue a credential for it
-	 * 
-	 * @param requestIdEntities The list of Uin objects that are to be processed.
+	 * For each encrypted UIN string in the list, decrypt it and then issue a
+	 * credential for it.
+	 *
+	 * @param encryptedUins The list of encrypted UIN strings to be processed.
 	 */
 	@Override
-	public void write(List<? extends Uin> requestIdEntities) throws Exception {
+	public void write(List<? extends String> encryptedUins) throws Exception {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE START",
-				"Starting write for chunk | item count: " + requestIdEntities.size());
-		requestIdEntities.stream().map(this::decryptUin).forEach(this::issueCredential);
+				"Starting write for chunk | item count: " + encryptedUins.size());
+		encryptedUins.stream().map(this::decryptUin).forEach(this::issueCredential);
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE END",
-				"Write completed for chunk | item count: " + requestIdEntities.size());
+				"Write completed for chunk | item count: " + encryptedUins.size());
 	}
 
 	/**
@@ -236,24 +236,22 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	}
 
 	/**
-	 * It decrypts the UIN and returns the
-	 * decrypted UIN
-	 * 
-	 * @param entity The entity that you want to decrypt.
-	 * @return The decrypted UIN
+	 * It decrypts the encrypted UIN and returns the plain UIN.
+	 *
+	 * @param encryptedUin The encrypted UIN string to decrypt.
+	 * @return The decrypted plain UIN
 	 */
-	private String decryptUin(Uin entity) {
+	private String decryptUin(String encryptedUin) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "DECRYPT UIN",
-				"Decrypting UIN entity with createdDateTime: " + entity.getCreatedDateTime());
+				"Decrypting encrypted UIN");
 		try {
-			String decryptedUin = credentialStatusManager.decryptId(entity.getUin());
+			String decryptedUin = credentialStatusManager.decryptId(encryptedUin);
 			mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "DECRYPT UIN DONE",
-					"UIN decryption successful for entity with createdDateTime: " + entity.getCreatedDateTime());
+					"UIN decryption successful");
 			return decryptedUin;
 		} catch (IdRepoAppException e) {
 			mosipLogger.error(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "DECRYPT UIN ERROR",
-					"Failed to decrypt UIN for entity with createdDateTime: " + entity.getCreatedDateTime()
-							+ " | error: " + ExceptionUtils.getStackTrace(e));
+					"Failed to decrypt UIN | error: " + ExceptionUtils.getStackTrace(e));
 			throw new IdRepoAppUncheckedException(e.getErrorCode(), e.getErrorText(), e);
 		}
 	}
