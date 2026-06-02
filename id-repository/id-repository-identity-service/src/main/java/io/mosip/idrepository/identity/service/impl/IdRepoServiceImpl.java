@@ -549,6 +549,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 
+				// Extract and persist remark for Alien Cancellation packets
+				String remark = extractAlienCancellationRemark(mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class));
+				if (remark != null) {
+					uinObject.setRemark(remark);
+				}
+
 				if (Objects.nonNull(requestDTO.getDocuments()) && !requestDTO.getDocuments().isEmpty()) {
 					anonymousProfileHelper
 							.setNewCbeff(uinObject.getUinHash(),
@@ -568,7 +574,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.getUin(), uinObject.getUinHash(), uinObject.getUinData(), uinObject.getUinDataHash(),
 					uinObject.getRegId(), uinObject.getStatusCode(), IdRepoSecurityManager.getUser(),
 					DateUtils.getUTCCurrentDateTime(), IdRepoSecurityManager.getUser(),
-					DateUtils.getUTCCurrentDateTime(), false, null,uinObject.getPart1(),uinObject.getPart2(),uinObject.getPart3(),uinObject.getPart4()));
+					DateUtils.getUTCCurrentDateTime(), false, null, uinObject.getPart1(), uinObject.getPart2(), uinObject.getPart3(), uinObject.getPart4(), uinObject.getRemark()));
 
 			issueCredential(uinObject.getUin(), uinHashWithSalt, uinObject.getStatusCode(),
 					DateUtils.getUTCCurrentDateTime(), uinObject.getRegId());
@@ -584,7 +590,24 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
-	
+	private String extractAlienCancellationRemark(ObjectNode identityObject) {
+		try {
+			JsonNode userServiceType = identityObject.get("userServiceType");
+			if (userServiceType != null && userServiceType.isArray() && userServiceType.size() > 0) {
+				String serviceTypeValue = userServiceType.get(0).path("value").asText("");
+				if ("Alien Deactivated".equalsIgnoreCase(serviceTypeValue)) {
+					JsonNode remarkNode = identityObject.get("remark");
+					if (remarkNode != null && !remarkNode.isNull()) {
+						return remarkNode.asText();
+					}
+				}
+			}
+		} catch (Exception e) {
+			mosipLogger.warn(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL,
+					"extractAlienCancellationRemark", "Could not extract remark: " + e.getMessage());
+		}
+		return null;
+	}
 
 	private void saveCardDetails(RequestDTO requestDTO) {
 		ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);

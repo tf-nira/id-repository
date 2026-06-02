@@ -38,6 +38,7 @@ CREATE TABLE idrepo.uin_h(
 	part2 character varying(64) NOT NULL,
 	part3 character varying(64) NOT NULL,
 	part4 character varying(64) NOT NULL,
+	remark text,
 	CONSTRAINT pk_uinh PRIMARY KEY (uin_ref_id,eff_dtimes),
 	CONSTRAINT uk_uinh UNIQUE (uin,eff_dtimes)
 

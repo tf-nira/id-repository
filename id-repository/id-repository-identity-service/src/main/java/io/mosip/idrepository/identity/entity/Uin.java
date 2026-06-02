@@ -42,6 +42,14 @@ public class Uin implements Persistable<String>, UinInfo {
 			String statusCode, String createdBy, LocalDateTime createdDateTime,
 			String updatedBy, LocalDateTime updatedDateTime, Boolean isDeleted, LocalDateTime deletedDateTime,
 			List<UinBiometric> biometrics, List<UinDocument> documents,String part1,String part2,String part3 ,String part4) {
+		this(uinRefId, uin, uinHash, uinData, uinDataHash, regId, statusCode, createdBy, createdDateTime,
+				updatedBy, updatedDateTime, isDeleted, deletedDateTime, biometrics, documents, part1, part2, part3, part4, null);
+	}
+
+	public Uin(String uinRefId, String uin, String uinHash, byte[] uinData, String uinDataHash, String regId,
+			String statusCode, String createdBy, LocalDateTime createdDateTime,
+			String updatedBy, LocalDateTime updatedDateTime, Boolean isDeleted, LocalDateTime deletedDateTime,
+			List<UinBiometric> biometrics, List<UinDocument> documents, String part1, String part2, String part3, String part4, String remark) {
 		this.uinRefId = uinRefId;
 		this.uin = uin;
 		this.uinHash = uinHash;
@@ -61,6 +69,7 @@ public class Uin implements Persistable<String>, UinInfo {
 		this.part2=part2;
 		this.part3=part3;
 		this.part4=part4;
+		this.remark = remark;
 	}
 
 	/** The uin ref id. */
@@ -136,6 +145,10 @@ public class Uin implements Persistable<String>, UinInfo {
 	
 	@Column(name = "part4")
 	private String part4;
+
+	/** The remark: populated for Alien Cancellation packets only. */
+	@Column(name = "remark")
+	private String remark;
 
 	/**
 	 * Gets the uin data.
