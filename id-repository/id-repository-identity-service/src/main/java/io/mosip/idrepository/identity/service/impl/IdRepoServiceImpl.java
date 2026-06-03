@@ -596,9 +596,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			if (userServiceType != null && userServiceType.isArray() && userServiceType.size() > 0) {
 				String serviceTypeValue = userServiceType.get(0).path("value").asText("");
 				if ("Alien Deactivated".equalsIgnoreCase(serviceTypeValue)) {
-					JsonNode remarkNode = identityObject.get("alienRemarks");
-					if (remarkNode != null && !remarkNode.isNull()) {
-						return remarkNode.asText();
+					JsonNode remarkArray = identityObject.get("remark");
+					if (remarkArray != null && remarkArray.isArray() && remarkArray.size() > 0) {
+						String remarkValue = remarkArray.get(0).path("value").asText(null);
+						if (StringUtils.isNotBlank(remarkValue)) {
+							return remarkValue;
+						}
 					}
 				}
 			}
