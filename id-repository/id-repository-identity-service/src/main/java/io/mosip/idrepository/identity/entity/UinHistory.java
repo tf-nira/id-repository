@@ -48,9 +48,7 @@ public class UinHistory implements UinInfo, Persistable<String> {
 	 * @param uinData the uin data
 	 * @param uinDataHash the uin data hash
 	 * @param regId the reg id
-	 * @param bioRefId the bio ref id
 	 * @param statusCode the status code
-	 * @param langCode the lang code
 	 * @param createdBy the created by
 	 * @param createdDateTime the created date time
 	 * @param updatedBy the updated by
@@ -62,6 +60,14 @@ public class UinHistory implements UinInfo, Persistable<String> {
 			String uinDataHash, String regId, String statusCode, String createdBy,
 			LocalDateTime createdDateTime, String updatedBy, LocalDateTime updatedDateTime, Boolean isDeleted,
 			LocalDateTime deletedDateTime,String part1,String part2,String part3,String part4) {
+		this(uinRefId, effectiveDateTime, uin, uinHash, uinData, uinDataHash, regId, statusCode, createdBy,
+				createdDateTime, updatedBy, updatedDateTime, isDeleted, deletedDateTime, part1, part2, part3, part4, null);
+	}
+
+	public UinHistory(String uinRefId, LocalDateTime effectiveDateTime, String uin, String uinHash, byte[] uinData,
+					  String uinDataHash, String regId, String statusCode, String createdBy,
+					  LocalDateTime createdDateTime, String updatedBy, LocalDateTime updatedDateTime, Boolean isDeleted,
+					  LocalDateTime deletedDateTime, String part1, String part2, String part3, String part4, String remark) {
 		this.uinRefId = uinRefId;
 		this.effectiveDateTime = effectiveDateTime;
 		this.uin = uin;
@@ -80,6 +86,7 @@ public class UinHistory implements UinInfo, Persistable<String> {
 		this.part2=part2;
 		this.part3=part3;
 		this.part4=part4;
+		this.remark = remark;
 	}
 
 	/** The uin ref id. */
@@ -153,6 +160,10 @@ public class UinHistory implements UinInfo, Persistable<String> {
 	
 	@Column(name = "part4")
 	private String part4;
+
+	/** The remark: populated for Alien Cancellation packets only. */
+	@Column(name = "remark")
+	private String remark;
 
 	/**
 	 * Gets the uin data.
