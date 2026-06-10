@@ -78,9 +78,9 @@ public class CredentialStatusManager {
 	private DummyPartnerCheckUtil dummyPartner;
 		
 	public void triggerEventNotifications() {
-		// handleDeletedRequests();
-		// handleExpiredRequests();
-		// handleNewOrUpdatedRequests();
+//		handleDeletedRequests();
+//		handleExpiredRequests();
+//		handleNewOrUpdatedRequests();
 	}
 
 	private void handleDeletedRequests() {
