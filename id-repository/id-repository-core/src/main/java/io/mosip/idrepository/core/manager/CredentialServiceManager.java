@@ -215,7 +215,7 @@ public class CredentialServiceManager {
 
 			if ((status != null && isUpdate) && (!ACTIVATED.equals(status) || expiryTimestamp != null)) {
 				// Event to be sent to IDA for deactivation/blocked uin state
-				sendUINEventToIDA(uin, expiryTimestamp, status, vidInfoDtos, partnerIds, txnId,
+				sendUINEventToIDA(uin, expiryTimestamp, status, vidInfoDtos, getHandles(uin, saltRetreivalFunction), partnerIds, txnId,
 						id -> securityManager.getIdHashWithSaltModuloByPlainIdHash(id, saltRetreivalFunction), idaEventModelConsumer);
 			} else {
 				// For create uin, or update uin with null expiry (active status), send event to
@@ -273,7 +273,7 @@ public class CredentialServiceManager {
 	 * @param getIdHashFunction     the get id hash function
 	 * @param idaEventModelConsumer
 	 */
-	private void sendUINEventToIDA(String uin, LocalDateTime expiryTimestamp, String status, List<VidInfoDTO> vidInfoDtos,
+	private void sendUINEventToIDA(String uin, LocalDateTime expiryTimestamp, String status, List<VidInfoDTO> vidInfoDtos, List<HandleInfoDTO> handleList,
 								   List<String> partnerIds, String txnId, UnaryOperator<String> getIdHashFunction,
 								   Consumer<EventModel> idaEventModelConsumer) {
 		List<EventModel> eventList = new ArrayList<>();
@@ -286,6 +286,15 @@ public class CredentialServiceManager {
 			List<EventModel> idaEvents = vidInfoDtos.stream()
 					.flatMap(vidInfoDTO -> createIdaEventModel(eventType, expiryTimestamp,
 							vidInfoDTO.getTransactionLimit(), partnerIds, txnId, vidInfoDTO.getHashAttributes().get(IdRepoConstants.ID_HASH)))
+					.collect(Collectors.toList());
+			eventList.addAll(idaEvents);
+		}
+
+		if(handleList != null && !handleList.isEmpty()) {
+			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "sendUINEventToIDA",
+					"Number of handles identified >> " + handleList.size());
+			List<EventModel> idaEvents = handleList.stream().flatMap(handleInfoDTO -> createIdaEventModel(eventType, expiryTimestamp,
+					null, partnerIds, txnId, getIdHashFunction.apply(handleInfoDTO.getHandle())))
 					.collect(Collectors.toList());
 			eventList.addAll(idaEvents);
 		}
