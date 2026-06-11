@@ -565,8 +565,8 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 
-				// Extract and persist remark for Alien Cancellation packets
-				String remark = extractAlienCancellationRemark(mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class));
+				// Extract and persist remark
+				String remark = extractRemark(mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class));
 				if (remark != null) {
 					uinObject.setRemark(remark);
 				}
@@ -610,24 +610,18 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
-	private String extractAlienCancellationRemark(ObjectNode identityObject) {
+	private String extractRemark(ObjectNode identityObject) {
 		try {
-			JsonNode userServiceType = identityObject.get("userServiceType");
-			if (userServiceType != null && userServiceType.isArray() && userServiceType.size() > 0) {
-				String serviceTypeValue = userServiceType.get(0).path("value").asText("");
-				if ("Alien Deactivated".equalsIgnoreCase(serviceTypeValue)) {
-					JsonNode remarkArray = identityObject.get("alienRemarks");
-					if (remarkArray != null && remarkArray.isArray() && remarkArray.size() > 0) {
-						String remarkValue = remarkArray.get(0).path("value").asText(null);
-						if (StringUtils.isNotBlank(remarkValue)) {
-							return remarkValue;
-						}
-					}
+			JsonNode remarkArray = identityObject.get("alienRemarks");
+			if (remarkArray != null && remarkArray.isArray() && remarkArray.size() > 0) {
+				String remarkValue = remarkArray.get(0).path("value").asText(null);
+				if (StringUtils.isNotBlank(remarkValue)) {
+					return remarkValue;
 				}
 			}
 		} catch (Exception e) {
 			mosipLogger.warn(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL,
-					"extractAlienCancellationRemark", "Could not extract remark: " + e.getMessage());
+					"extractRemark", "Could not extract remark: " + e.getMessage());
 		}
 		return null;
 	}
