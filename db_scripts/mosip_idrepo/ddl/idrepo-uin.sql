@@ -37,6 +37,7 @@ CREATE TABLE idrepo.uin(
 	part2 character varying(64) NOT NULL,
 	part3 character varying(64) NOT NULL,
 	part4 character varying(64) NOT NULL,
+    remark text,
 	CONSTRAINT pk_uin PRIMARY KEY (uin_ref_id),
 	CONSTRAINT uk_uin UNIQUE (uin),
 	CONSTRAINT uk_uin_reg_id UNIQUE (reg_id),
