@@ -600,7 +600,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 	private String extractRemark(ObjectNode identityObject) {
 		try {
-			JsonNode remarkArray = identityObject.get("alienRemarks");
+			JsonNode remarkArray = identityObject.get("remark");
 			if (remarkArray != null && remarkArray.isArray() && remarkArray.size() > 0) {
 				String remarkValue = remarkArray.get(0).path("value").asText(null);
 				if (StringUtils.isNotBlank(remarkValue)) {
