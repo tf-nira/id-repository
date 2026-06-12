@@ -560,7 +560,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				// Extract and persist remark
 				String remark = extractRemark(mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class));
 				if (remark != null) {
-					uinObject.setRemark(remark);
+					String existingRemark = uinObject.getRemark();
+					if (existingRemark != null && !existingRemark.trim().isEmpty() && StringUtils.isNotBlank(existingRemark)) {
+						uinObject.setRemark(existingRemark + " | " + remark);
+					} else {
+						uinObject.setRemark(remark);
+					}
 				}
 
 				if (Objects.nonNull(requestDTO.getDocuments()) && !requestDTO.getDocuments().isEmpty()) {
