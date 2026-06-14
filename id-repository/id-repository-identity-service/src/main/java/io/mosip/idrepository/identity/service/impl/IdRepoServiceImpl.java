@@ -551,15 +551,8 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 				// Extract and persist remark
 				String remark = extractRemark(mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class));
-				mosipLogger.info("Getting remark value - packetData: " + remark);
-				mosipLogger.info("Before Updating remark - dbData: " + uinObject.getRemark());
-				if (remark != null && !remark.trim().isEmpty()) {
-					String existingRemark = uinObject.getRemark();
-					if (existingRemark != null && !existingRemark.trim().isEmpty()) {
-						uinObject.setRemark(existingRemark + " | " + remark);
-					} else {
-						uinObject.setRemark(remark);
-					}
+				if (remark != null) {
+					uinObject.setRemark(remark);
 				}
 				mosipLogger.info("After Updating remark - dbData: " + uinObject.getRemark());
 
