@@ -90,6 +90,11 @@ public class CredentialServiceManager {
 
 	/** The Constant AUTH. */
 	private static final String AUTH = "auth";
+	
+	/** The Constant PDFCard. */
+	private static final String PDF_CARD = "PDFCard";
+	
+	private static final String DIGITAL_CARD_PARTNER = "mpartner-default-digitalcard";
 
 	/** The Constant ACTIVE. */
 	private static final String ACTIVATED = "ACTIVATED";
@@ -118,6 +123,10 @@ public class CredentialServiceManager {
 	/** The credential type. */
 	@Value("${id-repo-ida-credential-type:" + AUTH + "}")
 	private String credentialType;
+	
+	/** The credential type for digital card partner. */
+	@Value("${id-repo-digital-card-credential-type:" + PDF_CARD + "}")
+	private String credentialTypeDigitalCard;
 
 	/** The credential recepiant. */
 	@Value("${id-repo-ida-credential-recepiant:" + IDA + "}")
@@ -541,7 +550,11 @@ public class CredentialServiceManager {
 		CredentialIssueRequestDto credentialIssueRequestDto = new CredentialIssueRequestDto();
 		credentialIssueRequestDto.setId(id);
 		credentialIssueRequestDto.setRequestId(requestId);
-		credentialIssueRequestDto.setCredentialType(credentialType);
+		if(partnerId.equalsIgnoreCase(DIGITAL_CARD_PARTNER)){
+			credentialIssueRequestDto.setCredentialType(credentialTypeDigitalCard);
+		} else {
+			credentialIssueRequestDto.setCredentialType(credentialType);
+		}
 		credentialIssueRequestDto.setIssuer(partnerId);
 		credentialIssueRequestDto.setRecepiant(credentialRecepiant);
 		credentialIssueRequestDto.setUser(IdRepoSecurityManager.getUser());
