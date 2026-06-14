@@ -554,8 +554,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				if (remark != null) {
 					uinObject.setRemark(remark);
 				}
-				mosipLogger.info("After Updating remark - dbData: " + uinObject.getRemark());
-
+				
 				if (Objects.nonNull(requestDTO.getDocuments()) && !requestDTO.getDocuments().isEmpty()) {
 					anonymousProfileHelper
 							.setNewCbeff(uinObject.getUinHash(),
