@@ -23,6 +23,7 @@ on:
       - nira_1.2.1
       - tf_nira_dev
       - tf_nira_dev_instance5
+      - temp_reissue_digital_card
 
 jobs:
   build-maven-id-repository:
