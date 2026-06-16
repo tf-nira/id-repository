@@ -322,21 +322,78 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			String userServiceType = identityObject.get("userServiceType") != null
 					? identityObject.get("userServiceType").asText()
 					: null;
+			mosipLogger.info("NIN : "+NIN);
+			mosipLogger.info(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_SERVICE_IMPL,
+					"constructCardExpiryDate",
+					"userServiceType : " + userServiceType
+			);
 			if ("Alien New Registration".equalsIgnoreCase(userServiceType) || "Renewal of Alien".equalsIgnoreCase(userServiceType)) {
 				String facilityTypeSubCategory = identityObject.get("facilityTypeSubCategory") != null
 						? identityObject.get("facilityTypeSubCategory").asText()
 						: null;
 
+				mosipLogger.info(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_SERVICE_IMPL,
+						"constructCardExpiryDate",
+						"facilityTypeSubCategory : " + facilityTypeSubCategory
+				);
+
 				if (!"Life".equalsIgnoreCase(facilityTypeSubCategory) && identityObject.get("dateOfExpiry") != null) {
 					String expiryDate = identityObject.get("dateOfExpiry").asText();
+
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Expiry date from identity : " + expiryDate
+					);
+
 					java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
 					cardExpiryDate = java.time.LocalDate.parse(expiryDate, formatter);
 					cardExpiryDate = cardExpiryDate.minusDays(1);
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Calculated cardExpiryDate : " + cardExpiryDate
+					);
+				} else {
+
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Skipping expiry calculation. facilityTypeSubCategory is Life or dateOfExpiry missing"
+					);
 				}
 			}
 			else if("Replacement of Alien".equalsIgnoreCase(userServiceType)){
+				mosipLogger.info(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_SERVICE_IMPL,
+						"constructCardExpiryDate",
+						"Processing Replacement of Alien"
+				);
 				if (uinObject != null && uinObject.getUinData() != null) {
 					cardExpiryDate = getCardExpiryDate(uinObject);
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Expiry date fetched from existing UIN : " + cardExpiryDate
+					);
+				}
+				else {
+
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"UIN object or uinData is null, cannot fetch expiry date"
+					);
 				}
 			}
 			CardDetail cardDetail = new CardDetail();
