@@ -617,6 +617,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			}
 			if (Objects.nonNull(request.getRequest()) && Objects.nonNull(request.getRequest().getIdentity())) {
 				RequestDTO requestDTO = request.getRequest();
+				mosipLogger.info(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_SERVICE_IMPL,
+						"requestDTO value at the start of updateIdentity method",
+						"requestDTO : " + requestDTO
+				);
 				Configuration configuration = Configuration.builder().jsonProvider(new JacksonJsonProvider())
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
