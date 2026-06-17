@@ -345,9 +345,18 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			mosipLogger.info("NIN : "+NIN);
 
 			if ("Alien New Registration".equalsIgnoreCase(userServiceType) || "Renewal of Alien".equalsIgnoreCase(userServiceType)) {
-				String facilityTypeSubCategory = identityObject.get("facilityTypeSubCategory") != null
-						? identityObject.get("facilityTypeSubCategory").asText()
-						: null;
+				String facilityTypeSubCategory = null;
+
+				JsonNode facilityTypeNode = identityObject.get("facilityTypeSubCategory");
+
+				if (facilityTypeNode != null && facilityTypeNode.isArray()) {
+					for (JsonNode node : facilityTypeNode) {
+						if ("eng".equalsIgnoreCase(node.get("language").asText())) {
+							facilityTypeSubCategory = node.get("value").asText();
+							break;
+						}
+					}
+				}
 
 				mosipLogger.info(
 						IdRepoSecurityManager.getUser(),
@@ -424,6 +433,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 	private java.time.LocalDate getCardExpiryDate(Uin uinObject) {
 
+		mosipLogger.info(
+				IdRepoSecurityManager.getUser(),
+				ID_REPO_SERVICE_IMPL,
+				"getCardExpiryDate",
+				"uinObject : " + uinObject
+		);
+
 		if (uinObject == null || uinObject.getUinData() == null) {
 			return null;
 		}
@@ -434,6 +450,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			String uinData = new String(
 					uinObject.getUinData(),
 					StandardCharsets.UTF_8
+			);
+
+			mosipLogger.info(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_SERVICE_IMPL,
+					"getCardExpiryDate",
+					"uinData : " + uinData
 			);
 
 			JsonNode identityNode = objectMapper.readTree(uinData);
