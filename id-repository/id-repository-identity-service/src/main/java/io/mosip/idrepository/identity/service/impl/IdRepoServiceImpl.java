@@ -621,7 +621,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						IdRepoSecurityManager.getUser(),
 						ID_REPO_SERVICE_IMPL,
 						"requestDTO value at the start of updateIdentity method",
-						"requestDTO : " + requestDTO
+						"requestDTO : " + requestDTO.getIdentity()
 				);
 				Configuration configuration = Configuration.builder().jsonProvider(new JacksonJsonProvider())
 						.mappingProvider(new JacksonMappingProvider()).build();
