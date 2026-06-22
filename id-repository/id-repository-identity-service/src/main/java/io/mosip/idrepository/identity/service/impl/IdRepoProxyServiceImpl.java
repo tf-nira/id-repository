@@ -795,7 +795,11 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignResidenceAddress().getValue());
 		}
-		if (enrolmentStatus != null && (enrolmentStatus.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
+		if (enrolmentStatus != null
+				&& enrolmentStatus.isArray()
+				&& !enrolmentStatus.isEmpty()
+				&& enrolmentStatus.get(0).hasNonNull("value")
+				&& OUTSIDEUGANDA.equalsIgnoreCase(enrolmentStatus.get(0).get("value").asText())) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantPlaceOfEnrolmentCounty().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
