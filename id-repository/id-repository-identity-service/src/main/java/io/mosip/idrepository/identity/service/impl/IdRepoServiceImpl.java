@@ -330,6 +330,73 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
 			cardExpiryDate = cardExpiryDate.minusDays(1);
+			String userServiceType = null;
+			JsonNode userServiceTypeNode = identityObject.get("userServiceType");
+
+			if (userServiceTypeNode != null && userServiceTypeNode.isArray()) {
+				for (JsonNode node : userServiceTypeNode) {
+					if ("eng".equalsIgnoreCase(node.get("language").asText())) {
+						userServiceType = node.get("value").asText();
+						break;
+					}
+				}
+			}
+			mosipLogger.info(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_SERVICE_IMPL,
+					"constructCardExpiryDate",
+					"userServiceType : " + userServiceType
+			);
+
+			if ("Alien New Registration".equalsIgnoreCase(userServiceType) || "Renewal of Alien".equalsIgnoreCase(userServiceType)) {
+				String facilityTypeSubCategory = null;
+
+				JsonNode facilityTypeNode = identityObject.get("facilityTypeSubCategory");
+
+				if (facilityTypeNode != null && facilityTypeNode.isArray()) {
+					for (JsonNode node : facilityTypeNode) {
+						if ("eng".equalsIgnoreCase(node.get("language").asText())) {
+							facilityTypeSubCategory = node.get("value").asText();
+							break;
+						}
+					}
+				}
+
+				mosipLogger.info(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_SERVICE_IMPL,
+						"constructCardExpiryDate",
+						"facilityTypeSubCategory : " + facilityTypeSubCategory
+				);
+
+				if (!"Life".equalsIgnoreCase(facilityTypeSubCategory) && identityObject.get("dateOfExpiry") != null) {
+					String expiryDate = identityObject.get("dateOfExpiry").asText();
+
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Expiry date from identity : " + expiryDate
+					);
+
+					java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+					cardExpiryDate = java.time.LocalDate.parse(expiryDate, formatter);
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Calculated cardExpiryDate : " + cardExpiryDate
+					);
+				} else {
+
+					mosipLogger.info(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_SERVICE_IMPL,
+							"constructCardExpiryDate",
+							"Skipping expiry calculation. facilityTypeSubCategory is Life or dateOfExpiry missing"
+					);
+				}
+			}
 			CardDetail cardDetail = new CardDetail();
 			cardDetail.setNin(ninHash);
 			cardDetail.setDateOfIssuance(Date.valueOf(cardIssuanceDate));
