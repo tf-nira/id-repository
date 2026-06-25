@@ -128,7 +128,14 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	public void write(List<? extends Uin> requestIdEntities) throws Exception {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "WRITE START",
 				"Starting write for chunk | item count: " + requestIdEntities.size());
-		requestIdEntities.stream().map(this::decryptUin).forEach(this::issueCredential);
+		//requestIdEntities.stream().map(this::decryptUin).forEach(this::issueCredential);
+		
+		requestIdEntities.stream()
+        .forEach(uinEntity -> {
+            String uin = decryptUin(uinEntity);
+            String regId = uinEntity.getRegId() + "-PDF";
+            issueCredential(uin, regId);
+        });
 		
 		if (!requestIdEntities.isEmpty()) {
 			LocalDateTime maxProcessedDate = requestIdEntities.stream()
@@ -156,11 +163,11 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * 
 	 * @param uin The Aadhaar number of the resident.
 	 */
-	private void issueCredential(String uin) {
+	private void issueCredential(String uin, String regId) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE CREDENTIAL START",
 				"Issuing UIN credential, VID credential and publishing auth-lock for UIN: "
 						+ uin);
-		issueUinCredential(uin);
+		issueUinCredential(uin, regId);
 		issueVidCredential(uin);
 		publishAuthLock(uin);
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE CREDENTIAL END",
@@ -172,7 +179,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 	 * 
 	 * @param uin The UIN of the resident
 	 */
-	private void issueUinCredential(String uin) {
+	private void issueUinCredential(String uin, String regId) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL",
 				"Sending UIN events to credential service"
 						+ " | partners: " + Arrays.toString(onlineVerificationPartnerIds)
@@ -189,7 +196,8 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 		};
 		credentialServiceManager.sendUinEventsToCredService(uin, null, false, null, getHandles(uin, uinHashSaltRepo::retrieveSaltById),
 				Arrays.asList(onlineVerificationPartnerIds), uinHashSaltRepo::retrieveSaltById,
-				loggingConsumer);
+				loggingConsumer,
+	            regId);
 		if (credentialCount.get() == 0) {
 			mosipLogger.warn(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE UIN CREDENTIAL WARNING",
 					"No UIN credentials were issued — disableUINBasedCredentialRequest may be true or vidInfoDtos/handleList are null. UIN: " + uin);
