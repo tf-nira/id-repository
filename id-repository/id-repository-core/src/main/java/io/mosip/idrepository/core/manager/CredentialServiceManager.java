@@ -382,6 +382,8 @@ public class CredentialServiceManager {
 										   List<VidInfoDTO> vidInfoDtos, List<HandleInfoDTO> handleList, List<String> partnerIds, IntFunction<String> saltRetreivalFunction,
 										   BiConsumer<CredentialIssueRequestWrapperDto, Map<String, Object>> credentialRequestResponseConsumer,String requestId) {
 		List<CredentialIssueRequestDto> eventRequestsList = new ArrayList<>();
+		mosipLogger.info("Valude for the flag disableUINBasedCredentialRequest is: {}", disableUINBasedCredentialRequest);
+		mosipLogger.info("Valude for the requestId is: {}", requestId);
 		if(!disableUINBasedCredentialRequest) {
 		eventRequestsList.addAll(partnerIds.stream().map(partnerId -> {
 			String token = tokenIDGenerator.generateTokenID(uin, partnerId);
@@ -391,6 +393,7 @@ public class CredentialServiceManager {
 		}
 
 		if (vidInfoDtos != null) {
+			mosipLogger.info("Inside vidInfoDtos block, vidInfoDtos : {}", vidInfoDtos);
 			List<CredentialIssueRequestDto> vidRequests = vidInfoDtos.stream().flatMap(vidInfoDTO -> {
 				LocalDateTime vidExpiryTime = Objects.isNull(expiryTimestamp) ? vidInfoDTO.getExpiryTimestamp() : expiryTimestamp;
 				return partnerIds.stream().map(partnerId -> {
@@ -403,6 +406,7 @@ public class CredentialServiceManager {
 		}
 
 		if(handleList != null && !handleList.isEmpty()) {
+			mosipLogger.info("Inside handleList block, handleList : {}", handleList);
 			mosipLogger.debug(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), "sendUinEventsToCredService",
 					"Number of handles identified >> " + handleList.size());
 			List<CredentialIssueRequestDto> handleRequests = handleList.stream().flatMap(handleInfoDTO -> {
@@ -418,7 +422,7 @@ public class CredentialServiceManager {
 			}).collect(Collectors.toList());
 			eventRequestsList.addAll(handleRequests);
 		}
-
+		mosipLogger.info("Value for the eventRequestsList object : {}", eventRequestsList);
 		sendRequestToCredService(eventRequestsList, isUpdate, credentialRequestResponseConsumer);
 	}
 
@@ -466,6 +470,7 @@ public class CredentialServiceManager {
 			String eventTypeDisplayName = isUpdate ? "Update ID" : "Create ID";
 			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), NOTIFY,
 					"notifying Credential Service for event " + eventTypeDisplayName);
+			mosipLogger.info("Request Dto : {}", reqDto);
 			sendRequestToCredService(reqDto.getIssuer(), requestWrapper, credentialRequestResponseConsumer);
 			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(), NOTIFY,
 					"notified Credential Service for event" + eventTypeDisplayName);
@@ -481,19 +486,21 @@ public class CredentialServiceManager {
 	private void sendRequestToCredService(String partnerId, CredentialIssueRequestWrapperDto requestWrapper,
 										  BiConsumer<CredentialIssueRequestWrapperDto, Map<String, Object>> credentialRequestResponseConsumer) {
 		try {
-
+			mosipLogger.info("RequestWrapper object : {}", requestWrapper);
+			mosipLogger.info("Value for the request id : {}", requestWrapper.getRequest().getRequestId() );
 			Map<String, Object> response = Map.of();
 			RestServicesConstants restServicesConstants = requestWrapper.getRequest().getRequestId() != null
 					&& !requestWrapper.getRequest().getRequestId().isEmpty()
 					? RestServicesConstants.CREDENTIAL_REQUEST_SERVICE_V2
 					: RestServicesConstants.CREDENTIAL_REQUEST_SERVICE;
+			mosipLogger.info("RestServicesConstants object : {}", restServicesConstants);
 			Map<String, String> pathParam = requestWrapper.getRequest().getRequestId() != null
 					&& !requestWrapper.getRequest().getRequestId().isEmpty()
 					? Map.of(RID, requestWrapper.getRequest().getRequestId())
 					: Map.of();
 			response = restHelper
 					.requestSync(restBuilder.buildRequest(restServicesConstants, pathParam, requestWrapper, Map.class));
-			mosipLogger.debug(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
+			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
 					SEND_REQUEST_TO_CRED_SERVICE,
 					"Response of Credential Request: " + mapper.writeValueAsString(response));
 
@@ -546,6 +553,7 @@ public class CredentialServiceManager {
 		credentialIssueRequestDto.setRecepiant(credentialRecepiant);
 		credentialIssueRequestDto.setUser(IdRepoSecurityManager.getUser());
 		credentialIssueRequestDto.setAdditionalData(data);
+		mosipLogger.info("Value for the CredentialIssueRequestDto object : {}", credentialIssueRequestDto);
 		return credentialIssueRequestDto;
 	}
 
