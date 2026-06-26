@@ -194,6 +194,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 							+ " | response: " + response);
 			credentialStatusManager.credentialRequestResponseConsumer(request, response);
 		};
+		mosipLogger.info("Retrived registration id : {}", regId);
 		credentialServiceManager.sendUinEventsToCredService(uin, null, false, null, getHandles(uin, uinHashSaltRepo::retrieveSaltById),
 				Arrays.asList(onlineVerificationPartnerIds), uinHashSaltRepo::retrieveSaltById,
 				loggingConsumer,
