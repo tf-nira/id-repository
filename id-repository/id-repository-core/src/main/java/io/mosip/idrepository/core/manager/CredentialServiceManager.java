@@ -422,7 +422,7 @@ public class CredentialServiceManager {
 					//String handleRequestId = requestId.concat(handleInfoDTO.getHandle());
 					return createCredReqDto(handleInfoDTO.getHandle(), partnerId, null, null,
 							token, handleInfoDTO.getAdditionalData(),
-							null);
+							requestId);
 				});
 			}).collect(Collectors.toList());
 			eventRequestsList.addAll(handleRequests);
