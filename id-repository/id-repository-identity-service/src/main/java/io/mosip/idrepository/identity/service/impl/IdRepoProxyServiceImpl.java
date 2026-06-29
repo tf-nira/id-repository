@@ -29,15 +29,8 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.RECORD_EX
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -755,6 +748,18 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 		}
 	}
 
+	private interface FieldExtractor {
+		JsonNode extract(ObjectNode identityObject);
+	}
+
+	private void removeFieldIfNull(ObjectNode identityObject, String fieldKey) {
+		JsonNode fieldValue = identityObject.get(fieldKey);
+		if (fieldValue == null || fieldValue.isNull() ||
+				(fieldValue.isTextual() && fieldValue.asText().trim().isEmpty())) {
+			identityObject.remove(fieldKey);
+		}
+	}
+
 	private void constructAddressDetails(ObjectNode identityObject) {
 
 		JsonNode residenceStatus = identityObject
@@ -957,6 +962,20 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			identityObject.remove(
 					idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginAddress().getValue());
 		}
+
+		List<String> conditionalFields = Arrays.asList(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceAddress().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+		);
+		conditionalFields.forEach(field -> removeFieldIfNull(identityObject, field));
 	}
 
 	/**
