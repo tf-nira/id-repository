@@ -648,7 +648,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 
 				// Convert DocumentContext to ObjectNode for conditional field removal
-				ObjectNode inputIdentityObject = convertToObject(requestDTO.getIdentity().toString().getBytes(), ObjectNode.class);
+				ObjectNode inputIdentityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
 				ObjectNode dbIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
 
 				// Remove conditional fields ONLY if they are NOT in the update request
