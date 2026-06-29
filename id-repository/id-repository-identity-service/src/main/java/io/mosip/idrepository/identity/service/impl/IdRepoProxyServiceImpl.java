@@ -984,6 +984,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
 		);
 		conditionalFields.forEach(field -> removeFieldIfNull(identityObject, field));
+		mosipLogger.info("CONDITIONALFIELDS {}",conditionalFields);
 	}
 
 	/**

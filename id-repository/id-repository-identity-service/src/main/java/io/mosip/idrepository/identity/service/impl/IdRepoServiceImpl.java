@@ -566,6 +566,35 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
+	/**
+	 * Remove conditional fields that are null, empty, or have empty string values
+	 * This ensures optional fields don't persist in the database when they're empty
+	 */
+	private void removeConditionalFields(ObjectNode identityObject) {
+		List<String> conditionalFields = Arrays.asList(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceAddress().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+		);
+
+		conditionalFields.forEach(fieldKey -> removeFieldIfNull(identityObject, fieldKey));
+	}
+
+	private void removeFieldIfNull(ObjectNode identityObject, String fieldKey) {
+		JsonNode fieldValue = identityObject.get(fieldKey);
+		if (fieldValue == null || fieldValue.isNull() ||
+				(fieldValue.isTextual() && fieldValue.asText().trim().isEmpty())) {
+			identityObject.remove(fieldKey);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -612,6 +641,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
+				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
+				removeConditionalFields(cleanedIdentityObject);
+				uinObject.setUinData(convertToBytes(cleanedIdentityObject));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
