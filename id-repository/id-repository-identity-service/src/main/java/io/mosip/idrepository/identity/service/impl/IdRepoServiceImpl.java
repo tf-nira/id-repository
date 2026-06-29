@@ -318,6 +318,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
 			cardExpiryDate = cardExpiryDate.minusDays(1);
+			mosipLogger.info(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_SERVICE_IMPL,
+					"constructCardExpiryDate",
+					"identityObject : " + identityObject
+			);
 			String userServiceType = null;
 			JsonNode userServiceTypeNode = identityObject.get("userServiceType");
 
