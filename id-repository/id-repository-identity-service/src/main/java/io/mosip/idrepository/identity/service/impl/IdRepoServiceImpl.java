@@ -567,10 +567,11 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	}
 
 	/**
-	 * Remove conditional fields that are null, empty, or have empty string values
-	 * This ensures optional fields don't persist in the database when they're empty
+	 * Remove conditional fields that are NOT present in the update request
+	 * This ensures that optional fields filled during NEW process are deleted
+	 * when citizen doesn't include them in UPDATE request
 	 */
-	private void removeConditionalFields(ObjectNode identityObject) {
+	private void removeConditionalFieldsNotInRequest(DocumentContext inputData, DocumentContext dbData) {
 		List<String> conditionalFields = Arrays.asList(
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
@@ -584,15 +585,27 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
 		);
 
-		conditionalFields.forEach(fieldKey -> removeFieldIfNull(identityObject, fieldKey));
-	}
+		conditionalFields.forEach(fieldKey -> {
+			try {
+				// Check if field exists in the UPDATE REQUEST (inputData)
+				Object inputFieldValue = inputData.read("$." + fieldKey);
 
-	private void removeFieldIfNull(ObjectNode identityObject, String fieldKey) {
-		JsonNode fieldValue = identityObject.get(fieldKey);
-		if (fieldValue == null || fieldValue.isNull() ||
-				(fieldValue.isTextual() && fieldValue.asText().trim().isEmpty())) {
-			identityObject.remove(fieldKey);
-		}
+				// If field is NOT in the request but exists in DB, remove it from DB
+				if (inputFieldValue == null) {
+					try {
+						Object dbFieldValue = dbData.read("$." + fieldKey);
+						if (dbFieldValue != null) {
+							dbData.delete("$." + fieldKey);
+							mosipLogger.info("Removed conditional field '{}' because it's not present in update request", fieldKey);
+						}
+					} catch (Exception e) {
+						// Field doesn't exist in DB, nothing to remove
+					}
+				}
+			} catch (Exception e) {
+				// Field doesn't exist in input request, will be handled in the loop
+			}
+		});
 	}
 
 	/*
@@ -640,9 +653,11 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
 
+				// Remove conditional fields that are NOT present in the update request
+				removeConditionalFieldsNotInRequest(inputData, dbData);
+
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
-				removeConditionalFields(cleanedIdentityObject);
 				uinObject.setUinData(convertToBytes(cleanedIdentityObject));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
