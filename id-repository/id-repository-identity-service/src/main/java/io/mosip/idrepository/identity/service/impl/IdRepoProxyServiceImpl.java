@@ -985,6 +985,8 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 		);
 		conditionalFields.forEach(field -> removeFieldIfNull(identityObject, field));
 		mosipLogger.info("CONDITIONALFIELDS {}",conditionalFields);
+		mosipLogger.info("IDENTITYOBJECT {}", identityObject);
+		mosipLogger.info("FIELD {}", field);
 	}
 
 	/**
