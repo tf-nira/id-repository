@@ -971,6 +971,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginAddress().getValue());
 		}
 
+		identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue());
 		List<String> conditionalFields = Arrays.asList(
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
@@ -986,7 +987,8 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 		conditionalFields.forEach(field -> removeFieldIfNull(identityObject, field));
 		mosipLogger.info("CONDITIONALFIELDS {}",conditionalFields);
 		mosipLogger.info("IDENTITYOBJECT {}", identityObject);
-		mosipLogger.info("FIELD {}", field);
+		identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue());
+		mosipLogger.info("IDENTITYOBJECT AFTER REMOVAL {}", identityObject);
 	}
 
 	/**
