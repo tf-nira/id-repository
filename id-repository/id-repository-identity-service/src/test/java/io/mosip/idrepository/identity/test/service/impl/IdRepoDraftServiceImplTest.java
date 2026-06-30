@@ -282,7 +282,45 @@ public class IdRepoDraftServiceImplTest {
 		IdentityMapping.RemoveSpouseGivenName removeSpouseGivenName = new IdentityMapping.RemoveSpouseGivenName();
 		residenceStatus.setValue("removeSpouseGivenName");
 		identityMapping.getIdentity().setRemoveSpouseGivenName(removeSpouseGivenName);
-
+		IdentityMapping.IDSchemaVersion IDSchemaVersion = new IdentityMapping.IDSchemaVersion();
+		residenceStatus.setValue("IDSchemaVersion");
+		identityMapping.getIdentity().setIDSchemaVersion(IDSchemaVersion);
+		IdentityMapping.ApplicantPlaceOfEnrolmentDistrict applicantPlaceOfEnrolmentDistrict = new IdentityMapping.ApplicantPlaceOfEnrolmentDistrict();
+		applicantPlaceOfEnrolmentDistrict.setValue("applicantPlaceOfEnrolmentDistrict");
+		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentDistrict(applicantPlaceOfEnrolmentDistrict);
+		IdentityMapping.ApplicantPlaceOfResidenceDistrict applicantPlaceOfResidenceDistrict = new IdentityMapping.ApplicantPlaceOfResidenceDistrict();
+		applicantPlaceOfResidenceDistrict.setValue("applicantPlaceOfResidenceDistrict");
+		identityMapping.getIdentity().setApplicantPlaceOfResidenceDistrict(applicantPlaceOfResidenceDistrict);
+		IdentityMapping.ApplicantPlaceOfResidenceStreet applicantPlaceOfResidenceStreet = new IdentityMapping.ApplicantPlaceOfResidenceStreet();
+		applicantPlaceOfResidenceStreet.setValue("applicantPlaceOfResidenceStreet");
+		identityMapping.getIdentity().setApplicantPlaceOfResidenceStreet(applicantPlaceOfResidenceStreet);
+		IdentityMapping.ApplicantPlaceOfResidenceHouseNo applicantPlaceOfResidenceHouseNo = new IdentityMapping.ApplicantPlaceOfResidenceHouseNo();
+		applicantPlaceOfResidenceHouseNo.setValue("applicantPlaceOfResidenceHouseNo");
+		identityMapping.getIdentity().setApplicantPlaceOfResidenceHouseNo(applicantPlaceOfResidenceHouseNo);
+		IdentityMapping.ApplicantPlaceOfResidenceYearsLived applicantPlaceOfResidenceYearsLived = new IdentityMapping.ApplicantPlaceOfResidenceYearsLived();
+		applicantPlaceOfResidenceYearsLived.setValue("applicantPlaceOfResidenceYearsLived");
+		identityMapping.getIdentity().setApplicantPlaceOfResidenceYearsLived(applicantPlaceOfResidenceYearsLived);
+		IdentityMapping.ApplicantPlaceOfResidenceDistrictOfPrevRes applicantPlaceOfResidenceDistrictOfPrevRes = new IdentityMapping.ApplicantPlaceOfResidenceDistrictOfPrevRes();
+		applicantPlaceOfResidenceDistrictOfPrevRes.setValue("applicantPlaceOfResidenceDistrictOfPrevRes");
+		identityMapping.getIdentity().setApplicantPlaceOfResidenceDistrictOfPrevRes(applicantPlaceOfResidenceDistrictOfPrevRes);
+		IdentityMapping.ApplicantPlaceOfResidencePostalAddress applicantPlaceOfResidencePostalAddress = new IdentityMapping.ApplicantPlaceOfResidencePostalAddress();
+		applicantPlaceOfResidencePostalAddress.setValue("applicantPlaceOfResidencePostalAddress");
+		identityMapping.getIdentity().setApplicantPlaceOfResidencePostalAddress(applicantPlaceOfResidencePostalAddress);
+		IdentityMapping.ApplicantForeignResidenceAddress applicantForeignResidenceAddress = new IdentityMapping.ApplicantForeignResidenceAddress();
+		applicantForeignResidenceAddress.setValue("applicantForeignResidenceAddress");
+		identityMapping.getIdentity().setApplicantForeignResidenceAddress(applicantForeignResidenceAddress);
+		IdentityMapping.ApplicantPlaceOfEnrolmentCounty applicantPlaceOfEnrolmentCounty = new IdentityMapping.ApplicantPlaceOfEnrolmentCounty();
+		applicantPlaceOfEnrolmentCounty.setValue("applicantPlaceOfEnrolmentCounty");
+		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentCounty(applicantPlaceOfEnrolmentCounty);
+		IdentityMapping.ApplicantPlaceOfEnrolmentSubCounty applicantPlaceOfEnrolmentSubCounty = new IdentityMapping.ApplicantPlaceOfEnrolmentSubCounty();
+		applicantPlaceOfEnrolmentSubCounty.setValue("applicantPlaceOfEnrolmentSubCounty");
+		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentSubCounty(applicantPlaceOfEnrolmentSubCounty);
+		IdentityMapping.ApplicantPlaceOfEnrolmentParish applicantPlaceOfEnrolmentParish = new IdentityMapping.ApplicantPlaceOfEnrolmentParish();
+		applicantPlaceOfEnrolmentParish.setValue("applicantPlaceOfEnrolmentParish");
+		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentParish(applicantPlaceOfEnrolmentParish);
+		IdentityMapping.ApplicantPlaceOfEnrolmentVillage applicantPlaceOfEnrolmentVillage = new IdentityMapping.ApplicantPlaceOfEnrolmentVillage();
+		applicantPlaceOfEnrolmentVillage.setValue("applicantPlaceOfEnrolmentVillage");
+		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentVillage(applicantPlaceOfEnrolmentVillage);
 		ReflectionTestUtils.setField(idRepoServiceHelper, "identityMapping", identityMapping);
 	}
 
