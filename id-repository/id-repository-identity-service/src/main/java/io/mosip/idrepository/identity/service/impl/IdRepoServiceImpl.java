@@ -598,6 +598,8 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
 				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
+				updateVerifiedAttributes(requestDTO, inputData, dbData);
+
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
 				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("removeSpouse"), inputData, null, false), "Y");
 
@@ -609,10 +611,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
 
-
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
-				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
-				uinObject.setUinData(convertToBytes(cleanedIdentityObject));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
