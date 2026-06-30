@@ -567,38 +567,49 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	}
 
 	/**
-	 * Remove conditional fields from database ONLY if they are NOT present in the update request
-	 * If user provides the field in update request, it will be saved with the new value
-	 * If user doesn't provide the field, it will be removed from database
+	 * For each mandatory-parent / optional-children group, if the mandatory parent
+	 * field is present in dbData, remove the optional children from dbData
+	 * regardless of whether they are null or not — BEFORE comparison/merge with
+	 * inputData. This way, if inputData still has the optional field, the merge
+	 * step (updateJsonObject) will add it back from inputData. If inputData
+	 * doesn't have it, it stays absent.
 	 */
-	private void removeConditionalFieldsNotInRequest(ObjectNode inputIdentityObject, ObjectNode IdentityObject) {
-		List<String> conditionalFields = Arrays.asList(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceAddress().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+	private void removeOptionalFieldsWhenParentPresent(ObjectNode dbIdentityObject) {
+
+		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+				)
 		);
 
-		conditionalFields.forEach(fieldKey -> {
-			// Check if field exists in INPUT REQUEST
-			JsonNode inputFieldValue = inputIdentityObject.get(fieldKey);
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
+				)
+		);
 
-			// If field is NOT in the request
-			if (inputFieldValue == null) {
-				// Check if it exists in database
-				if (IdentityObject.has(fieldKey)) {
-					// Remove it from database
-					IdentityObject.remove(fieldKey);
-					mosipLogger.info("Removed conditional field '{}' because it's not present in update request", fieldKey);
-				}
+		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
+			if (dbIdentityObject.has(mandatoryParentField)) {
+				optionalFields.forEach(optionalField -> {
+					if (dbIdentityObject.has(optionalField)) {
+						dbIdentityObject.remove(optionalField);
+						mosipLogger.info(
+								"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
+								optionalField, mandatoryParentField);
+					}
+				});
 			}
-			// If field IS in the request, it will be updated by the normal update logic
 		});
 	}
 
@@ -639,6 +650,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
 				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
+				// Strip optional fields from dbData BEFORE comparison/merge, so that:
+                // - if inputData has them, they get re-added via updateMissingFields
+				// - if inputData doesn't have them, they stay removed
+				ObjectNode dbIdentityObjectForStripping = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
+				removeOptionalFieldsWhenParentPresent(dbIdentityObjectForStripping);
+				dbData = JsonPath.using(configuration).parse(convertToBytes(dbIdentityObjectForStripping));
+
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 
 				mosipLogger.info("========== AFTER updateVerifiedAttributes ==========");
@@ -647,14 +665,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
 
-				// Convert DocumentContext to ObjectNode for conditional field removal
-				ObjectNode inputIdentityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-				ObjectNode dbIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
-				mosipLogger.info("INPUTIDENTITYOBJECT {}",  inputIdentityObject);
-				mosipLogger.info("DBIDENTITYOBJECT {}",  dbIdentityObject);
 
-				// Remove conditional fields ONLY if they are NOT in the update request
-				removeConditionalFieldsNotInRequest(inputIdentityObject, dbIdentityObject);
 
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
 				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("removeSpouse"), inputData, null, false), "Y");
