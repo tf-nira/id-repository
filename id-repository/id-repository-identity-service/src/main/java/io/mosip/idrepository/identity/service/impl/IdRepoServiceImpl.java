@@ -597,8 +597,20 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
+				mosipLogger.info("========== BEFORE setOldUinData ==========");
+				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
+				mosipLogger.info("========== BEFORE IDREPO updateVerifiedAttributes ==========");
+				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
+				mosipLogger.info("========== AFTER IDREPO updateVerifiedAttributes ==========");
+				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
 				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("removeSpouse"), inputData, null, false), "Y");
