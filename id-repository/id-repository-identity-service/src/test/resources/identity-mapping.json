@@ -60,6 +60,9 @@
 		"residenceStatus": {
 			"value": "residenceStatus"
 		},
+		"enrolmentStatus": {
+			"value": "enrolmentStatus"
+		},
 		"preferredLanguage": {
 			"value": "preferredLang"
 		},
