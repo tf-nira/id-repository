@@ -634,7 +634,27 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
 				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
+				mosipLogger.info("========== BEFORE updateVerifiedAttributes ==========");
+				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
+
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
+
+				mosipLogger.info("========== AFTER updateVerifiedAttributes ==========");
+				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
+
+
+				// Convert DocumentContext to ObjectNode for conditional field removal
+				ObjectNode inputIdentityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
+				ObjectNode dbIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
+				mosipLogger.info("INPUTIDENTITYOBJECT {}",  inputIdentityObject);
+				mosipLogger.info("DBIDENTITYOBJECT {}",  dbIdentityObject);
+
+				// Remove conditional fields ONLY if they are NOT in the update request
+				removeConditionalFieldsNotInRequest(inputIdentityObject, dbIdentityObject);
 
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
 				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("removeSpouse"), inputData, null, false), "Y");
@@ -647,14 +667,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
 
-				// Convert DocumentContext to ObjectNode for conditional field removal
-				ObjectNode inputIdentityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
-				ObjectNode dbIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
-				mosipLogger.info("INPUTIDENTITYOBJECT {}",  inputIdentityObject);
-				mosipLogger.info("DBIDENTITYOBJECT {}",  dbIdentityObject);
-
-				// Remove conditional fields ONLY if they are NOT in the update request
-				removeConditionalFieldsNotInRequest(inputIdentityObject, dbIdentityObject);
 
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
