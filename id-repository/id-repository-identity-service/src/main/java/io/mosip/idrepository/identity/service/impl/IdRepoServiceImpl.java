@@ -13,6 +13,7 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UNKNOWN_E
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_COUNT_LIMIT_EXCEEDED;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -304,13 +305,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(), null, null, false, null,uinEntity.getPart1(),uinEntity.getPart2(),uinEntity.getPart3(),uinEntity.getPart4()));
 
 		addIdentityHandle(uinEntity, selectedUniqueHandlesMap);
-		addCardDetails(identityObject);
+		addCardDetails(identityObject, null);
 		issueCredential(uinEntity.getUin(), uinHashWithSalt, activeStatus, null, uinEntity.getRegId());
 		anonymousProfileHelper.buildAndsaveProfile(false);
 		return uinEntity;
 	}
 
-	private void addCardDetails(ObjectNode identityObject) {
+	private void addCardDetails(ObjectNode identityObject, Uin uinObject) {
 
 		if (identityObject.get("NIN") != null) {
 			String NIN = identityObject.get("NIN").asText();
@@ -318,6 +319,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
 			cardExpiryDate = cardExpiryDate.minusDays(1);
+			mosipLogger.info(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_SERVICE_IMPL,
+					"constructCardExpiryDate",
+					"identityObject : " + identityObject
+			);
 			String userServiceType = null;
 			JsonNode userServiceTypeNode = identityObject.get("userServiceType");
 
@@ -384,6 +391,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 							"Skipping expiry calculation. facilityTypeSubCategory is Life or dateOfExpiry missing"
 					);
 				}
+			} else if("Replacement of Alien".equalsIgnoreCase(userServiceType)) {
+				if (uinObject != null && uinObject.getUinData() != null) {
+					cardExpiryDate = getCardExpiryDate(uinObject);
+				}
 			}
 			CardDetail cardDetail = new CardDetail();
 			cardDetail.setNin(ninHash);
@@ -394,6 +405,34 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			cardDetailRepository.save(cardDetail);
 		}
 
+	}
+
+	private java.time.LocalDate getCardExpiryDate(Uin uinObject) {
+		if (uinObject == null || uinObject.getUinData() == null) {
+			return null;
+		}
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			String uinData = new String(
+					uinObject.getUinData(),
+					StandardCharsets.UTF_8
+			);
+			JsonNode identityNode = objectMapper.readTree(uinData);
+			JsonNode expiryNode = identityNode.get("dateOfExpiry");
+			if (expiryNode == null || expiryNode.asText().isBlank()) {
+				return null;
+			}
+			java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+			return java.time.LocalDate.parse(expiryNode.asText(), formatter);
+		} catch (Exception e) {
+			mosipLogger.error(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_SERVICE_IMPL,
+					"getCardExpiryDate",
+					e.getMessage()
+			);
+			return null;
+		}
 	}
 
 	private Map<String, String> getEncodedPart(JsonNode partJsonNode) {
@@ -632,7 +671,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
-				saveCardDetails(requestDTO);
+				saveCardDetails(requestDTO,uinObject);
 			}
 			
 			uinObject = uinRepo.save(uinObject);
@@ -673,11 +712,11 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		return null;
 	}
 
-	private void saveCardDetails(RequestDTO requestDTO) {
+	private void saveCardDetails(RequestDTO requestDTO, Uin uinObject) {
 		ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
 		if (identityObject.get("isCardRequired") != null) {
 			if (identityObject.get("isCardRequired").asText().equalsIgnoreCase("yes")) {
-				addCardDetails(identityObject);
+				addCardDetails(identityObject,uinObject);
 			}
 		}
 
