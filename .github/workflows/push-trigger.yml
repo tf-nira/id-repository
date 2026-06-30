@@ -23,7 +23,7 @@ on:
       - nira_1.2.1
       - tf_nira_dev
       - tf_nira_dev_SR
-      - jagaPatch
+      - Devtest
 
 jobs:
   build-maven-id-repository:
