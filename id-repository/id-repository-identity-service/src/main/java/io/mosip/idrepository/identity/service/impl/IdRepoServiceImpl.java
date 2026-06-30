@@ -566,15 +566,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
-	/**
-	 * For each mandatory-parent / optional-children group, if the mandatory parent
-	 * field is present in dbData, remove the optional children from dbData
-	 * regardless of whether they are null or not — BEFORE comparison/merge with
-	 * inputData. This way, if inputData still has the optional field, the merge
-	 * step (updateJsonObject) will add it back from inputData. If inputData
-	 * doesn't have it, it stays absent.
-	 */
-	private void removeOptionalFieldsWhenParentPresent(ObjectNode dbIdentityObject) {
+	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData) {
 
 		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
 
@@ -599,14 +591,22 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				)
 		);
 
+		// Read current state once as a Map to safely check key presence without
+		// triggering JsonPath exceptions on missing paths
+		Map<String, Object> currentState = dbData.read("$", Map.class);
+
 		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
-			if (dbIdentityObject.has(mandatoryParentField)) {
+			if (currentState.containsKey(mandatoryParentField)) {
 				optionalFields.forEach(optionalField -> {
-					if (dbIdentityObject.has(optionalField)) {
-						dbIdentityObject.remove(optionalField);
-						mosipLogger.info(
-								"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
-								optionalField, mandatoryParentField);
+					if (currentState.containsKey(optionalField)) {
+						try {
+							dbData.delete("$." + optionalField);
+							mosipLogger.info(
+									"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
+									optionalField, mandatoryParentField);
+						} catch (Exception e) {
+							mosipLogger.warn("Could not strip field '{}': {}", optionalField, e.getMessage());
+						}
 					}
 				});
 			}
@@ -651,11 +651,9 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
 				// Strip optional fields from dbData BEFORE comparison/merge, so that:
-                // - if inputData has them, they get re-added via updateMissingFields
-				// - if inputData doesn't have them, they stay removed
-				ObjectNode dbIdentityObjectForStripping = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
-				removeOptionalFieldsWhenParentPresent(dbIdentityObjectForStripping);
-				dbData = JsonPath.using(configuration).parse(convertToBytes(dbIdentityObjectForStripping));
+// - if inputData has them, they get re-added via updateMissingFields
+// - if inputData doesn't have them, they stay removed
+				removeOptionalFieldsWhenParentPresent(dbData);
 
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 
