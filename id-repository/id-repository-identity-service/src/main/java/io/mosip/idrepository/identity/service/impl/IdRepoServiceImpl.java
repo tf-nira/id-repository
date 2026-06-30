@@ -566,6 +566,52 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
+	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData) {
+
+		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
+				)
+		);
+
+		// Read current state once as a Map to safely check key presence without
+		// triggering JsonPath exceptions on missing paths
+		Map<String, Object> currentState = dbData.read("$", Map.class);
+
+		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
+			if (currentState.containsKey(mandatoryParentField)) {
+				optionalFields.forEach(optionalField -> {
+					if (currentState.containsKey(optionalField)) {
+						try {
+							dbData.delete("$." + optionalField);
+							mosipLogger.info(
+									"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
+									optionalField, mandatoryParentField);
+						} catch (Exception e) {
+							mosipLogger.warn("Could not strip field '{}': {}", optionalField, e.getMessage());
+						}
+					}
+				});
+			}
+		});
+	}
 	/*
 	 * (non-Javadoc)
 	 *
@@ -606,6 +652,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
 				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
 				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
+				removeOptionalFieldsWhenParentPresent(dbData);
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 				mosipLogger.info("========== AFTER IDREPO updateVerifiedAttributes ==========");
 				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
@@ -624,6 +671,8 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				}
 
 				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
+				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
+				uinObject.setUinData(convertToBytes(cleanedIdentityObject));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
