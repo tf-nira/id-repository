@@ -472,14 +472,14 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			// - if inputData doesn't have them, they stay removed
 			removeOptionalFieldsWhenParentPresent(dbData);
 
-			updateVerifiedAttributes(requestDTO, inputData, dbData);
+			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
 
 			mosipLogger.info("========== AFTER updateVerifiedAttributes ==========");
 			mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
 			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
 			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
-			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
+
 			JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(),
 					JSONCompareMode.LENIENT);
 
