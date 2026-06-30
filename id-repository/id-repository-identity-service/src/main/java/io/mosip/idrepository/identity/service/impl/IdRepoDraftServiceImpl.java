@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import org.hibernate.exception.JDBCConnectionException;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
@@ -138,6 +139,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 
 	@Autowired
 	private RestHelper restHelper;
+
+	@Autowired
+	private IdRepoServiceHelper idRepoServiceHelper;
 
 	@Autowired
 	private UinBiometricRepo uinBiometricRepo;
@@ -360,6 +364,53 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 		return formattedAin.toString();
 	}
 
+	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData) {
+
+		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
+				)
+		);
+
+		// Read current state once as a Map to safely check key presence without
+		// triggering JsonPath exceptions on missing paths
+		Map<String, Object> currentState = dbData.read("$", Map.class);
+
+		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
+			if (currentState.containsKey(mandatoryParentField)) {
+				optionalFields.forEach(optionalField -> {
+					if (currentState.containsKey(optionalField)) {
+						try {
+							dbData.delete("$." + optionalField);
+							mosipLogger.info(
+									"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
+									optionalField, mandatoryParentField);
+						} catch (Exception e) {
+							mosipLogger.warn("Could not strip field '{}': {}", optionalField, e.getMessage());
+						}
+					}
+				});
+			}
+		});
+	}
+
 	private void updateDemographicData(IdRequestDTO request, UinDraft draftToUpdate) throws JSONException, IdRepoAppException, IOException {
 		if (Objects.nonNull(request.getRequest()) && Objects.nonNull(request.getRequest().getIdentity())) {
 			RequestDTO requestDTO = request.getRequest();
@@ -411,6 +462,23 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			DocumentContext dbData = JsonPath.using(configuration).parse(new String(draftToUpdate.getUinData()));
 			JsonPath uinJsonPath = JsonPath.compile(uinPath.replace(ROOT_PATH, "$"));
 			inputData.set(uinJsonPath, dbData.read(uinJsonPath));
+			mosipLogger.info("========== BEFORE updateVerifiedAttributes ==========");
+			mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
+
+			// Strip optional fields from dbData BEFORE comparison/merge, so that:
+			// - if inputData has them, they get re-added via updateMissingFields
+			// - if inputData doesn't have them, they stay removed
+			removeOptionalFieldsWhenParentPresent(dbData);
+
+			updateVerifiedAttributes(requestDTO, inputData, dbData);
+
+			mosipLogger.info("========== AFTER updateVerifiedAttributes ==========");
+			mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
+			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
+			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
+
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
 			JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(),
 					JSONCompareMode.LENIENT);

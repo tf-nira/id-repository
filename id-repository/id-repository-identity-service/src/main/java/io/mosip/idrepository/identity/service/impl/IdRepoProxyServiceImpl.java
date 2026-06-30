@@ -958,7 +958,6 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			identityObject.remove(
 					idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginAddress().getValue());
 		}
-		mosipLogger.info("IDENTITYOBJECT {}", identityObject);
 	}
 
 	/**
