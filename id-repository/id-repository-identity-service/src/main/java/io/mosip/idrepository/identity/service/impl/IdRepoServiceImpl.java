@@ -391,7 +391,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 							"Skipping expiry calculation. facilityTypeSubCategory is Life or dateOfExpiry missing"
 					);
 				}
-			} else if("Replacement of Alien".equalsIgnoreCase(userServiceType)) {
+			} else if("Alien Replacement".equalsIgnoreCase(userServiceType)) {
 				if (uinObject != null && uinObject.getUinData() != null) {
 					cardExpiryDate = getCardExpiryDate(uinObject);
 				}
