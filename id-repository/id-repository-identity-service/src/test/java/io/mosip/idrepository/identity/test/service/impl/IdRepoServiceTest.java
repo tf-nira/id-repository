@@ -312,6 +312,12 @@ public class IdRepoServiceTest {
 		IdentityMapping.IDSchemaVersion IDSchemaVersion = new IdentityMapping.IDSchemaVersion();
 		residenceStatus.setValue("IDSchemaVersion");
 		identityMapping.getIdentity().setIDSchemaVersion(IDSchemaVersion);
+		IdentityMapping.ApplicantPlaceOfEnrolmentDistrict applicantPlaceOfEnrolmentDistrict = new IdentityMapping.ApplicantPlaceOfEnrolmentDistrict();
+		applicantPlaceOfEnrolmentDistrict.setValue("applicantPlaceOfEnrolmentDistrict");
+		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentDistrict(applicantPlaceOfEnrolmentDistrict);
+		IdentityMapping.ApplicantPlaceOfResidenceDistrict applicantPlaceOfResidenceDistrict = new IdentityMapping.ApplicantPlaceOfResidenceDistrict();
+		applicantPlaceOfResidenceDistrict.setValue("applicantPlaceOfResidenceDistrict");
+		identityMapping.getIdentity().setApplicantPlaceOfResidenceDistrict(applicantPlaceOfResidenceDistrict);
 		IdentityMapping.ApplicantPlaceOfResidenceStreet applicantPlaceOfResidenceStreet = new IdentityMapping.ApplicantPlaceOfResidenceStreet();
 		applicantPlaceOfResidenceStreet.setValue("applicantPlaceOfResidenceStreet");
 		identityMapping.getIdentity().setApplicantPlaceOfResidenceStreet(applicantPlaceOfResidenceStreet);
