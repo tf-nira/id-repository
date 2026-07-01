@@ -364,7 +364,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 		return formattedAin.toString();
 	}
 
-	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData) {
+	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData, DocumentContext inputData) {
 
 		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
 
@@ -391,7 +391,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 
 		// Read current state once as a Map to safely check key presence without
 		// triggering JsonPath exceptions on missing paths
-		Map<String, Object> currentState = dbData.read("$", Map.class);
+		Map<String, Object> currentState = inputData.read("$", Map.class);
 
 		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
 			if (currentState.containsKey(mandatoryParentField)) {
@@ -470,7 +470,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			// Strip optional fields from dbData BEFORE comparison/merge, so that:
 			// - if inputData has them, they get re-added via updateMissingFields
 			// - if inputData doesn't have them, they stay removed
-			removeOptionalFieldsWhenParentPresent(dbData);
+			removeOptionalFieldsWhenParentPresent(dbData, inputData);
 
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
 

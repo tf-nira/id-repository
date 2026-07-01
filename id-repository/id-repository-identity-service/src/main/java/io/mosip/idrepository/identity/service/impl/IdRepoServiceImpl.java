@@ -566,7 +566,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
-	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData) {
+	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData, DocumentContext inputData) {
 
 		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
 
@@ -593,7 +593,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		// Read current state once as a Map to safely check key presence without
 		// triggering JsonPath exceptions on missing paths
-		Map<String, Object> currentState = dbData.read("$", Map.class);
+		Map<String, Object> currentState = inputData.read("$", Map.class);
 
 		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
 			if (currentState.containsKey(mandatoryParentField)) {
@@ -652,7 +652,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
 				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
 				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
-				removeOptionalFieldsWhenParentPresent(dbData);
+				removeOptionalFieldsWhenParentPresent(dbData, inputData);
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 				mosipLogger.info("========== AFTER IDREPO updateVerifiedAttributes ==========");
 				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
