@@ -591,6 +591,41 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				)
 		);
 
+		// Foreign residence Country → remove foreign residence fields
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
+				)
+		);
+
+		// Birth District → optional birth sub-fields
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthCity().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthHealthFacility().getValue()
+				)
+		);
+
+		// Foreign Birth Country → optional foreign birth sub-fields
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthHealthFacility().getValue()
+				)
+		);
+
+		// Foreign Origin Country → optional foreign origin sub-fields
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginAddress().getValue()
+				)
+		);
+
 		// Read current state once as a Map to safely check key presence without
 		// triggering JsonPath exceptions on missing paths
 		Map<String, Object> currentState = inputData.read("$", Map.class);

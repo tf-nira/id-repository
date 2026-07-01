@@ -321,6 +321,30 @@ public class IdRepoDraftServiceImplTest {
 		IdentityMapping.ApplicantPlaceOfEnrolmentVillage applicantPlaceOfEnrolmentVillage = new IdentityMapping.ApplicantPlaceOfEnrolmentVillage();
 		applicantPlaceOfEnrolmentVillage.setValue("applicantPlaceOfEnrolmentVillage");
 		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentVillage(applicantPlaceOfEnrolmentVillage);
+        IdentityMapping.ApplicantForeignResidenceCountry applicantForeignResidenceCountry = new IdentityMapping.ApplicantForeignResidenceCountry();
+        applicantForeignResidenceCountry.setValue("applicantForeignResidenceCountry");
+        identityMapping.getIdentity().setApplicantForeignResidenceCountry(applicantForeignResidenceCountry);
+        IdentityMapping.ApplicantPlaceOfBirthDistrict applicantPlaceOfBirthDistrict = new IdentityMapping.ApplicantPlaceOfBirthDistrict();
+        applicantPlaceOfBirthDistrict.setValue("applicantPlaceOfBirthDistrict");
+        identityMapping.getIdentity().setApplicantPlaceOfBirthDistrict(applicantPlaceOfBirthDistrict);
+        IdentityMapping.ApplicantPlaceOfBirthCity applicantPlaceOfBirthCity = new IdentityMapping.ApplicantPlaceOfBirthCity();
+        applicantPlaceOfBirthCity.setValue("applicantPlaceOfBirthCity");
+        identityMapping.getIdentity().setApplicantPlaceOfBirthCity(applicantPlaceOfBirthCity);
+        IdentityMapping.ApplicantPlaceOfBirthHealthFacility applicantPlaceOfBirthHealthFacility = new IdentityMapping.ApplicantPlaceOfBirthHealthFacility();
+        applicantPlaceOfBirthHealthFacility.setValue("applicantPlaceOfBirthHealthFacility");
+        identityMapping.getIdentity().setApplicantPlaceOfBirthHealthFacility(applicantPlaceOfBirthHealthFacility);
+        IdentityMapping.ApplicantForeignBirthCountry applicantForeignBirthCountry = new IdentityMapping.ApplicantForeignBirthCountry();
+        applicantForeignBirthCountry.setValue("applicantForeignBirthCountry");
+        identityMapping.getIdentity().setApplicantForeignBirthCountry(applicantForeignBirthCountry);
+        IdentityMapping.ApplicantForeignBirthAddress applicantForeignBirthAddress = new IdentityMapping.ApplicantForeignBirthAddress();
+        applicantForeignBirthAddress.setValue("applicantForeignBirthAddress");
+        identityMapping.getIdentity().setApplicantForeignBirthAddress(applicantForeignBirthAddress);
+        IdentityMapping.ApplicantForeignOriginCountry applicantForeignOriginCountry = new IdentityMapping.ApplicantForeignOriginCountry();
+        applicantForeignOriginCountry.setValue("applicantForeignOriginCountry");
+        identityMapping.getIdentity().setApplicantForeignOriginCountry(applicantForeignOriginCountry);
+        IdentityMapping.ApplicantForeignOriginAddress applicantForeignOriginAddress = new IdentityMapping.ApplicantForeignOriginAddress();
+        applicantForeignOriginAddress.setValue("applicantForeignOriginAddress");
+        identityMapping.getIdentity().setApplicantForeignOriginAddress(applicantForeignOriginAddress);
 		ReflectionTestUtils.setField(idRepoServiceHelper, "identityMapping", identityMapping);
 	}
 
