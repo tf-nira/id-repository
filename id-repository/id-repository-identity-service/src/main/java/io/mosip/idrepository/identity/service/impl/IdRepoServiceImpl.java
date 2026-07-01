@@ -706,7 +706,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
 
-				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
 				uinObject.setUinData(convertToBytes(cleanedIdentityObject));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
