@@ -594,11 +594,12 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		// Read current state once as a Map to safely check key presence without
 		// triggering JsonPath exceptions on missing paths
 		Map<String, Object> currentState = inputData.read("$", Map.class);
+		Map<String, Object> currentOptionalState = dbData.read("$", Map.class);
 
 		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
 			if (currentState.containsKey(mandatoryParentField)) {
 				optionalFields.forEach(optionalField -> {
-					if (currentState.containsKey(optionalField)) {
+					if (currentOptionalState.containsKey(optionalField)) {
 						try {
 							dbData.delete("$." + optionalField);
 							mosipLogger.info(
