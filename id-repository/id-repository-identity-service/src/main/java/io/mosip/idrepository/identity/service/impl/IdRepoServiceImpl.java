@@ -305,13 +305,13 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(), null, null, false, null,uinEntity.getPart1(),uinEntity.getPart2(),uinEntity.getPart3(),uinEntity.getPart4()));
 
 		addIdentityHandle(uinEntity, selectedUniqueHandlesMap);
-		addCardDetails(identityObject, null);
+		addCardDetails(identityObject);
 		issueCredential(uinEntity.getUin(), uinHashWithSalt, activeStatus, null, uinEntity.getRegId());
 		anonymousProfileHelper.buildAndsaveProfile(false);
 		return uinEntity;
 	}
 
-	private void addCardDetails(ObjectNode identityObject, Uin uinObject) {
+	private void addCardDetails(ObjectNode identityObject) {
 
 		if (identityObject.get("NIN") != null) {
 			String NIN = identityObject.get("NIN").asText();
@@ -319,12 +319,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			java.time.LocalDate cardIssuanceDate = java.time.LocalDate.now();
 			java.time.LocalDate cardExpiryDate = cardIssuanceDate.plusYears(cardExpiryInyears);
 			cardExpiryDate = cardExpiryDate.minusDays(1);
-			mosipLogger.info(
-					IdRepoSecurityManager.getUser(),
-					ID_REPO_SERVICE_IMPL,
-					"constructCardExpiryDate",
-					"identityObject : " + identityObject
-			);
 			String userServiceType = null;
 			JsonNode userServiceTypeNode = identityObject.get("userServiceType");
 
@@ -357,13 +351,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					}
 				}
 
-				mosipLogger.info(
-						IdRepoSecurityManager.getUser(),
-						ID_REPO_SERVICE_IMPL,
-						"constructCardExpiryDate",
-						"facilityTypeSubCategory : " + facilityTypeSubCategory
-				);
-
 				if (!"Life".equalsIgnoreCase(facilityTypeSubCategory) && identityObject.get("dateOfExpiry") != null) {
 					String expiryDate = identityObject.get("dateOfExpiry").asText();
 
@@ -392,8 +379,21 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					);
 				}
 			} else if("Alien Replacement".equalsIgnoreCase(userServiceType)) {
-				if (uinObject != null && uinObject.getUinData() != null) {
-					cardExpiryDate = getCardExpiryDate(uinObject);
+				mosipLogger.info(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_SERVICE_IMPL,
+						"constructCardExpiryDate",
+						"Processing Replacement of Alien"
+				);
+				List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.getBytes()));
+				if (cardDetails != null && !cardDetails.isEmpty()) {
+					CardDetail cardDetail = cardDetails.get(0);
+					Date expiryDate = cardDetail.getDateOfExpiry();
+					Date issuancedate = cardDetail.getDateOfIssuance();
+					if (expiryDate != null && issuancedate != null) {
+						cardExpiryDate = expiryDate.toLocalDate();
+						cardIssuanceDate = issuancedate.toLocalDate();
+					}
 				}
 			}
 			CardDetail cardDetail = new CardDetail();
@@ -405,34 +405,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			cardDetailRepository.save(cardDetail);
 		}
 
-	}
-
-	private java.time.LocalDate getCardExpiryDate(Uin uinObject) {
-		if (uinObject == null || uinObject.getUinData() == null) {
-			return null;
-		}
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			String uinData = new String(
-					uinObject.getUinData(),
-					StandardCharsets.UTF_8
-			);
-			JsonNode identityNode = objectMapper.readTree(uinData);
-			JsonNode expiryNode = identityNode.get("dateOfExpiry");
-			if (expiryNode == null || expiryNode.asText().isBlank()) {
-				return null;
-			}
-			java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
-			return java.time.LocalDate.parse(expiryNode.asText(), formatter);
-		} catch (Exception e) {
-			mosipLogger.error(
-					IdRepoSecurityManager.getUser(),
-					ID_REPO_SERVICE_IMPL,
-					"getCardExpiryDate",
-					e.getMessage()
-			);
-			return null;
-		}
 	}
 
 	private Map<String, String> getEncodedPart(JsonNode partJsonNode) {
@@ -671,7 +643,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 					uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 					uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
 				}
-				saveCardDetails(requestDTO,uinObject);
+				saveCardDetails(requestDTO);
 			}
 			
 			uinObject = uinRepo.save(uinObject);
@@ -712,11 +684,11 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		return null;
 	}
 
-	private void saveCardDetails(RequestDTO requestDTO, Uin uinObject) {
+	private void saveCardDetails(RequestDTO requestDTO) {
 		ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
 		if (identityObject.get("isCardRequired") != null) {
 			if (identityObject.get("isCardRequired").asText().equalsIgnoreCase("yes")) {
-				addCardDetails(identityObject,uinObject);
+				addCardDetails(identityObject);
 			}
 		}
 
