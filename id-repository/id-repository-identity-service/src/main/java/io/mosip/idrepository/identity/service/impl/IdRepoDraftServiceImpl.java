@@ -439,8 +439,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					if (!inputState.containsKey(optionalField)) {
 						try {
 							String yearsLivedField = idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue();
+							String houseNo = idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue();
 
-							if (yearsLivedField.equals(optionalField)) {
+							if (yearsLivedField.equals(optionalField) || houseNo.equals(optionalField)) {
 								inputData.put("$", optionalField, "");
 							} else {
 								inputData.put("$", optionalField, emptyFieldValue);
