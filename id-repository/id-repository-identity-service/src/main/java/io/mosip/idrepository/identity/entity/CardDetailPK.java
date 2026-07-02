@@ -16,5 +16,5 @@ public class CardDetailPK implements Serializable {
 
 	private String nin;
 
-	private Date dateOfIssuance;
+	private Date crDTimes;
 }

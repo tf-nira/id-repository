@@ -18,7 +18,8 @@ CREATE TABLE idrepo.card_detail(
 	cr_by character varying(256) NOT NULL,
 	cr_dtimes timestamp NOT NULL,
 	upd_by character varying(256),
-	upd_dtimes timestamp
+	upd_dtimes timestamp,
+	CONSTRAINT pk_nind PRIMARY KEY (nin,cr_dtimes)
 );
 -- ddl-end --
 COMMENT ON TABLE idrepo.card_detail IS 'card_detail: Card details of individual';
