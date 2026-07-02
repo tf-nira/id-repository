@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Table(name = "card_detail", schema = "idrepo")
 @Entity
-@IdClass(CardDetailPK.class)
 public class CardDetail {
 
 	@Id
@@ -28,7 +27,6 @@ public class CardDetail {
 	@Column(name = "card_number")
 	private String cardNumber;
 
-	@Id
 	@NotNull
 	@Column(name = "date_of_issuance")
 	private Date dateOfIssuance;
