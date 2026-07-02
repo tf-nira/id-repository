@@ -442,7 +442,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 							String houseNo = idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue();
 
 							if (yearsLivedField.equals(optionalField) || houseNo.equals(optionalField)) {
-								inputData.put("$", optionalField, null);
+								inputData.put("$", optionalField, "");
 							} else {
 								inputData.put("$", optionalField, emptyFieldValue);
 							}
