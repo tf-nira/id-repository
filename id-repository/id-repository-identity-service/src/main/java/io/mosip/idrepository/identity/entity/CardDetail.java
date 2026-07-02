@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Table(name = "card_detail", schema = "idrepo")
 @Entity
+@IdClass(CardDetailPK.class)
 public class CardDetail {
 
 	@Id
@@ -38,6 +39,7 @@ public class CardDetail {
 	@Column(name = "cr_by")
 	private String createdBy;
 
+	@Id
 	@NotNull
 	@Column(name = "cr_dtimes")
 	private LocalDateTime crDTimes;
