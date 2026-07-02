@@ -364,7 +364,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 		return formattedAin.toString();
 	}
 
-	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData, DocumentContext inputData) {
+	private void removeOptionalFieldsWhenParentPresent(DocumentContext inputData) {
 
 		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
 
@@ -389,7 +389,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				)
 		);
 
-		// Foreign residence Country → remove foreign residence fields
 		parentToOptionalFieldsMap.put(
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceCountry().getValue(),
 				Arrays.asList(
@@ -398,7 +397,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				)
 		);
 
-		// Birth District → optional birth sub-fields
 		parentToOptionalFieldsMap.put(
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthDistrict().getValue(),
 				Arrays.asList(
@@ -407,7 +405,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				)
 		);
 
-		// Foreign Birth Country → optional foreign birth sub-fields
 		parentToOptionalFieldsMap.put(
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthCountry().getValue(),
 				Arrays.asList(
@@ -416,7 +413,6 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				)
 		);
 
-		// Foreign Origin Country → optional foreign origin sub-fields
 		parentToOptionalFieldsMap.put(
 				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginCountry().getValue(),
 				Arrays.asList(
@@ -424,22 +420,30 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				)
 		);
 
-		// Read current state once as a Map to safely check key presence without
-		// triggering JsonPath exceptions on missing paths
-		Map<String, Object> currentState = inputData.read("$", Map.class);
-		Map<String, Object> currentOptionalState = dbData.read("$", Map.class);
+		// Snapshot of both states before any mutations
+		Map<String, Object> inputState = inputData.read("$", Map.class);
+
+		// Empty array value representing a cleared field: [{"language":"eng","value":""}]
+		List<Map<String, Object>> emptyFieldValue = Collections.singletonList(
+				new java.util.HashMap<String, Object>() {{ put("language", "eng"); put("value", ""); }}
+		);
 
 		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
-			if (currentState.containsKey(mandatoryParentField)) {
+			// Only act if mandatory/parent field is present in inputData (user is updating this section)
+			if (inputState.containsKey(mandatoryParentField)) {
 				optionalFields.forEach(optionalField -> {
-					if (currentOptionalState.containsKey(optionalField)) {
+
+					// If optional field is also absent from inputData, add it with empty value
+					// This ensures the merge step sees it as "missing on field" and writes null/empty
+					// into dbData, rather than leaving the old stale value
+					if (!inputState.containsKey(optionalField)) {
 						try {
-							dbData.delete("$." + optionalField);
+							inputData.put("$", optionalField, emptyFieldValue);
 							mosipLogger.info(
-									"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
-									optionalField, mandatoryParentField);
+									"Added empty placeholder for optional field '{}' in inputData (absent from request)",
+									optionalField);
 						} catch (Exception e) {
-							mosipLogger.warn("Could not strip field '{}': {}", optionalField, e.getMessage());
+							mosipLogger.warn("Could not add empty placeholder for field '{}' in inputData: {}", optionalField, e.getMessage());
 						}
 					}
 				});
@@ -503,10 +507,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
 			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
-			// Strip optional fields from dbData BEFORE comparison/merge, so that:
-			// - if inputData has them, they get re-added via updateMissingFields
-			// - if inputData doesn't have them, they stay removed
-			removeOptionalFieldsWhenParentPresent(dbData, inputData);
+			removeOptionalFieldsWhenParentPresent(inputData);
 
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
 

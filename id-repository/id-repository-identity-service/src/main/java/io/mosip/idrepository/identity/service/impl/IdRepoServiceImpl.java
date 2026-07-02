@@ -566,88 +566,6 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 	}
 
-	private void removeOptionalFieldsWhenParentPresent(DocumentContext dbData, DocumentContext inputData) {
-
-		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
-
-		parentToOptionalFieldsMap.put(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentDistrict().getValue(),
-				Arrays.asList(
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
-				)
-		);
-
-		parentToOptionalFieldsMap.put(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue(),
-				Arrays.asList(
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
-				)
-		);
-
-		// Foreign residence Country → remove foreign residence fields
-		parentToOptionalFieldsMap.put(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceCountry().getValue(),
-				Arrays.asList(
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceAddress().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
-				)
-		);
-
-		// Birth District → optional birth sub-fields
-		parentToOptionalFieldsMap.put(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthDistrict().getValue(),
-				Arrays.asList(
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthCity().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthHealthFacility().getValue()
-				)
-		);
-
-		// Foreign Birth Country → optional foreign birth sub-fields
-		parentToOptionalFieldsMap.put(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthCountry().getValue(),
-				Arrays.asList(
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthAddress().getValue(),
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthHealthFacility().getValue()
-				)
-		);
-
-		// Foreign Origin Country → optional foreign origin sub-fields
-		parentToOptionalFieldsMap.put(
-				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginCountry().getValue(),
-				Arrays.asList(
-						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginAddress().getValue()
-				)
-		);
-
-		// Read current state once as a Map to safely check key presence without
-		// triggering JsonPath exceptions on missing paths
-		Map<String, Object> currentState = inputData.read("$", Map.class);
-		Map<String, Object> currentOptionalState = dbData.read("$", Map.class);
-
-		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
-			if (currentState.containsKey(mandatoryParentField)) {
-				optionalFields.forEach(optionalField -> {
-					if (currentOptionalState.containsKey(optionalField)) {
-						try {
-							dbData.delete("$." + optionalField);
-							mosipLogger.info(
-									"Stripped optional field '{}' from dbData (parent '{}' present) prior to merge",
-									optionalField, mandatoryParentField);
-						} catch (Exception e) {
-							mosipLogger.warn("Could not strip field '{}': {}", optionalField, e.getMessage());
-						}
-					}
-				});
-			}
-		});
-	}
 	/*
 	 * (non-Javadoc)
 	 *
@@ -679,35 +597,19 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
-				mosipLogger.info("========== BEFORE setOldUinData ==========");
-				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
-				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
-				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
-				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
-				mosipLogger.info("========== BEFORE IDREPO updateVerifiedAttributes ==========");
-				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
-				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
-				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
-				removeOptionalFieldsWhenParentPresent(dbData, inputData);
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
-				mosipLogger.info("========== AFTER IDREPO updateVerifiedAttributes ==========");
-				mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
-				mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
-				mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
 				boolean isRemoveSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("removeSpouse"), inputData, null, false), "Y");
 
 				if (isAddSpouse) spouseDetailHelper.addSpouseDetails(inputData, dbData);
 				if (isRemoveSpouse) spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
-
 				JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(), JSONCompareMode.LENIENT);
 				if (comparisonResult.failed()) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);
 				}
 
-				ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
-				uinObject.setUinData(convertToBytes(cleanedIdentityObject));
+				uinObject.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
 				uinObject.setUinDataHash(securityManager.hash(uinObject.getUinData()));
 				uinObject.setUpdatedBy(IdRepoSecurityManager.getUser());
 				uinObject.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
