@@ -597,6 +597,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
+				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 
 				boolean isAddSpouse = Objects.equals(spouseDetailHelper.getStringData(idRepoServiceHelper.getMappingJsonValue("addSpouse"), inputData, null, false), "Y");
@@ -604,6 +605,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 				if (isAddSpouse) spouseDetailHelper.addSpouseDetails(inputData, dbData);
 				if (isRemoveSpouse) spouseDetailHelper.updateSpouseDetails(requestDTO, inputData, dbData);
+
 				JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(), JSONCompareMode.LENIENT);
 				if (comparisonResult.failed()) {
 					updateJsonObject(uinHash, inputData, dbData, comparisonResult, true);

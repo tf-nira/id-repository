@@ -282,9 +282,6 @@ public class IdRepoDraftServiceImplTest {
 		IdentityMapping.RemoveSpouseGivenName removeSpouseGivenName = new IdentityMapping.RemoveSpouseGivenName();
 		residenceStatus.setValue("removeSpouseGivenName");
 		identityMapping.getIdentity().setRemoveSpouseGivenName(removeSpouseGivenName);
-		IdentityMapping.IDSchemaVersion IDSchemaVersion = new IdentityMapping.IDSchemaVersion();
-		residenceStatus.setValue("IDSchemaVersion");
-		identityMapping.getIdentity().setIDSchemaVersion(IDSchemaVersion);
 		IdentityMapping.ApplicantPlaceOfEnrolmentDistrict applicantPlaceOfEnrolmentDistrict = new IdentityMapping.ApplicantPlaceOfEnrolmentDistrict();
 		applicantPlaceOfEnrolmentDistrict.setValue("applicantPlaceOfEnrolmentDistrict");
 		identityMapping.getIdentity().setApplicantPlaceOfEnrolmentDistrict(applicantPlaceOfEnrolmentDistrict);

@@ -364,7 +364,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 		return formattedAin.toString();
 	}
 
-	private void removeOptionalFieldsWhenParentPresent(DocumentContext inputData) {
+	private void addPlaceholdersForMissingOptionalFields(DocumentContext inputData) {
 
 		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
 
@@ -438,7 +438,13 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 					// into dbData, rather than leaving the old stale value
 					if (!inputState.containsKey(optionalField)) {
 						try {
-							inputData.put("$", optionalField, emptyFieldValue);
+							String yearsLivedField = idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue();
+
+							if (yearsLivedField.equals(optionalField)) {
+								inputData.put("$", optionalField, "");
+							} else {
+								inputData.put("$", optionalField, emptyFieldValue);
+							}
 							mosipLogger.info(
 									"Added empty placeholder for optional field '{}' in inputData (absent from request)",
 									optionalField);
@@ -507,7 +513,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
 			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
 
-			removeOptionalFieldsWhenParentPresent(inputData);
+			addPlaceholdersForMissingOptionalFields(inputData);
 
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
 
