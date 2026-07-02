@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 public class CardDetail {
 
+	@Id
 	@NotNull
 	@Column(name = "nin")
 	private String nin;
