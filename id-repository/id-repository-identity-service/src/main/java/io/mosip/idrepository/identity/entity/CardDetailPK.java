@@ -1,7 +1,7 @@
 package io.mosip.idrepository.identity.entity;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +16,5 @@ public class CardDetailPK implements Serializable {
 
 	private String nin;
 
-	private Date crDTimes;
+	private LocalDateTime crDTimes;
 }
