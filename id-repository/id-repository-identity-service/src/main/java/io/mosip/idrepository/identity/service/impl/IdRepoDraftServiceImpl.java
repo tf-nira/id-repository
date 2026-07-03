@@ -509,21 +509,8 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			DocumentContext dbData = JsonPath.using(configuration).parse(new String(draftToUpdate.getUinData()));
 			JsonPath uinJsonPath = JsonPath.compile(uinPath.replace(ROOT_PATH, "$"));
 			inputData.set(uinJsonPath, dbData.read(uinJsonPath));
-			mosipLogger.info("========== BEFORE updateVerifiedAttributes ==========");
-			mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
-			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
-			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
-
 			addPlaceholdersForMissingOptionalFields(inputData);
-
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
-
-			mosipLogger.info("========== AFTER updateVerifiedAttributes ==========");
-			mosipLogger.info("REQUEST DTO IDENTITY : {}", requestDTO.getIdentity());
-			mosipLogger.info("INPUT DATA          : {}", inputData.jsonString());
-			mosipLogger.info("DB DATA             : {}", dbData.jsonString());
-
-
 			JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(),
 					JSONCompareMode.LENIENT);
 
