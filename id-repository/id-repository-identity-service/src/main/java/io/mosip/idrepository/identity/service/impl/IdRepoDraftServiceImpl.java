@@ -420,6 +420,76 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 				)
 		);
 
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceVillage().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceHouseNo().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignResidenceCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignResidenceAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPostalAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfOriginDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherIndigenousCommunityTribe().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherIndigenousCommunityClan().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceVillage().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceHouseNo().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignResidenceCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignResidenceAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPostalAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfOriginDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherIndigenousCommunityTribe().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherIndigenousCommunityClan().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginAddress().getValue()
+				)
+		);
+
 		// Snapshot of both states before any mutations
 		Map<String, Object> inputState = inputData.read("$", Map.class);
 
