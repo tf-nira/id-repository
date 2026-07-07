@@ -24,7 +24,7 @@ on:
       - tf_nira_dev
       - tf_nira_dev_SR
       - Devtest
-      - tf_nira_dev_Satyam
+      - tf_nira_devlop_Satyam
 
 jobs:
   build-maven-id-repository:
