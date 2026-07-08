@@ -761,6 +761,8 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 		JsonNode residenceStatus = identityObject
 				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getResidenceStatus().getValue());
+		JsonNode enrolmentStatus = identityObject
+				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getEnrolmentStatus().getValue());
 		JsonNode applicantOriginPlace = identityObject
 				.get(idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantOriginPlace().getValue());
 		JsonNode applicantBirthPlace = identityObject
@@ -795,6 +797,16 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantForeignResidenceAddress().getValue());
 		}
+		if (enrolmentStatus != null && (enrolmentStatus.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfEnrolmentCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfEnrolmentSubCounty().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfEnrolmentParish().getValue());
+			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
+					.getApplicantPlaceOfEnrolmentVillage().getValue());
+		}
 		if (applicantBirthPlace != null
 				&& (applicantBirthPlace.get(0).get("value").asText()).equalsIgnoreCase(OUTSIDEUGANDA)) {
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
@@ -811,8 +823,6 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					.getApplicantPlaceOfBirthVillage().getValue());
 			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
 					.getApplicantPlaceOfBirthCity().getValue());
-			identityObject.remove(idRepoServiceHelper.getIdentityMapping().getIdentity()
-					.getApplicantPlaceOfBirthHealthFacility().getValue());
 		}
 		if (applicantBirthPlace != null
 				&& (applicantBirthPlace.get(0).get("value").asText()).equalsIgnoreCase(INUGANDA)) {
