@@ -28,7 +28,6 @@ public class CardDetail {
 	@Column(name = "card_number")
 	private String cardNumber;
 
-	@Id
 	@NotNull
 	@Column(name = "date_of_issuance")
 	private Date dateOfIssuance;
@@ -40,6 +39,7 @@ public class CardDetail {
 	@Column(name = "cr_by")
 	private String createdBy;
 
+	@Id
 	@NotNull
 	@Column(name = "cr_dtimes")
 	private LocalDateTime crDTimes;
