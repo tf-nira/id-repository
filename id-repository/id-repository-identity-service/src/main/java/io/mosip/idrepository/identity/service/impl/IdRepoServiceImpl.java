@@ -396,7 +396,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						"constructCardExpiryDate",
 						"Processing Replacement of Alien"
 				);
-				List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.getBytes()));
+				List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.toLowerCase().getBytes()));
 				if (cardDetails != null && !cardDetails.isEmpty()) {
 					CardDetail cardDetail = cardDetails.get(0);
 					Date expiryDate = cardDetail.getDateOfExpiry();
