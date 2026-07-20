@@ -102,6 +102,7 @@ import io.mosip.idrepository.identity.repository.UinBiometricRepo;
 import io.mosip.idrepository.identity.repository.UinDocumentRepo;
 import io.mosip.idrepository.identity.repository.UinDraftRepo;
 import io.mosip.idrepository.identity.validator.IdRequestValidator;
+import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.kernel.core.http.ResponseWrapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
@@ -138,6 +139,9 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 
 	@Autowired
 	private RestHelper restHelper;
+
+	@Autowired
+	private IdRepoServiceHelper idRepoServiceHelper;
 
 	@Autowired
 	private UinBiometricRepo uinBiometricRepo;
@@ -359,6 +363,173 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 		idrepoDraftLogger.info("formattedAIN : " +formattedAin.toString());
 		return formattedAin.toString();
 	}
+
+	private void addPlaceholdersForMissingOptionalFields(DocumentContext inputData) {
+
+		Map<String, List<String>> parentToOptionalFieldsMap = new LinkedHashMap<>();
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfEnrolmentVillage().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceDistrictOfPrevRes().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignResidenceAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidencePostalAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthCity().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthHealthFacility().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignBirthAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfBirthHealthFacility().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantForeignOriginAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceVillage().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceHouseNo().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignResidenceCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignResidenceAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPostalAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfOriginDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherIndigenousCommunityTribe().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherIndigenousCommunityClan().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherForeignOriginAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceSubCounty().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceParish().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceVillage().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceStreet().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceHouseNo().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignResidenceCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignResidenceAddress().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPostalAddress().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfOriginDistrict().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherIndigenousCommunityTribe().getValue(),
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherIndigenousCommunityClan().getValue()
+				)
+		);
+
+		parentToOptionalFieldsMap.put(
+				idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginCountry().getValue(),
+				Arrays.asList(
+						idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherForeignOriginAddress().getValue()
+				)
+		);
+
+		// Snapshot of both states before any mutations
+		Map<String, Object> inputState = inputData.read("$", Map.class);
+
+		// Empty array value representing a cleared field: [{"language":"eng","value":""}]
+		List<Map<String, Object>> emptyFieldValue = Collections.singletonList(
+				new java.util.HashMap<String, Object>() {{ put("language", "eng"); put("value", ""); }}
+		);
+
+		parentToOptionalFieldsMap.forEach((mandatoryParentField, optionalFields) -> {
+			// Only act if mandatory/parent field is present in inputData (user is updating this section)
+			if (inputState.containsKey(mandatoryParentField)) {
+				optionalFields.forEach(optionalField -> {
+
+					// If optional field is also absent from inputData, add it with empty value
+					// This ensures the merge step sees it as "missing on field" and writes null/empty
+					// into dbData, rather than leaving the old stale value
+					if (!inputState.containsKey(optionalField)) {
+						try {
+							String yearsLivedField = idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceYearsLived().getValue();
+							String applicantHouseNo = idRepoServiceHelper.getIdentityMapping().getIdentity().getApplicantPlaceOfResidenceHouseNo().getValue();
+							String fatherHouseNo = idRepoServiceHelper.getIdentityMapping().getIdentity().getFatherPlaceOfResidenceHouseNo().getValue();
+							String motherHouseNo = idRepoServiceHelper.getIdentityMapping().getIdentity().getMotherPlaceOfResidenceHouseNo().getValue();
+
+							if (yearsLivedField.equals(optionalField) || applicantHouseNo.equals(optionalField) || fatherHouseNo.equals(optionalField) || motherHouseNo.equals(optionalField)) {
+								inputData.put("$", optionalField, "");
+							} else {
+								inputData.put("$", optionalField, emptyFieldValue);
+							}
+							mosipLogger.info(
+									"Added empty placeholder for optional field '{}' in inputData (absent from request)",
+									optionalField);
+						} catch (Exception e) {
+							mosipLogger.warn("Could not add empty placeholder for field '{}' in inputData: {}", optionalField, e.getMessage());
+						}
+					}
+				});
+			}
+		});
+	}
+
 	private void updateDemographicData(IdRequestDTO request, UinDraft draftToUpdate) throws JSONException, IdRepoAppException, IOException {
 		if (Objects.nonNull(request.getRequest()) && Objects.nonNull(request.getRequest().getIdentity())) {
 			RequestDTO requestDTO = request.getRequest();
@@ -410,6 +581,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			DocumentContext dbData = JsonPath.using(configuration).parse(new String(draftToUpdate.getUinData()));
 			JsonPath uinJsonPath = JsonPath.compile(uinPath.replace(ROOT_PATH, "$"));
 			inputData.set(uinJsonPath, dbData.read(uinJsonPath));
+			addPlaceholdersForMissingOptionalFields(inputData);
 			super.updateVerifiedAttributes(requestDTO, inputData, dbData);
 			JSONCompareResult comparisonResult = JSONCompare.compareJSON(inputData.jsonString(), dbData.jsonString(),
 					JSONCompareMode.LENIENT);
@@ -417,7 +589,8 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			if (comparisonResult.failed()) {
 				super.updateJsonObject(draftToUpdate.getUinHash(), inputData, dbData, comparisonResult, false);
 			}
-			draftToUpdate.setUinData(convertToBytes(convertToObject(dbData.jsonString().getBytes(), Map.class)));
+			ObjectNode cleanedIdentityObject = convertToObject(dbData.jsonString().getBytes(), ObjectNode.class);
+			draftToUpdate.setUinData(convertToBytes(cleanedIdentityObject));
 			draftToUpdate.setUinDataHash(securityManager.hash(draftToUpdate.getUinData()));
 			draftToUpdate.setUpdatedBy(IdRepoSecurityManager.getUser());
 			draftToUpdate.setUpdatedDateTime(DateUtils.getUTCCurrentDateTime());
