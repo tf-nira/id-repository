@@ -62,18 +62,6 @@ public class IdentityMapping {
 		private FatherOrigin fatherOrigin;
 		@JsonProperty("motherOrigin")
 		private MotherOrigin motherOrigin;
-		@JsonProperty("enrolmentStatus")
-		private EnrolmentStatus enrolmentStatus;
-		@JsonProperty("applicantPlaceOfEnrolmentDistrict")
-		private ApplicantPlaceOfEnrolmentDistrict applicantPlaceOfEnrolmentDistrict;
-		@JsonProperty("applicantPlaceOfEnrolmentCounty")
-		private ApplicantPlaceOfEnrolmentCounty applicantPlaceOfEnrolmentCounty;
-		@JsonProperty("applicantPlaceOfEnrolmentSubCounty")
-		private ApplicantPlaceOfEnrolmentSubCounty applicantPlaceOfEnrolmentSubCounty;
-		@JsonProperty("applicantPlaceOfEnrolmentParish")
-		private ApplicantPlaceOfEnrolmentParish applicantPlaceOfEnrolmentParish;
-		@JsonProperty("applicantPlaceOfEnrolmentVillage")
-		private ApplicantPlaceOfEnrolmentVillage applicantPlaceOfEnrolmentVillage;
 		@JsonProperty("applicantPlaceOfResidence")
 		private ApplicantPlaceOfResidence applicantPlaceOfResidence;
 		@JsonProperty("applicantPlaceOfResidenceDistrict")
@@ -576,42 +564,6 @@ public class IdentityMapping {
 	@Data
 	@NoArgsConstructor
 	public static class MotherOrigin {
-		private String value;
-	}
-
-	@Data
-	@NoArgsConstructor
-	public static class EnrolmentStatus {
-		private String value;
-	}
-
-	@Data
-	@NoArgsConstructor
-	public static class ApplicantPlaceOfEnrolmentDistrict {
-		private String value;
-	}
-
-	@Data
-	@NoArgsConstructor
-	public static class ApplicantPlaceOfEnrolmentCounty {
-		private String value;
-	}
-
-	@Data
-	@NoArgsConstructor
-	public static class ApplicantPlaceOfEnrolmentSubCounty {
-		private String value;
-	}
-
-	@Data
-	@NoArgsConstructor
-	public static class ApplicantPlaceOfEnrolmentParish {
-		private String value;
-	}
-
-	@Data
-	@NoArgsConstructor
-	public static class ApplicantPlaceOfEnrolmentVillage {
 		private String value;
 	}
 
