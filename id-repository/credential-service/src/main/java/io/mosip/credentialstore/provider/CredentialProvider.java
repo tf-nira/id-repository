@@ -790,9 +790,9 @@ public class CredentialProvider {
 				}
 			}
 			if (formatAttrName.equals(CredentialConstants.NAME)) {
-				LOGGER.info(IdRepoSecurityManager.getUser(),LoggerFileConstant.REQUEST_ID.toString(), "", "Formatting Name - Language: " + lang + ", Input: " + formatDataList);
+				LOGGER.debug(IdRepoSecurityManager.getUser(),LoggerFileConstant.REQUEST_ID.toString(), "", "Formatting Name - Language: " + lang + ", Input: " + formatDataList);
 				formattedData = formatName(formatDataList);
-				LOGGER.info(IdRepoSecurityManager.getUser(),LoggerFileConstant.REQUEST_ID.toString(),"", "Formatted Name - Language: " + lang + ", Output: " + formattedData);
+				LOGGER.debug(IdRepoSecurityManager.getUser(),LoggerFileConstant.REQUEST_ID.toString(),"", "Formatted Name - Language: " + lang + ", Output: " + formattedData);
 			}
 			else if (formatAttrName.equals(CredentialConstants.FULLADDRESS)) {
 				formattedData = formatAddress(formatDataList);
