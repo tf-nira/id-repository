@@ -504,19 +504,19 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			String eventModelJson = objectMapper.writeValueAsString(eventModel);
-			LOGGER.info(IdRepoSecurityManager.getUser(),
+			LOGGER.debug(IdRepoSecurityManager.getUser(),
 					LoggerFileConstant.REQUEST_ID.toString(),
 					requestId,
 					"Request Payload to Print Service: " + eventModelJson);
-			LOGGER.info(IdRepoSecurityManager.getUser(),
+			LOGGER.debug(IdRepoSecurityManager.getUser(),
 					LoggerFileConstant.REQUEST_ID.toString(),
 					requestId,
 					"Request Payload Unicode: " + toUnicode(eventModelJson));
-			LOGGER.info(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
+			LOGGER.debug(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
 					"Sending data to print");
 			String response = restUtil.postApi(ApiName.PRINT_STORE, null, "", "", MediaType.APPLICATION_JSON,
 					eventModel, String.class);
-			LOGGER.info(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
+			LOGGER.debug(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
 					"Data sent to print, response: " + response);
 		} catch (Exception e) {
 			LOGGER.error(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(),
