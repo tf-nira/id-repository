@@ -502,6 +502,16 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 	
 	private void sendToPrint(EventModel eventModel, String requestId) {
 		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			String eventModelJson = objectMapper.writeValueAsString(eventModel);
+			LOGGER.info(IdRepoSecurityManager.getUser(),
+					LoggerFileConstant.REQUEST_ID.toString(),
+					requestId,
+					"Request Payload to Print Service: " + eventModelJson);
+			LOGGER.info(IdRepoSecurityManager.getUser(),
+					LoggerFileConstant.REQUEST_ID.toString(),
+					requestId,
+					"Request Payload Unicode: " + toUnicode(eventModelJson));
 			LOGGER.info(IdRepoSecurityManager.getUser(), LoggerFileConstant.REQUEST_ID.toString(), requestId,
 					"Sending data to print");
 			String response = restUtil.postApi(ApiName.PRINT_STORE, null, "", "", MediaType.APPLICATION_JSON,
@@ -513,6 +523,24 @@ public class CredentialStoreServiceImpl implements CredentialStoreService {
 					" Sending to print service failed for id:" + requestId,
 					ExceptionUtils.getStackTrace(e));
 		}
+	}
+
+	private String toUnicode(String s) {
+		if (s == null) {
+			return "null";
+		}
+		StringBuilder sb = new StringBuilder();
+		s.codePoints().forEach(cp -> {
+			if (sb.length() > 0) {
+				sb.append(' ');
+			}
+			if (cp <= 0xFFFF) {
+				sb.append(String.format("\\u%04X", cp));
+			} else {
+				sb.append(String.format("\\U%08X", cp));
+			}
+		});
+		return sb.toString();
 	}
 
 }
