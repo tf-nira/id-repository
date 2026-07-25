@@ -341,7 +341,7 @@ public class CredentialProvider {
 				Object object = identity.get(attribute);
 				Object formattedObject = object;
 
-				if (object != null) {
+				if (object != null && !isDateOFExpiryAttribute(attribute)) {
 					if (userReqMaskingAttributes != null && !userReqMaskingAttributes.isEmpty()
 							&& userReqMaskingAttributes.contains(attribute)) {
 						formattedObject = maskData(object.toString(), attribute);
