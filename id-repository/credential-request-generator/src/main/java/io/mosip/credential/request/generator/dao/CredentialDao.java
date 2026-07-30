@@ -1,15 +1,12 @@
 package io.mosip.credential.request.generator.dao;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import io.mosip.credential.request.generator.entity.CredentialEntity;
@@ -31,7 +28,7 @@ public class CredentialDao {
     @Value("${credential.request.reprocess.statuscodes}")
     private String reprocessStatusCodes;
     
-    @Value("${credential.request.reprocess.issuers:mpartner-default-print,opencrvs-cred-partner}")
+	@Value("${credential.request.reprocess.issuers:mpartner-default-print,opencrvs-cred-partner,mpartner-default-auth}")
     private String reprocessIssuers;
     
 
