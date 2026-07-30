@@ -34,7 +34,6 @@ import io.mosip.idrepository.core.repository.UinHashSaltRepo;
 import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.core.util.EnvUtil;
 import io.mosip.idrepository.credentialsfeeder.entity.AuthtypeLock;
-import io.mosip.idrepository.credentialsfeeder.entity.Uin;
 import io.mosip.idrepository.credentialsfeeder.repository.AuthLockRepository;
 import io.mosip.idrepository.credentialsfeeder.step.CredentialsFeedingWriter;
 import io.mosip.kernel.core.util.DateUtils;
@@ -94,15 +93,13 @@ public class CredentialsFeedingWriterTest {
 		when(restBuilder.buildRequest(any(), any(), any())).thenReturn(requestDTO);
 		when(restHelper.requestSync(any())).thenReturn(info);
 		when(credentialStatusManager.decryptId(any())).thenReturn("1234");
-		writer.write(List.of(new Uin(null, "1234", "1234", "".getBytes(), null, null, null, null, null, null, null,
-				null, null, null, null)));
+		writer.write(List.of("1234"));
 	}
 
 	@Test(expected = IdRepoAppUncheckedException.class)
 	public void testIssueCredentialDecryptionFailed() throws Exception {
 		when(credentialStatusManager.decryptId(any())).thenThrow(new IdRepoAppException("", ""));
-		writer.write(List.of(new Uin(null, "1234", "1234", "".getBytes(), null, null, null, null, null, null, null,
-				null, null, null, null)));
+		writer.write(List.of("1234"));
 	}
 
 	@Test(expected = IdRepoAppUncheckedException.class)
@@ -114,8 +111,7 @@ public class CredentialsFeedingWriterTest {
 		when(restBuilder.buildRequest(any(), any(), any())).thenReturn(requestDTO);
 		when(restHelper.requestSync(any())).thenThrow(new RestServiceException(IdRepoErrorConstants.CLIENT_ERROR));
 		when(credentialStatusManager.decryptId(any())).thenReturn("1234");
-		writer.write(List.of(new Uin(null, "1234", "1234", "".getBytes(), null, null, null, null, null, null, null,
-				null, null, null, null)));
+		writer.write(List.of("1234"));
 	}
 	
 	@Test
@@ -129,8 +125,7 @@ public class CredentialsFeedingWriterTest {
 		when(restBuilder.buildRequest(any(), any(), any())).thenReturn(requestDTO);
 		when(restHelper.requestSync(any())).thenReturn(info);
 		when(credentialStatusManager.decryptId(any())).thenReturn("1234");
-		writer.write(List.of(new Uin(null, "1234", "1234", "".getBytes(), null, null, null, null, null, null, null,
-				null, null, null, null)));
+		writer.write(List.of("1234"));
 	}
 	
 	@Test
@@ -144,7 +139,6 @@ public class CredentialsFeedingWriterTest {
 		when(restBuilder.buildRequest(any(), any(), any())).thenReturn(requestDTO);
 		when(restHelper.requestSync(any())).thenReturn(info);
 		when(credentialStatusManager.decryptId(any())).thenReturn("1234");
-		writer.write(List.of(new Uin(null, "1234", "1234", "".getBytes(), null, null, null, null, null, null, null,
-				null, null, null, null)));
+		writer.write(List.of("1234"));
 	}
 }

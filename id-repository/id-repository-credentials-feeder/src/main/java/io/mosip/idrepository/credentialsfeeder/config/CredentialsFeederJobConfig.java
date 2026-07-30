@@ -30,7 +30,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import io.mosip.idrepository.credentialsfeeder.entity.Uin;
 import io.mosip.idrepository.credentialsfeeder.logger.IdRepoLogger;
 import io.mosip.idrepository.credentialsfeeder.repository.UinRepo;
 import io.mosip.idrepository.credentialsfeeder.step.CredentialsFeedingWriter;
@@ -90,7 +89,7 @@ public class CredentialsFeederJobConfig {
 						+ " | writer: CredentialsFeedingWriter");
 		return stepBuilderFactory
 				.get("step")
-				.<Uin, Future<Uin>>chunk(chunkSize)
+				.<String, Future<String>>chunk(chunkSize)
 				.reader(credentialEventReader(uinRepo))
 				.processor(asyncItemProcessor())
 				.writer(asyncItemWriter(writer))
@@ -98,25 +97,26 @@ public class CredentialsFeederJobConfig {
 	}
 
 	/**
-	 * This function reads the data from the database and returns the data in the
-	 * form of a list of
-	 * objects
-	 * 
+	 * This function reads the data from the database and returns only the encrypted
+	 * UIN string for each record. Using a String projection avoids loading the large
+	 * {@code uinData} LOB column, which is not needed by the credentials feeder and
+	 * would otherwise accumulate in memory across chunks.
+	 *
 	 * @param uinRepo This is the repository that we are using to fetch the data.
-	 * @return A list of Uin objects
+	 * @return A page of encrypted UIN strings
 	 */
 	@Bean
-	public ItemReader<Uin> credentialEventReader(UinRepo uinRepo) {
+	public ItemReader<String> credentialEventReader(UinRepo uinRepo) {
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
 				"Initializing credentialEventReader"
-						+ " | method: findByStatusCodeAndCreatedDateTimeBefore"
+						+ " | method: findEncryptedUinByStatusCodeAndCreatedDateTimeBefore"
 						+ " | uinActiveStatus: " + uinActiveStatus
 						+ " | readBeforeDateTime: " + DateUtils.getUTCCurrentDateTime()
 						+ " | pageSize/chunkSize: " + chunkSize
 						+ " | sortBy: createdDateTime ASC");
-		RepositoryItemReader<Uin> reader = new RepositoryItemReader<>();
+		RepositoryItemReader<String> reader = new RepositoryItemReader<>();
 		reader.setRepository(uinRepo);
-		reader.setMethodName("findByStatusCodeAndCreatedDateTimeBefore");
+		reader.setMethodName("findEncryptedUinByStatusCodeAndCreatedDateTimeBefore");
 		reader.setArguments(List.of(uinActiveStatus, DateUtils.getUTCCurrentDateTime()));
 		final Map<String, Sort.Direction> sorts = new HashMap<>();
 		sorts.put("createdDateTime", Direction.ASC); // then try processing Least failed entries first
