@@ -23,7 +23,6 @@ on:
       - nira_1.2.1
       - tf_nira_dev
       - tf_nira_prod
-      - tf_nira_preprod
       
 
 jobs:
