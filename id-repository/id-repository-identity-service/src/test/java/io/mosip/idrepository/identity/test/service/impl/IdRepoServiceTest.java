@@ -282,6 +282,9 @@ public class IdRepoServiceTest {
 		residenceStatus.setValue("enrolmentStatus");
 		identityMapping.getIdentity().setEnrolmentStatus(enrolmentStatus);
 		identityMapping.getIdentity().setResidenceStatus(residenceStatus);
+		IdentityMapping.EnrolmentStatus enrolmentStatus = new IdentityMapping.EnrolmentStatus();
+		residenceStatus.setValue("enrolmentStatus");
+		identityMapping.getIdentity().setEnrolmentStatus(enrolmentStatus);
 		IdentityMapping.ApplicantOriginPlace applicantOriginPlace = new IdentityMapping.ApplicantOriginPlace();
 		residenceStatus.setValue("applicantOriginPlace");
 		identityMapping.getIdentity().setApplicantOriginPlace(applicantOriginPlace);
