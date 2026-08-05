@@ -658,12 +658,13 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 */
 	private String getUinHash(String individualId, IdType idType)
 			throws IdRepoDataValidationException, IdRepoAppException {
-				
-		if (individualId != null && 
-	    (individualId.toLowerCase().contains("@nin") || 
-	     (idType != null && "HANDLE".equalsIgnoreCase(idType.name())))) {
-	     return idRepoServiceHelper.getHandleHash(individualId);
+
+		if (individualId != null &&
+				(individualId.toLowerCase().contains("@nin") ||
+						(idType != null && "HANDLE".equalsIgnoreCase(idType.name())))) {
+			return idRepoServiceHelper.getHandleHash(individualId);
 		}
+
 		switch (idType) {
 			case VID:
 				individualId = getUinByVid(individualId);

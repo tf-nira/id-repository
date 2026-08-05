@@ -150,6 +150,7 @@ public class Uin implements Persistable<String>, UinInfo {
 	@Column(name = "remark")
 	private String remark;
 
+
 	/**
 	 * Gets the uin data.
 	 *

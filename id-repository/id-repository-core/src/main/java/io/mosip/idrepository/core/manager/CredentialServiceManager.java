@@ -298,7 +298,7 @@ public class CredentialServiceManager {
 					.collect(Collectors.toList());
 			eventList.addAll(idaEvents);
 		}
-
+		
 		sendEventsToIDA(eventList, eventType, idaEventModelConsumer);
 	}
 

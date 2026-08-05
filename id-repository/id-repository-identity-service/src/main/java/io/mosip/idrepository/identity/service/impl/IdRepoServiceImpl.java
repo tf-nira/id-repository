@@ -702,7 +702,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 		}
 		return null;
 	}
-
+	
 	private void saveCardDetails(RequestDTO requestDTO) {
 		ObjectNode identityObject = mapper.convertValue(requestDTO.getIdentity(), ObjectNode.class);
 		if (identityObject.get("isCardRequired") != null) {
