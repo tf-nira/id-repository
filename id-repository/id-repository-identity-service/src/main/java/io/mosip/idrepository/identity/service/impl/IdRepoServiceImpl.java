@@ -15,20 +15,14 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_CO
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+import io.mosip.idrepository.identity.constant.MappingJsonConstants;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -391,6 +385,23 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 							"constructCardExpiryDate",
 							"Skipping expiry calculation. facilityTypeSubCategory is Life or dateOfExpiry missing"
 					);
+				}
+			} else if("Alien Replacement".equalsIgnoreCase(userServiceType)) {
+				mosipLogger.info(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_SERVICE_IMPL,
+						"constructCardExpiryDate",
+						"Processing Replacement of Alien"
+				);
+				List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(NIN.toLowerCase().getBytes()));
+				if (cardDetails != null && !cardDetails.isEmpty()) {
+					CardDetail cardDetail = cardDetails.get(0);
+					Date expiryDate = cardDetail.getDateOfExpiry();
+					Date issuancedate = cardDetail.getDateOfIssuance();
+					if (expiryDate != null && issuancedate != null) {
+						cardExpiryDate = expiryDate.toLocalDate();
+						cardIssuanceDate = issuancedate.toLocalDate();
+					}
 				}
 			}
 			CardDetail cardDetail = new CardDetail();
