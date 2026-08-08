@@ -65,4 +65,7 @@ public interface UinRepo extends JpaRepository<Uin, String> {
 	boolean existsByUinHash(String uinHash);
 	
 	Page<Uin> findByStatusCodeAndCreatedDateTimeBefore(String statusCode, LocalDateTime createdDateTime, Pageable pageable);
+	
+	Page<Uin> findByStatusCodeAndCreatedDateTimeBetween(String statusCode, LocalDateTime fromDate, LocalDateTime toDate, Pageable pageable);
+
 }

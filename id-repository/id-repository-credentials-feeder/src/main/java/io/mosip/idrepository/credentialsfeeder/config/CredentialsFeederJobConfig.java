@@ -4,6 +4,8 @@ import static io.mosip.idrepository.credentialsfeeder.constant.Constants.DEFAULT
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.IDREPO_CREDENTIAL_FEEDER_CHUNK_SIZE;
 import static io.mosip.idrepository.credentialsfeeder.constant.Constants.MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,12 @@ public class CredentialsFeederJobConfig {
 	@Value("${" + MOSIP_IDREPO_IDENTITY_UIN_STATUS_REGISTERED + "}")
 	private String uinActiveStatus;
 
+	@Value("${idrepo.credential.feeder.from-date}")
+	private String fromDateStr;
+	
+	@Value("${idrepo.credential.feeder.to-date:}")
+	private String toDateStr;
+	
 	/**
 	 * Job.
 	 *
@@ -114,10 +122,21 @@ public class CredentialsFeederJobConfig {
 						+ " | readBeforeDateTime: " + DateUtils.getUTCCurrentDateTime()
 						+ " | pageSize/chunkSize: " + chunkSize
 						+ " | sortBy: createdDateTime ASC");
+		
+		LocalDateTime fromDate = LocalDateTime.parse(fromDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		LocalDateTime effectiveToDate = (toDateStr != null && !toDateStr.isBlank()) 
+				? LocalDateTime.parse(toDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+				: DateUtils.getUTCCurrentDateTime();
+		
+		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeederJobConfig", "READER INIT",
+	            "Initializing credentialEventReader"
+	                    + " | fromDate: " + fromDate
+	                    + " | toDate: " + effectiveToDate);
+
 		RepositoryItemReader<Uin> reader = new RepositoryItemReader<>();
 		reader.setRepository(uinRepo);
-		reader.setMethodName("findByStatusCodeAndCreatedDateTimeBefore");
-		reader.setArguments(List.of(uinActiveStatus, DateUtils.getUTCCurrentDateTime()));
+		reader.setMethodName("findByStatusCodeAndCreatedDateTimeBetween");
+		reader.setArguments(List.of(uinActiveStatus, fromDate, effectiveToDate));
 		final Map<String, Sort.Direction> sorts = new HashMap<>();
 		sorts.put("createdDateTime", Direction.ASC); // then try processing Least failed entries first
 		reader.setSort(sorts);
