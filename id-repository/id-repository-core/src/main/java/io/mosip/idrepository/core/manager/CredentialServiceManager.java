@@ -408,7 +408,7 @@ public class CredentialServiceManager {
 				return partnerIds.stream().map(partnerId -> {
 					String token = tokenIDGenerator.generateTokenID(uin, partnerId);
 					return createCredReqDto(vidInfoDTO.getVid(), partnerId, vidExpiryTime, vidInfoDTO.getTransactionLimit(),
-							token, vidInfoDTO.getHashAttributes());
+							token, vidInfoDTO.getHashAttributes(), requestId);
 				});
 			}).collect(Collectors.toList());
 			eventRequestsList.addAll(vidRequests);
