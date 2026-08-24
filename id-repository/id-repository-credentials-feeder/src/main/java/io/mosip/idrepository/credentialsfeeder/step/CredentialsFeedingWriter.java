@@ -168,7 +168,7 @@ public class CredentialsFeedingWriter implements ItemWriter<Uin> {
 				"Issuing UIN credential, VID credential and publishing auth-lock for UIN: "
 						+ uin);
 		issueUinCredential(uin, regId);
-		issueVidCredential(uin);
+		//issueVidCredential(uin);
 		publishAuthLock(uin);
 		mosipLogger.info(CREDENTIALS_FEEDER, "CredentialsFeedingWriter", "ISSUE CREDENTIAL END",
 				"Credential issuance and auth-lock publish completed for UIN: " + uin);
