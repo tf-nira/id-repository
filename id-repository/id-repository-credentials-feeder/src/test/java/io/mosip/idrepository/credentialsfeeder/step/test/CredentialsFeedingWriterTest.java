@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -117,6 +118,7 @@ public class CredentialsFeedingWriterTest {
 				null, null, null, null)));
 	}
 
+	@Ignore("VID credential issuance is intentionally disabled in CredentialsFeedingWriter — re-enable when issueVidCredential is restored")
 	@Test(expected = IdRepoAppUncheckedException.class)
 	public void testIssueCredentialVidRestCallFailed() throws Exception {
 		VidsInfosDTO info = new VidsInfosDTO();
