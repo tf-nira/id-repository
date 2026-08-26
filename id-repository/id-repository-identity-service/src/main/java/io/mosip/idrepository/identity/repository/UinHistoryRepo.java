@@ -37,4 +37,9 @@ public interface UinHistoryRepo extends JpaRepository<UinHistory, String> {
 	 */
 	@Query("select u from UinHistory u where u.uinHash = :uinHash order by u.effectiveDateTime desc")
 	List<UinHistory> findByUinHashOrderByEffectiveDateTimeDesc(@Param("uinHash") String uinHash);
+
+	@Query("select u from UinHistory u where u.uinRefId = :uinRefId order by u.effectiveDateTime desc")
+	List<UinHistory> findByUinRefIdOrderByEffectiveDateTimeDesc(@Param("uinRefId") String uinRefId);
+
+
 }
