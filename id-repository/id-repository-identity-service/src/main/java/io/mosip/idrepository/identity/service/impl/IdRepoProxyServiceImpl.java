@@ -29,20 +29,17 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.RECORD_EX
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import io.mosip.idrepository.identity.dto.HandleHistoryEntryDTO;
+import io.mosip.idrepository.identity.dto.IdResponseHistoryDTO;
+import io.mosip.idrepository.identity.entity.*;
+import io.mosip.idrepository.identity.repository.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.JDBCConnectionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,14 +80,8 @@ import io.mosip.idrepository.core.security.IdRepoSecurityManager;
 import io.mosip.idrepository.core.spi.BiometricExtractionService;
 import io.mosip.idrepository.core.spi.IdRepoService;
 import io.mosip.idrepository.core.util.EnvUtil;
-import io.mosip.idrepository.identity.entity.CardDetail;
-import io.mosip.idrepository.identity.entity.Uin;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
-import io.mosip.idrepository.identity.repository.CardDetailRepository;
-import io.mosip.idrepository.identity.repository.UinDraftRepo;
-import io.mosip.idrepository.identity.repository.UinHistoryRepo;
-import io.mosip.idrepository.identity.repository.UinRepo;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.entities.BIR;
 import io.mosip.kernel.biometrics.spi.CbeffUtil;
@@ -181,6 +172,12 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 	@Autowired
 	private IdRepoServiceHelper idRepoServiceHelper;
+
+	@Autowired
+	private UinDocumentHistoryRepo uinDocHRepo;
+
+	@Autowired
+	private UinBiometricHistoryRepo uinBioHRepo;
 
 	private static final String REGISTRATION_ID = "registration_id";
 
@@ -1059,6 +1056,171 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 					: ((IdRepoAppUncheckedException) e).getErrorText();
 			throw new IdRepoAppException(errorCode, errorMsg, e);
 		}
+	}
+
+	/**
+	 * Exclusive-to-handle endpoint: returns every historical uin_h snapshot for
+	 * the NIN-mapped uin_hash, with documents/biometrics reconstructed "as of"
+	 * each snapshot's eff_dtimes from uin_document_h / uin_biometric_h.
+	 *
+	 * @param handle             the NIN handle (e.g. "cf192392613467@nin")
+	 * @param type               all/bio/demo
+	 * @param extractionFormats  optional biometric extraction formats
+	 */
+	public IdResponseHistoryDTO retrieveIdentityHistoryByHandle(String handle, String type,
+																Map<String, String> extractionFormats) throws IdRepoAppException {
+		try {
+			String handleHash = idRepoServiceHelper.getHandleHash(handle);
+			Handle handleEntity = handleRepo.findByHandleHash(handleHash);
+			if (Objects.isNull(handleEntity)) {
+				throw new IdRepoAppException(NO_RECORD_FOUND);
+			}
+
+			String uinHash = handleEntity.getUinHash();
+			List<UinHistory> historyList = uinHistoryRepo.findByUinHashOrderByEffectiveDateTimeDesc(uinHash);
+			if (historyList.isEmpty()) {
+				throw new IdRepoAppException(NO_RECORD_FOUND);
+			}
+
+			List<HandleHistoryEntryDTO> entries = new ArrayList<>();
+			for (UinHistory snapshot : historyList) {
+				List<DocumentsDTO> documents = new ArrayList<>();
+//				if (StringUtils.containsIgnoreCase(type, BIO) || StringUtils.containsIgnoreCase(type, ALL)) {
+//					getBiometricFilesAsOf(snapshot, documents, extractionFormats);
+//				}
+				if (StringUtils.containsIgnoreCase(type, DEMO) || StringUtils.containsIgnoreCase(type, ALL)) {
+					getDemographicFilesAsOf(snapshot, documents);
+				}
+				entries.add(constructHistoryEntry(snapshot, documents));
+			}
+
+			IdResponseHistoryDTO idResponse = new IdResponseHistoryDTO();
+			idResponse.setId(this.id.get(READ));
+			idResponse.setVersion(EnvUtil.getAppVersion());
+			idResponse.setResponse(entries);
+			return idResponse;
+
+		} catch (DataAccessException | TransactionException | JDBCConnectionException e) {
+			mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, RETRIEVE_IDENTITY,
+					"\n" + e.getMessage());
+			throw new IdRepoAppException(DATABASE_ACCESS_ERROR, e);
+		} catch (IdRepoAppException | IdRepoAppUncheckedException e) {
+			mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, RETRIEVE_IDENTITY,
+					"\n" + e.getMessage());
+			String errorCode = (e instanceof IdRepoAppException) ? ((IdRepoAppException) e).getErrorCode()
+					: ((IdRepoAppUncheckedException) e).getErrorCode();
+			String errorMsg = (e instanceof IdRepoAppException) ? ((IdRepoAppException) e).getErrorText()
+					: ((IdRepoAppUncheckedException) e).getErrorText();
+			throw new IdRepoAppException(errorCode, errorMsg, e);
+		}
+	}
+
+	/**
+	 * Builds one history entry (status/identity/documents/cardDetails) from a
+	 * single uin_h snapshot row — mirrors the READ branch of constructIdResponse.
+	 */
+	private HandleHistoryEntryDTO constructHistoryEntry(UinHistory snapshot, List<DocumentsDTO> documents)
+			throws IdRepoAppException {
+		HandleHistoryEntryDTO entry = new HandleHistoryEntryDTO();
+		entry.setStatus(snapshot.getStatusCode());
+		entry.setEffectiveDateTime(DateUtils.formatToISOString(snapshot.getEffectiveDateTime()));
+
+		if (!documents.isEmpty()) {
+			entry.setDocuments(documents);
+		}
+
+		ObjectNode identityObject = convertToObject(snapshot.getUinData(), ObjectNode.class);
+		entry.setVerifiedAttributes(mapper.convertValue(identityObject.get("verifiedAttributes"), List.class));
+		identityObject.remove("verifiedAttributes");
+		constructAddressDetails(identityObject);
+		removeNullNodes(identityObject);
+
+		if (identityObject.get("NIN") != null) {
+			String nin = identityObject.get("NIN").asText();
+			List<CardDetail> cardDetails = cardDetailRepository.getCardDetail(securityManager.hash(nin.getBytes()));
+			List<CardDetailDto> cardDetailDtos = new ArrayList<>();
+			for (CardDetail cardDetail : cardDetails) {
+				CardDetailDto dto = new CardDetailDto();
+				try {
+					dto.setDateOfExpiry(convertDate(cardDetail.getDateOfExpiry()));
+					dto.setDateOfIssuance(convertDate(cardDetail.getDateOfIssuance()));
+				} catch (ParseException e) {
+					throw new IdRepoAppException(PARSE_EXCEPTION);
+				}
+				dto.setCardNumber(cardDetail.getCardNumber());
+				cardDetailDtos.add(dto);
+			}
+			entry.setCardDetails(cardDetailDtos);
+		}
+
+		entry.setIdentity(identityObject);
+		return entry;
+	}
+
+	/**
+	 * Demographic docs "as of" this snapshot: latest uin_document_h row per
+	 * doccat_code with eff_dtimes <= snapshot.effDTimes.
+	 */
+	private void getDemographicFilesAsOf(UinHistory snapshot, List<DocumentsDTO> documents) {
+		List<UinDocumentHistory> rows = uinDocHRepo.findAllUpToAsOf(snapshot.getUinRefId(), snapshot.getEffectiveDateTime());
+		Map<String, UinDocumentHistory> latestPerCategory = new LinkedHashMap<>();
+		for (UinDocumentHistory row : rows) {
+			latestPerCategory.putIfAbsent(row.getDoccatCode(), row);
+		}
+		String uinHashUnsalted = snapshot.getUinHash().split("_")[1];
+		latestPerCategory.values().forEach(demo -> {
+			try {
+				byte[] data = objectStoreHelper.getDemographicObject(uinHashUnsalted, demo.getDocId());
+				if (demo.getDocHash().equals(securityManager.hash(data))) {
+					documents.add(new DocumentsDTO(demo.getDoccatCode(), CryptoUtil.encodeToURLSafeBase64(data)));
+				} else {
+					throw new IdRepoAppException(DOCUMENT_HASH_MISMATCH);
+				}
+			} catch (IdRepoAppException e) {
+				mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, GET_FILES, e.getMessage());
+				throw new IdRepoAppUncheckedException(e.getErrorCode(), e.getErrorText(), e);
+			}
+		});
+	}
+
+	/**
+	 * Biometric docs "as of" this snapshot: latest uin_biometric_h row per
+	 * biometric_file_type with eff_dtimes <= snapshot.effDTimes.
+	 */
+	private void getBiometricFilesAsOf(UinHistory snapshot, List<DocumentsDTO> documents,
+									   Map<String, String> extractionFormats) {
+		List<UinBiometricHistory> rows = uinBioHRepo.findAllUpToAsOf(snapshot.getUinRefId(), snapshot.getEffectiveDateTime());
+		Map<String, UinBiometricHistory> latestPerType = new LinkedHashMap<>();
+		for (UinBiometricHistory row : rows) {
+			latestPerType.putIfAbsent(row.getBiometricFileType(), row);
+		}
+		String uinHashUnsalted = snapshot.getUinHash().split("_")[1];
+		latestPerType.values().forEach(bio -> {
+			if (!allowedBioAttributes.contains(bio.getBiometricFileType())) {
+				return;
+			}
+			try {
+				byte[] data = objectStoreHelper.getBiometricObject(uinHashUnsalted, bio.getBioFileId());
+				if (Objects.isNull(data)) {
+					return;
+				}
+				if (Objects.nonNull(extractionFormats) && !extractionFormats.isEmpty()) {
+					byte[] extracted = getBiometricsForRequestedFormats(uinHashUnsalted, bio.getBioFileId(),
+							extractionFormats, data);
+					if (Objects.nonNull(extracted)) {
+						documents.add(new DocumentsDTO(bio.getBiometricFileType(),
+								CryptoUtil.encodeToURLSafeBase64(extracted)));
+					}
+				} else if (StringUtils.equals(bio.getBiometricFileHash(), securityManager.hash(data))) {
+					documents.add(new DocumentsDTO(bio.getBiometricFileType(), CryptoUtil.encodeToURLSafeBase64(data)));
+				} else {
+					throw new IdRepoAppException(DOCUMENT_HASH_MISMATCH);
+				}
+			} catch (IdRepoAppException e) {
+				mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, GET_FILES, e.getMessage());
+				throw new IdRepoAppUncheckedException(e.getErrorCode(), e.getErrorText(), e);
+			}
+		});
 	}
 
 	private List<BIR> filterExceptionBiometrics(List<BIR> birTypesForModality, List<BIR> finalBirs)
