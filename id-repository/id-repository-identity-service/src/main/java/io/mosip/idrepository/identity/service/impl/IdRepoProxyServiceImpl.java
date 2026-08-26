@@ -1077,6 +1077,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			}
 
 			String uinHash = handleEntity.getUinHash();
+			mosipLogger.info("uinhash : "+ uinHash+" for "+handle);
 			List<UinHistory> historyList = uinHistoryRepo.findByUinHashOrderByEffectiveDateTimeDesc(uinHash);
 			if (historyList.isEmpty()) {
 				throw new IdRepoAppException(NO_RECORD_FOUND);
