@@ -361,184 +361,252 @@ public class IdRepoEntityInterceptor extends EmptyInterceptor {
 //		return super.onLoad(entity, id, state, propertyNames, types);
 //	}
 
+//	@Override
+//	public boolean onLoad(Object entity, Serializable id, Object[] state,
+//						  String[] propertyNames, Type[] types) {
+//
+//		List<String> propertyNamesList = Arrays.asList(propertyNames);
+//
+//		String entityType = entity.getClass().getSimpleName();
+//
+//		try {
+//			mosipLogger.info(
+//					IdRepoSecurityManager.getUser(),
+//					ID_REPO_ENTITY_INTERCEPTOR,
+//					"onLoad",
+//					"START - entityType=" + entityType + ", id=" + id
+//			);
+//
+//			if (entity instanceof Uin ||
+//					entity instanceof UinHistory ||
+//					entity instanceof UinDraft) {
+//
+//				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
+//				int indexOfDataHash = propertyNamesList.indexOf(UIN_DATA_HASH);
+//
+//				mosipLogger.info(
+//						IdRepoSecurityManager.getUser(),
+//						ID_REPO_ENTITY_INTERCEPTOR,
+//						"onLoad",
+//						"Validation entityType=" + entityType
+//								+ ", id=" + id
+//								+ ", uinDataIndex=" + indexOfData
+//								+ ", uinDataHashIndex=" + indexOfDataHash
+//				);
+//
+//				if (indexOfData < 0) {
+//					mosipLogger.warn(
+//							IdRepoSecurityManager.getUser(),
+//							ID_REPO_ENTITY_INTERCEPTOR,
+//							"onLoad",
+//							"UIN_DATA property not found. entityType=" + entityType
+//									+ ", id=" + id
+//					);
+//
+//					return super.onLoad(entity, id, state, propertyNames, types);
+//				}
+//
+//				if (indexOfDataHash < 0) {
+//					mosipLogger.warn(
+//							IdRepoSecurityManager.getUser(),
+//							ID_REPO_ENTITY_INTERCEPTOR,
+//							"onLoad",
+//							"UIN_DATA_HASH property not found. entityType=" + entityType
+//									+ ", id=" + id
+//					);
+//
+//					return super.onLoad(entity, id, state, propertyNames, types);
+//				}
+//
+//				if (Objects.isNull(state[indexOfData])) {
+//
+//					mosipLogger.warn(
+//							IdRepoSecurityManager.getUser(),
+//							ID_REPO_ENTITY_INTERCEPTOR,
+//							"onLoad",
+//							"UIN_DATA is NULL. entityType=" + entityType
+//									+ ", id=" + id
+//					);
+//
+//					return super.onLoad(entity, id, state, propertyNames, types);
+//				}
+//
+//				mosipLogger.info(
+//						IdRepoSecurityManager.getUser(),
+//						ID_REPO_ENTITY_INTERCEPTOR,
+//						"onLoad",
+//						"Decrypting UIN_DATA. entityType=" + entityType
+//								+ ", id=" + id
+//				);
+//
+//				byte[] encryptedData = (byte[]) state[indexOfData];
+//
+//				byte[] decryptedData =
+//						securityManager.decrypt(encryptedData, uinDataRefId);
+//
+//				mosipLogger.info(
+//						IdRepoSecurityManager.getUser(),
+//						ID_REPO_ENTITY_INTERCEPTOR,
+//						"onLoad",
+//						"UIN_DATA decrypted successfully. entityType=" + entityType
+//								+ ", id=" + id
+//								+ ", decryptedDataLength=" + decryptedData.length
+//				);
+//
+//				state[indexOfData] = decryptedData;
+//
+//				String calculatedHash =
+//						securityManager.hash(decryptedData);
+//
+//				String storedHash =
+//						(String) state[indexOfDataHash];
+//
+//				mosipLogger.info(
+//						IdRepoSecurityManager.getUser(),
+//						ID_REPO_ENTITY_INTERCEPTOR,
+//						"onLoad",
+//						"Hash validation. entityType=" + entityType
+//								+ ", id=" + id
+//								+ ", calculatedHash=" + calculatedHash
+//								+ ", storedHash=" + storedHash
+//				);
+//
+//				if (!StringUtils.equals(calculatedHash, storedHash)) {
+//
+//					mosipLogger.warn(
+//							IdRepoSecurityManager.getUser(),
+//							ID_REPO_ENTITY_INTERCEPTOR,
+//							"onLoad",
+//							"IDENTITY HASH MISMATCH. entityType=" + entityType
+//									+ ", id=" + id
+//									+ ", calculatedHash=" + calculatedHash
+//									+ ", storedHash=" + storedHash
+//					);
+//
+//					/*
+//					 * For UinHistory:
+//					 * Do not fail the request. Continue loading the entity.
+//					 */
+//					if (entity instanceof UinHistory) {
+//
+//						mosipLogger.warn(
+//								IdRepoSecurityManager.getUser(),
+//								ID_REPO_ENTITY_INTERCEPTOR,
+//								"onLoad",
+//								"Continuing despite hash mismatch because entity is UinHistory. "
+//										+ "id=" + id
+//						);
+//
+//					} else {
+//						throw new IdRepoAppUncheckedException(
+//								IDENTITY_HASH_MISMATCH);
+//					}
+//
+//				} else {
+//
+//					mosipLogger.info(
+//							IdRepoSecurityManager.getUser(),
+//							ID_REPO_ENTITY_INTERCEPTOR,
+//							"onLoad",
+//							"IDENTITY HASH VALID. entityType=" + entityType
+//									+ ", id=" + id
+//					);
+//				}
+//			}
+//
+//		} catch (IdRepoAppException e) {
+//
+//			mosipLogger.error(
+//					IdRepoSecurityManager.getUser(),
+//					ID_REPO_ENTITY_INTERCEPTOR,
+//					"onLoad",
+//					"Decrypt failed. entityType=" + entityType
+//							+ ", id=" + id
+//							+ ", error=" + e.getMessage()
+//			);
+//
+//			/*
+//			 * I would NOT ignore decryption failure even for history.
+//			 * If decrypt itself fails, the entity cannot be safely loaded.
+//			 */
+//			throw new IdRepoAppUncheckedException(
+//					ENCRYPTION_DECRYPTION_FAILED, e);
+//		}
+//
+//		mosipLogger.info(
+//				IdRepoSecurityManager.getUser(),
+//				ID_REPO_ENTITY_INTERCEPTOR,
+//				"onLoad",
+//				"END - entityType=" + entityType + ", id=" + id
+//		);
+//
+//		return super.onLoad(entity, id, state, propertyNames, types);
+//	}
+
 	@Override
-	public boolean onLoad(Object entity, Serializable id, Object[] state,
-						  String[] propertyNames, Type[] types) {
-
-		List<String> propertyNamesList = Arrays.asList(propertyNames);
-
-		String entityType = entity.getClass().getSimpleName();
+	public boolean onLoad(
+			Object entity,
+			Serializable id,
+			Object[] state,
+			String[] propertyNames,
+			Type[] types) {
 
 		try {
-			mosipLogger.info(
-					IdRepoSecurityManager.getUser(),
-					ID_REPO_ENTITY_INTERCEPTOR,
-					"onLoad",
-					"START - entityType=" + entityType + ", id=" + id
-			);
+			List<String> propertyNamesList = Arrays.asList(propertyNames);
 
-			if (entity instanceof Uin ||
-					entity instanceof UinHistory ||
-					entity instanceof UinDraft) {
+			if (entity instanceof Uin
+					|| entity instanceof UinHistory
+					|| entity instanceof UinDraft) {
 
 				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
 				int indexOfDataHash = propertyNamesList.indexOf(UIN_DATA_HASH);
 
-				mosipLogger.info(
-						IdRepoSecurityManager.getUser(),
-						ID_REPO_ENTITY_INTERCEPTOR,
-						"onLoad",
-						"Validation entityType=" + entityType
-								+ ", id=" + id
-								+ ", uinDataIndex=" + indexOfData
-								+ ", uinDataHashIndex=" + indexOfDataHash
-				);
+				if (indexOfData >= 0 && Objects.nonNull(state[indexOfData])) {
 
-				if (indexOfData < 0) {
-					mosipLogger.warn(
-							IdRepoSecurityManager.getUser(),
-							ID_REPO_ENTITY_INTERCEPTOR,
-							"onLoad",
-							"UIN_DATA property not found. entityType=" + entityType
-									+ ", id=" + id
-					);
+					byte[] data = (byte[]) state[indexOfData];
 
-					return super.onLoad(entity, id, state, propertyNames, types);
-				}
-
-				if (indexOfDataHash < 0) {
-					mosipLogger.warn(
-							IdRepoSecurityManager.getUser(),
-							ID_REPO_ENTITY_INTERCEPTOR,
-							"onLoad",
-							"UIN_DATA_HASH property not found. entityType=" + entityType
-									+ ", id=" + id
-					);
-
-					return super.onLoad(entity, id, state, propertyNames, types);
-				}
-
-				if (Objects.isNull(state[indexOfData])) {
-
-					mosipLogger.warn(
-							IdRepoSecurityManager.getUser(),
-							ID_REPO_ENTITY_INTERCEPTOR,
-							"onLoad",
-							"UIN_DATA is NULL. entityType=" + entityType
-									+ ", id=" + id
-					);
-
-					return super.onLoad(entity, id, state, propertyNames, types);
-				}
-
-				mosipLogger.info(
-						IdRepoSecurityManager.getUser(),
-						ID_REPO_ENTITY_INTERCEPTOR,
-						"onLoad",
-						"Decrypting UIN_DATA. entityType=" + entityType
-								+ ", id=" + id
-				);
-
-				byte[] encryptedData = (byte[]) state[indexOfData];
-
-				byte[] decryptedData =
-						securityManager.decrypt(encryptedData, uinDataRefId);
-
-				mosipLogger.info(
-						IdRepoSecurityManager.getUser(),
-						ID_REPO_ENTITY_INTERCEPTOR,
-						"onLoad",
-						"UIN_DATA decrypted successfully. entityType=" + entityType
-								+ ", id=" + id
-								+ ", decryptedDataLength=" + decryptedData.length
-				);
-
-				state[indexOfData] = decryptedData;
-
-				String calculatedHash =
-						securityManager.hash(decryptedData);
-
-				String storedHash =
-						(String) state[indexOfDataHash];
-
-				mosipLogger.info(
-						IdRepoSecurityManager.getUser(),
-						ID_REPO_ENTITY_INTERCEPTOR,
-						"onLoad",
-						"Hash validation. entityType=" + entityType
-								+ ", id=" + id
-								+ ", calculatedHash=" + calculatedHash
-								+ ", storedHash=" + storedHash
-				);
-
-				if (!StringUtils.equals(calculatedHash, storedHash)) {
-
-					mosipLogger.warn(
-							IdRepoSecurityManager.getUser(),
-							ID_REPO_ENTITY_INTERCEPTOR,
-							"onLoad",
-							"IDENTITY HASH MISMATCH. entityType=" + entityType
-									+ ", id=" + id
-									+ ", calculatedHash=" + calculatedHash
-									+ ", storedHash=" + storedHash
-					);
-
-					/*
-					 * For UinHistory:
-					 * Do not fail the request. Continue loading the entity.
-					 */
+					// UinHistory is currently getting encrypted twice
 					if (entity instanceof UinHistory) {
+						data = securityManager.decrypt(data, uinDataRefId);
+					}
 
-						mosipLogger.warn(
-								IdRepoSecurityManager.getUser(),
-								ID_REPO_ENTITY_INTERCEPTOR,
-								"onLoad",
-								"Continuing despite hash mismatch because entity is UinHistory. "
-										+ "id=" + id
-						);
+					// Normal decryption
+					data = securityManager.decrypt(data, uinDataRefId);
 
-					} else {
+					state[indexOfData] = data;
+
+					String calculatedHash = securityManager.hash(data);
+					String entityHash = (String) state[indexOfDataHash];
+
+					mosipLogger.warn(
+							IdRepoSecurityManager.getUser(),
+							ID_REPO_ENTITY_INTERCEPTOR,
+							"onLoad",
+							"entity=" + entity.getClass().getSimpleName()
+									+ ", dataLength=" + data.length
+									+ ", calculatedHash=" + calculatedHash
+									+ ", entityHash=" + entityHash
+									+ ", hashMatch="
+									+ StringUtils.equals(calculatedHash, entityHash)
+					);
+
+					if (!StringUtils.equals(calculatedHash, entityHash)) {
 						throw new IdRepoAppUncheckedException(
 								IDENTITY_HASH_MISMATCH);
 					}
-
-				} else {
-
-					mosipLogger.info(
-							IdRepoSecurityManager.getUser(),
-							ID_REPO_ENTITY_INTERCEPTOR,
-							"onLoad",
-							"IDENTITY HASH VALID. entityType=" + entityType
-									+ ", id=" + id
-					);
 				}
 			}
 
 		} catch (IdRepoAppException e) {
-
 			mosipLogger.error(
 					IdRepoSecurityManager.getUser(),
 					ID_REPO_ENTITY_INTERCEPTOR,
 					"onLoad",
-					"Decrypt failed. entityType=" + entityType
-							+ ", id=" + id
-							+ ", error=" + e.getMessage()
-			);
+					"\n" + e.getMessage());
 
-			/*
-			 * I would NOT ignore decryption failure even for history.
-			 * If decrypt itself fails, the entity cannot be safely loaded.
-			 */
 			throw new IdRepoAppUncheckedException(
 					ENCRYPTION_DECRYPTION_FAILED, e);
 		}
-
-		mosipLogger.info(
-				IdRepoSecurityManager.getUser(),
-				ID_REPO_ENTITY_INTERCEPTOR,
-				"onLoad",
-				"END - entityType=" + entityType + ", id=" + id
-		);
 
 		return super.onLoad(entity, id, state, propertyNames, types);
 	}
