@@ -91,34 +91,245 @@ public class IdRepoEntityInterceptor extends EmptyInterceptor {
 		return super.onSave(entity, id, state, propertyNames, types);
 	}
 
-	private <T extends UinInfo> void encryptDataOnSave(Serializable id, Object[] state, List<String> propertyNamesList,
-													   Type[] types, T entity) throws IdRepoAppException {
+//	private <T extends UinInfo> void encryptDataOnSave(Serializable id, Object[] state, List<String> propertyNamesList,
+//													   Type[] types, T entity) throws IdRepoAppException {
+//		if (Objects.nonNull(entity.getUinData())) {
+//			byte[] encryptedData = securityManager.encrypt(entity.getUinData(), uinDataRefId);
+//			entity.setUinData(encryptedData);
+//			int indexOfData = propertyNamesList.indexOf(UIN_DATA);
+//			state[indexOfData] = encryptedData;
+//		}
+//
+//		if (Objects.nonNull(entity.getUin()) && !(entity instanceof UinHistory)) {
+//			List<String> uinList = Arrays.asList(entity.getUin().split(SPLITTER));
+//			byte[] encryptedUinByteWithSalt = securityManager.encryptWithSalt(uinList.get(1).getBytes(),
+//					CryptoUtil.decodePlainBase64(uinList.get(2)), uinRefId);
+//			String encryptedUinWithSalt = uinList.get(0) + SPLITTER + new String(encryptedUinByteWithSalt);
+//			entity.setUin(encryptedUinWithSalt);
+//			int indexOfUin = propertyNamesList.indexOf(UIN);
+//			state[indexOfUin] = encryptedUinWithSalt;
+//		}
+//
+//		if ((entity instanceof HandleInfo)) {
+//			List<String> parts = Arrays.asList(((HandleInfo) entity).getHandle().split(SPLITTER));
+//			byte[] encryptedHandleByteWithSalt = securityManager.encryptWithSalt(parts.get(1).getBytes(),
+//					CryptoUtil.decodePlainBase64(parts.get(2)), uinRefId);
+//			String encryptedHandleWithSalt = parts.get(0) + SPLITTER + new String(encryptedHandleByteWithSalt);
+//			((HandleInfo) entity).setHandle(encryptedHandleWithSalt);
+//			int indexOfUin = propertyNamesList.indexOf(HANDLE);
+//			state[indexOfUin] = encryptedHandleWithSalt;
+//		}
+//	}
+
+	private <T extends UinInfo> void encryptDataOnSave(
+			Serializable id,
+			Object[] state,
+			List<String> propertyNamesList,
+			Type[] types,
+			T entity) throws IdRepoAppException {
+
+		String entityName = entity.getClass().getSimpleName();
+
+		mosipLogger.warn(
+				IdRepoSecurityManager.getUser(),
+				ID_REPO_ENTITY_INTERCEPTOR,
+				"encryptDataOnSave",
+				"START - entity=" + entityName + ", id=" + id
+		);
+
+		// ---------------------------------------------------------
+		// UIN DATA
+		// ---------------------------------------------------------
 		if (Objects.nonNull(entity.getUinData())) {
-			byte[] encryptedData = securityManager.encrypt(entity.getUinData(), uinDataRefId);
-			entity.setUinData(encryptedData);
+
 			int indexOfData = propertyNamesList.indexOf(UIN_DATA);
-			state[indexOfData] = encryptedData;
+			int indexOfDataHash = propertyNamesList.indexOf(UIN_DATA_HASH);
+
+			byte[] originalData = entity.getUinData();
+
+			String entityHash = null;
+
+			if (indexOfDataHash >= 0 && state[indexOfDataHash] != null) {
+				entityHash = (String) state[indexOfDataHash];
+			}
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"UIN_DATA found - entity=" + entityName
+							+ ", dataIndex=" + indexOfData
+							+ ", dataHashIndex=" + indexOfDataHash
+							+ ", originalLength=" + originalData.length
+			);
+
+			// Log hash of the plaintext data
+			String calculatedHash = securityManager.hash(originalData);
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"UIN_DATA plaintext hash="
+							+ calculatedHash
+							+ ", entityHash="
+							+ entityHash
+							+ ", hashMatch="
+							+ StringUtils.equals(
+							calculatedHash,
+							entityHash
+					)
+			);
+
+			// Check state before changing it
+			if (indexOfData >= 0 && state[indexOfData] instanceof byte[]) {
+
+				mosipLogger.warn(
+						IdRepoSecurityManager.getUser(),
+						ID_REPO_ENTITY_INTERCEPTOR,
+						"encryptDataOnSave",
+						"STATE UIN_DATA before encryption - length="
+								+ ((byte[]) state[indexOfData]).length
+								+ ", sameAsEntity="
+								+ Arrays.equals(
+								originalData,
+								(byte[]) state[indexOfData]
+						)
+				);
+			}
+
+			// Encrypt
+			byte[] encryptedData =
+					securityManager.encrypt(originalData, uinDataRefId);
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"UIN_DATA encrypted successfully - "
+							+ "originalLength=" + originalData.length
+							+ ", encryptedLength=" + encryptedData.length
+			);
+
+			entity.setUinData(encryptedData);
+
+			if (indexOfData >= 0) {
+				state[indexOfData] = encryptedData;
+			}
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"UIN_DATA encryption completed - "
+							+ "entity=" + entityName
+							+ ", stateUpdated=true"
+			);
+
+		} else {
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"UIN_DATA is NULL - entity=" + entityName
+			);
 		}
 
-		if (Objects.nonNull(entity.getUin()) && !(entity instanceof UinHistory)) {
-			List<String> uinList = Arrays.asList(entity.getUin().split(SPLITTER));
-			byte[] encryptedUinByteWithSalt = securityManager.encryptWithSalt(uinList.get(1).getBytes(),
-					CryptoUtil.decodePlainBase64(uinList.get(2)), uinRefId);
-			String encryptedUinWithSalt = uinList.get(0) + SPLITTER + new String(encryptedUinByteWithSalt);
+
+		// ---------------------------------------------------------
+		// UIN
+		// ---------------------------------------------------------
+		if (Objects.nonNull(entity.getUin())
+				&& !(entity instanceof UinHistory)) {
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"Encrypting UIN - entity=" + entityName
+			);
+
+			List<String> uinList =
+					Arrays.asList(entity.getUin().split(SPLITTER));
+
+			byte[] encryptedUinByteWithSalt =
+					securityManager.encryptWithSalt(
+							uinList.get(1).getBytes(),
+							CryptoUtil.decodePlainBase64(uinList.get(2)),
+							uinRefId
+					);
+
+			String encryptedUinWithSalt =
+					uinList.get(0) + SPLITTER
+							+ new String(encryptedUinByteWithSalt);
+
 			entity.setUin(encryptedUinWithSalt);
+
 			int indexOfUin = propertyNamesList.indexOf(UIN);
-			state[indexOfUin] = encryptedUinWithSalt;
+
+			if (indexOfUin >= 0) {
+				state[indexOfUin] = encryptedUinWithSalt;
+			}
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"UIN encryption completed - entity=" + entityName
+			);
 		}
 
-		if ((entity instanceof HandleInfo)) {
-			List<String> parts = Arrays.asList(((HandleInfo) entity).getHandle().split(SPLITTER));
-			byte[] encryptedHandleByteWithSalt = securityManager.encryptWithSalt(parts.get(1).getBytes(),
-					CryptoUtil.decodePlainBase64(parts.get(2)), uinRefId);
-			String encryptedHandleWithSalt = parts.get(0) + SPLITTER + new String(encryptedHandleByteWithSalt);
+
+		// ---------------------------------------------------------
+		// HANDLE
+		// ---------------------------------------------------------
+		if (entity instanceof HandleInfo) {
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"Encrypting HANDLE"
+			);
+
+			List<String> parts =
+					Arrays.asList(
+							((HandleInfo) entity).getHandle().split(SPLITTER)
+					);
+
+			byte[] encryptedHandleByteWithSalt =
+					securityManager.encryptWithSalt(
+							parts.get(1).getBytes(),
+							CryptoUtil.decodePlainBase64(parts.get(2)),
+							uinRefId
+					);
+
+			String encryptedHandleWithSalt =
+					parts.get(0) + SPLITTER
+							+ new String(encryptedHandleByteWithSalt);
+
 			((HandleInfo) entity).setHandle(encryptedHandleWithSalt);
-			int indexOfUin = propertyNamesList.indexOf(HANDLE);
-			state[indexOfUin] = encryptedHandleWithSalt;
+
+			int indexOfHandle = propertyNamesList.indexOf(HANDLE);
+
+			if (indexOfHandle >= 0) {
+				state[indexOfHandle] = encryptedHandleWithSalt;
+			}
+
+			mosipLogger.warn(
+					IdRepoSecurityManager.getUser(),
+					ID_REPO_ENTITY_INTERCEPTOR,
+					"encryptDataOnSave",
+					"HANDLE encryption completed"
+			);
 		}
+
+		mosipLogger.warn(
+				IdRepoSecurityManager.getUser(),
+				ID_REPO_ENTITY_INTERCEPTOR,
+				"encryptDataOnSave",
+				"END - entity=" + entityName + ", id=" + id
+		);
 	}
 
 	/*
