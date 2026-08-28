@@ -543,71 +543,119 @@ public class IdRepoEntityInterceptor extends EmptyInterceptor {
 //		return super.onLoad(entity, id, state, propertyNames, types);
 //	}
 
-	@Override
-	public boolean onLoad(
-			Object entity,
-			Serializable id,
-			Object[] state,
-			String[] propertyNames,
-			Type[] types) {
+//	@Override
+//	public boolean onLoad(
+//			Object entity,
+//			Serializable id,
+//			Object[] state,
+//			String[] propertyNames,
+//			Type[] types) {
+//
+//		try {
+//			List<String> propertyNamesList = Arrays.asList(propertyNames);
+//
+//			if (entity instanceof Uin
+//					|| entity instanceof UinHistory
+//					|| entity instanceof UinDraft) {
+//
+//				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
+//				int indexOfDataHash = propertyNamesList.indexOf(UIN_DATA_HASH);
+//
+//				if (indexOfData >= 0 && Objects.nonNull(state[indexOfData])) {
+//
+//					byte[] data = (byte[]) state[indexOfData];
+//
+//					// UinHistory is currently getting encrypted twice
+//					if (entity instanceof UinHistory) {
+//						data = securityManager.decrypt(data, uinDataRefId);
+//					}
+//
+//					// Normal decryption
+//					data = securityManager.decrypt(data, uinDataRefId);
+//
+//					state[indexOfData] = data;
+//
+//					String calculatedHash = securityManager.hash(data);
+//					String entityHash = (String) state[indexOfDataHash];
+//
+//					mosipLogger.warn(
+//							IdRepoSecurityManager.getUser(),
+//							ID_REPO_ENTITY_INTERCEPTOR,
+//							"onLoad",
+//							"entity=" + entity.getClass().getSimpleName()
+//									+ ", dataLength=" + data.length
+//									+ ", calculatedHash=" + calculatedHash
+//									+ ", entityHash=" + entityHash
+//									+ ", hashMatch="
+//									+ StringUtils.equals(calculatedHash, entityHash)
+//					);
+//
+//					if (!StringUtils.equals(calculatedHash, entityHash)) {
+//						throw new IdRepoAppUncheckedException(
+//								IDENTITY_HASH_MISMATCH);
+//					}
+//				}
+//			}
+//
+//		} catch (IdRepoAppException e) {
+//			mosipLogger.error(
+//					IdRepoSecurityManager.getUser(),
+//					ID_REPO_ENTITY_INTERCEPTOR,
+//					"onLoad",
+//					"\n" + e.getMessage());
+//
+//			throw new IdRepoAppUncheckedException(
+//					ENCRYPTION_DECRYPTION_FAILED, e);
+//		}
+//
+//		return super.onLoad(entity, id, state, propertyNames, types);
+//	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see org.hibernate.EmptyInterceptor#onLoad(java.lang.Object,
+	 * java.io.Serializable, java.lang.Object[], java.lang.String[],
+	 * org.hibernate.type.Type[])
+	 */
+	@Override
+	public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
 		try {
 			List<String> propertyNamesList = Arrays.asList(propertyNames);
-
-			if (entity instanceof Uin
-					|| entity instanceof UinHistory
-					|| entity instanceof UinDraft) {
-
+			if (entity instanceof Uin || entity instanceof UinDraft) {
 				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
-				int indexOfDataHash = propertyNamesList.indexOf(UIN_DATA_HASH);
+				if (Objects.nonNull(state[indexOfData])) {
+					state[indexOfData] = securityManager.decrypt((byte[]) state[indexOfData], uinDataRefId);
 
-				if (indexOfData >= 0 && Objects.nonNull(state[indexOfData])) {
-
-					byte[] data = (byte[]) state[indexOfData];
-
-					// UinHistory is currently getting encrypted twice
-					if (entity instanceof UinHistory) {
-						data = securityManager.decrypt(data, uinDataRefId);
-					}
-
-					// Normal decryption
-					data = securityManager.decrypt(data, uinDataRefId);
-
-					state[indexOfData] = data;
-
-					String calculatedHash = securityManager.hash(data);
-					String entityHash = (String) state[indexOfDataHash];
-
-					mosipLogger.warn(
-							IdRepoSecurityManager.getUser(),
-							ID_REPO_ENTITY_INTERCEPTOR,
-							"onLoad",
-							"entity=" + entity.getClass().getSimpleName()
-									+ ", dataLength=" + data.length
-									+ ", calculatedHash=" + calculatedHash
-									+ ", entityHash=" + entityHash
-									+ ", hashMatch="
-									+ StringUtils.equals(calculatedHash, entityHash)
-					);
-
-					if (!StringUtils.equals(calculatedHash, entityHash)) {
-						throw new IdRepoAppUncheckedException(
-								IDENTITY_HASH_MISMATCH);
+					if (!StringUtils.equals(securityManager.hash((byte[]) state[indexOfData]),
+							(String) state[propertyNamesList.indexOf(UIN_DATA_HASH)])) {
+						throw new IdRepoAppUncheckedException(IDENTITY_HASH_MISMATCH);
 					}
 				}
 			}
+			else if (entity instanceof UinHistory) {
+				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
+				if (Objects.nonNull(state[indexOfData])) {
+					byte[] decryptedData = securityManager.decrypt(
+							(byte[]) state[indexOfData], uinDataRefId);
 
+					String dataHash = (String) state[propertyNamesList.indexOf(UIN_DATA_HASH)];
+
+					if (!StringUtils.equals(securityManager.hash(decryptedData), dataHash)) {
+						decryptedData = securityManager.decrypt(decryptedData, uinDataRefId);
+
+						if (!StringUtils.equals(securityManager.hash(decryptedData), dataHash)) {
+							throw new IdRepoAppUncheckedException(IDENTITY_HASH_MISMATCH);
+						}
+					}
+
+					state[indexOfData] = decryptedData;
+				}
+			}
 		} catch (IdRepoAppException e) {
-			mosipLogger.error(
-					IdRepoSecurityManager.getUser(),
-					ID_REPO_ENTITY_INTERCEPTOR,
-					"onLoad",
-					"\n" + e.getMessage());
-
-			throw new IdRepoAppUncheckedException(
-					ENCRYPTION_DECRYPTION_FAILED, e);
+			mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_ENTITY_INTERCEPTOR, "onLoad", "\n" + e.getMessage());
+			throw new IdRepoAppUncheckedException(ENCRYPTION_DECRYPTION_FAILED, e);
 		}
-
 		return super.onLoad(entity, id, state, propertyNames, types);
 	}
 
