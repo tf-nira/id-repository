@@ -1125,6 +1125,7 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	@SuppressWarnings("unchecked")
 	private HandleHistoryEntryDTO constructHistoryEntry(UinHistory historyRecord) throws IdRepoAppException {
 		HandleHistoryEntryDTO entry = new HandleHistoryEntryDTO();
+		entry.setRegId(historyRecord.getRegId());
 		entry.setEffectiveDateTime(historyRecord.getEffectiveDateTime());
 		entry.setStatus(historyRecord.getStatusCode());
 		ObjectNode identityObject = convertToObject(historyRecord.getUinData(), ObjectNode.class);
