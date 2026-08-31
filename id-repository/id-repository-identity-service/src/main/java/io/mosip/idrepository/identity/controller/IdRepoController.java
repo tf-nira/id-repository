@@ -271,21 +271,18 @@ public class IdRepoController {
 
 	@PreAuthorize("hasAnyRole(@authorizedRoles.getGetidvidid())")
 	@GetMapping(path = "/idvid/{id}/history", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "retrieveIdentityHistory", description = "retrieveIdentityHistory", tags = { "id-repo-controller" })
+	@Operation(summary = "retrieveIdentityHistory", description = "retrieveIdentityHistory", tags = {"id-repo-controller"})
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "OK"),
 			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
 			@ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
 			@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
 	public ResponseEntity<io.mosip.idrepository.identity.dto.IdResponseHistoryDTO> retrieveIdentityHistory(
-			@PathVariable String id,
-			@RequestParam(name = TYPE, required = false) @Nullable String type)
+			@PathVariable String id)
 			throws IdRepoAppException {
 		try {
-			type = validator.validateType(type);
-			Map<String, String> extractionFormats = new HashMap<>();
 			return new ResponseEntity<>(
-					idRepoProxyService.retrieveIdentityHistoryByHandle(id, type, extractionFormats), HttpStatus.OK);
+					idRepoProxyService.retrieveIdentityHistoryByHandle(id), HttpStatus.OK);
 		} catch (IdRepoAppException e) {
 			auditHelper.auditError(AuditModules.ID_REPO_CORE_SERVICE,
 					AuditEvents.RETRIEVE_IDENTITY_REQUEST_RESPONSE_UIN, id, IdType.HANDLE, e);

@@ -173,12 +173,6 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	@Autowired
 	private IdRepoServiceHelper idRepoServiceHelper;
 
-	@Autowired
-	private UinDocumentRepo uinDocRepo;
-
-	@Autowired
-	private UinBiometricHistoryRepo uinBioHRepo;
-
 	private static final String REGISTRATION_ID = "registration_id";
 
 	private static final String PARTNER_ACTIVE_STATUS = "Active";
@@ -1060,15 +1054,10 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 
 	/**
 	 * Exclusive-to-handle endpoint: returns every historical uin_h snapshot for
-	 * the NIN-mapped uin_hash, with documents/biometrics reconstructed "as of"
-	 * each snapshot's eff_dtimes from uin_document_h / uin_biometric_h.
-	 *
-	 * @param handle             the NIN handle (e.g. "cf192392613467@nin")
-	 * @param type               all/bio/demo
-	 * @param extractionFormats  optional biometric extraction formats
+	 * the NIN-mapped uin_hash
+	 * @param handle   the NIN handle (e.g. "cf192392613467@nin")
 	 */
-	public IdResponseHistoryDTO retrieveIdentityHistoryByHandle(String handle, String type,
-																Map<String, String> extractionFormats) throws IdRepoAppException {
+	public IdResponseHistoryDTO retrieveIdentityHistoryByHandle(String handle) throws IdRepoAppException {
 		try {
 			String handleHash = idRepoServiceHelper.getHandleHash(handle);
 			Handle handleEntity = handleRepo.findByHandleHash(handleHash);
@@ -1077,16 +1066,10 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 			}
 
 			String uinHash = handleEntity.getUinHash();
-			mosipLogger.info("uinhash : "+ uinHash+" for "+handle);
 			Uin uinObject = uinRepo.findByUinHash(uinHash)
 					.orElseThrow(() -> new IdRepoAppException(NO_RECORD_FOUND));
-			mosipLogger.info("after uinrepo");
-			if(uinObject!=null){
-				mosipLogger.info("able to get from uinrepo");
-				mosipLogger.info(uinObject.toString());
-			}
 			String uinRefId = uinObject.getUinRefId();
-			mosipLogger.info("uinRefId " +uinRefId);
+
 			List<UinHistory> historyRecords = uinHistoryRepo.findByUinRefIdOrderByEffectiveDateTimeDesc(uinRefId);
 			if (historyRecords.isEmpty()) {
 				throw new IdRepoAppException(NO_RECORD_FOUND);

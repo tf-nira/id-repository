@@ -33,11 +33,8 @@ public interface UinHistoryRepo extends JpaRepository<UinHistory, String> {
 	String getUinHashByRid(@Param("regId") String regId);
 
 	/**
-	 *
+	 * for history
 	 */
-	@Query("select u from UinHistory u where u.uinHash = :uinHash order by u.effectiveDateTime desc")
-	List<UinHistory> findByUinHashOrderByEffectiveDateTimeDesc(@Param("uinHash") String uinHash);
-
 	@Query("select u from UinHistory u where u.uinRefId = :uinRefId and u.isDeleted = false order by u.effectiveDateTime desc")
 	List<UinHistory> findByUinRefIdOrderByEffectiveDateTimeDesc(@Param("uinRefId") String uinRefId);
 
