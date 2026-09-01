@@ -121,6 +121,7 @@ public class IdRepoEntityInterceptor extends EmptyInterceptor {
 		}
 	}
 
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -132,7 +133,7 @@ public class IdRepoEntityInterceptor extends EmptyInterceptor {
 	public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
 		try {
 			List<String> propertyNamesList = Arrays.asList(propertyNames);
-			if (entity instanceof Uin || entity instanceof UinHistory || entity instanceof UinDraft) {
+			if (entity instanceof Uin || entity instanceof UinDraft) {
 				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
 				if (Objects.nonNull(state[indexOfData])) {
 					state[indexOfData] = securityManager.decrypt((byte[]) state[indexOfData], uinDataRefId);
@@ -141,6 +142,25 @@ public class IdRepoEntityInterceptor extends EmptyInterceptor {
 							(String) state[propertyNamesList.indexOf(UIN_DATA_HASH)])) {
 						throw new IdRepoAppUncheckedException(IDENTITY_HASH_MISMATCH);
 					}
+				}
+			}
+			else if (entity instanceof UinHistory) {
+				int indexOfData = propertyNamesList.indexOf(UIN_DATA);
+				if (Objects.nonNull(state[indexOfData])) {
+					byte[] decryptedData = securityManager.decrypt(
+							(byte[]) state[indexOfData], uinDataRefId);
+
+					String dataHash = (String) state[propertyNamesList.indexOf(UIN_DATA_HASH)];
+
+					if (!StringUtils.equals(securityManager.hash(decryptedData), dataHash)) {
+						decryptedData = securityManager.decrypt(decryptedData, uinDataRefId);
+
+						if (!StringUtils.equals(securityManager.hash(decryptedData), dataHash)) {
+							throw new IdRepoAppUncheckedException(IDENTITY_HASH_MISMATCH);
+						}
+					}
+
+					state[indexOfData] = decryptedData;
 				}
 			}
 		} catch (IdRepoAppException e) {

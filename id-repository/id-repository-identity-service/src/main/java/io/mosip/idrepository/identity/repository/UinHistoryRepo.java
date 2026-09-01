@@ -6,6 +6,8 @@ import org.springframework.data.repository.query.Param;
 
 import io.mosip.idrepository.identity.entity.UinHistory;
 
+import java.util.List;
+
 /**
  * The Interface UinHistoryRepo.
  *
@@ -29,4 +31,12 @@ public interface UinHistoryRepo extends JpaRepository<UinHistory, String> {
 	 */
 	@Query("select uinHash from UinHistory where regId = :regId")
 	String getUinHashByRid(@Param("regId") String regId);
+
+	/**
+	 * for history
+	 */
+	@Query("select u from UinHistory u where u.uinRefId = :uinRefId and u.isDeleted = false order by u.effectiveDateTime desc")
+	List<UinHistory> findByUinRefIdOrderByEffectiveDateTimeDesc(@Param("uinRefId") String uinRefId);
+
+
 }

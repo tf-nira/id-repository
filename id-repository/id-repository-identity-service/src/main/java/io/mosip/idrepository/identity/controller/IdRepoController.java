@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
 import io.mosip.idrepository.core.dto.*;
+import io.mosip.idrepository.identity.service.impl.IdRepoProxyServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -141,6 +142,9 @@ public class IdRepoController {
 	@Autowired
 	private AuthtypeStatusService authTypeStatusService;
 
+	@Autowired
+	private IdRepoProxyServiceImpl idRepoProxyService;
+
 	@Value("${mosip.idrepo.rid.get.id}")
 	private String ridId;
 
@@ -262,6 +266,31 @@ public class IdRepoController {
 		} finally {
 			auditHelper.audit(AuditModules.ID_REPO_CORE_SERVICE, AuditEvents.RETRIEVE_IDENTITY_REQUEST_RESPONSE_UIN, id,
 					IdType.UIN, "Retrieve Identity requested");
+		}
+	}
+
+	@PreAuthorize("hasAnyRole(@authorizedRoles.getGetidvidid())")
+	@GetMapping(path = "/idvid/{id}/history", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "retrieveIdentityHistory", description = "retrieveIdentityHistory", tags = {"id-repo-controller"})
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
+	public ResponseEntity<io.mosip.idrepository.identity.dto.IdResponseHistoryDTO> retrieveIdentityHistory(
+			@PathVariable String id)
+			throws IdRepoAppException {
+		try {
+			return new ResponseEntity<>(
+					idRepoProxyService.retrieveIdentityHistoryByHandle(id), HttpStatus.OK);
+		} catch (IdRepoAppException e) {
+			auditHelper.auditError(AuditModules.ID_REPO_CORE_SERVICE,
+					AuditEvents.RETRIEVE_IDENTITY_REQUEST_RESPONSE_UIN, id, IdType.HANDLE, e);
+			mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_CONTROLLER, RETRIEVE_IDENTITY, e.getMessage());
+			throw new IdRepoAppException(e.getErrorCode(), e.getErrorText(), e);
+		} finally {
+			auditHelper.audit(AuditModules.ID_REPO_CORE_SERVICE, AuditEvents.RETRIEVE_IDENTITY_REQUEST_RESPONSE_UIN,
+					id, IdType.HANDLE, "Retrieve Identity History requested");
 		}
 	}
 

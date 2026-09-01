@@ -25,6 +25,7 @@ on:
       - tf_nira_dev_SR
       - Devtest
       - tf_nira_devlop_Satyam
+      - hstryhandle
 
 jobs:
   build-maven-id-repository:
