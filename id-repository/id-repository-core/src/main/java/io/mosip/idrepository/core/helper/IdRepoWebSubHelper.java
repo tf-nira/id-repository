@@ -12,6 +12,9 @@ import static io.mosip.idrepository.core.constant.IdRepoConstants.VID_EVENT_SECR
 import static io.mosip.idrepository.core.constant.IdRepoConstants.VID_EVENT_TOPIC;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.WEB_SUB_HUB_URL;
 import static io.mosip.idrepository.core.constant.IdRepoConstants.WEB_SUB_PUBLISH_URL;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CREDENTIAL_EVENT_SECRET;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CREDENTIAL_EVENT_TOPIC;
+import static io.mosip.idrepository.core.constant.IdRepoConstants.CREDENTIAL_EVENT_CALLBACK_URL;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -92,6 +95,15 @@ public class IdRepoWebSubHelper {
 
 	@Value("${" + CARD_EVENT_CALLBACK_URL + "}")
 	private String cardEventUrl;
+
+	@Value("${" + CREDENTIAL_EVENT_TOPIC + "}")
+	private String credentialEventTopic;
+
+	@Value("${" + CREDENTIAL_EVENT_SECRET + "}")
+	private String credentialEventSecret;
+
+	@Value("${" + CREDENTIAL_EVENT_CALLBACK_URL + "}")
+	private String credentialEventUrl;
 
 	/** The ida event type namespace. */
 	@Value("${id-repo-ida-event-type-namespace:mosip}")
@@ -291,10 +303,29 @@ public class IdRepoWebSubHelper {
 		}
 	}
 
+	public void subscribeForCredentialEvent() {
+		try {
+			SubscriptionChangeRequest subscriptionRequest = new SubscriptionChangeRequest();
+			subscriptionRequest.setCallbackURL(credentialEventUrl);
+			subscriptionRequest.setHubURL(hubURL);
+			subscriptionRequest.setSecret(credentialEventSecret);
+			subscriptionRequest.setTopic(credentialEventTopic);
+			subscribe.subscribe(subscriptionRequest);
+			mosipLogger.info(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
+					"subscribeForCredentialEvent", "subscribed event topic: " + credentialEventTopic);
+		} catch (Exception e) {
+			mosipLogger.warn(IdRepoSecurityManager.getUser(), this.getClass().getCanonicalName(),
+					"subscribeForCredentialEvent", "Error subscribing topic: " + credentialEventTopic + "\n" + e.getMessage());
+		}
+	}
+
 	@Scheduled(fixedDelayString = "${idrepo-websub-resubscription-delay-millisecs}", initialDelayString = "${mosip.event.delay-millisecs}")
 	public void initSubsriptions() {
 		mosipLogger.info("Initializing subscribptions... {} {}", this.getClass().getSimpleName(), "initSubsriptions");
 		tryRegisteringTopic(cardEventTopic);
 		subscribeForCardEvent();
+
+		tryRegisteringTopic(credentialEventTopic);
+		subscribeForCredentialEvent();
 	}
 }
