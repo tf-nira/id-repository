@@ -87,13 +87,17 @@ public class OnDemandCredentialServiceImpl implements OnDemandCredentialService 
         try {
             String id = decryptId((String)data.get(INDIVIDUAL_ID));
 
-            String uin;
+            String uin = null;
             if (IdType.HANDLE.name().equalsIgnoreCase((String)data.get(INDIVIDUAL_ID_TYPE))) {
                 mosipLogger.info("Fetching uin for decrypted nin");
                 IdResponseDTO response = idRepoService.retrieveIdentity(id, IdType.HANDLE, "metadata", null);
-                ObjectMapper mapper = new ObjectMapper();
-                Map<String, Object> map = mapper.convertValue(response.getResponse().getIdentity(), Map.class);
-                uin = (String)map.get("UIN");
+                if(!"DEACTIVATED".equalsIgnoreCase(response.getResponse().getStatus())) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    Map<String, Object> map = mapper.convertValue(response.getResponse().getIdentity(), Map.class);
+                    uin = (String) map.get("UIN");
+                } else {
+                    mosipLogger.error("NIN/UIN status is deactivated");
+                }
             } else {
                 uin = id;
             }
