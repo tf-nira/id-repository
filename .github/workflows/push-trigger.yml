@@ -39,7 +39,7 @@ jobs:
           echo "===== Java Version ====="
           java -version
   build-maven-id-repository:
-    uses: mosip/kattu/.github/workflows/maven-build.yml@master
+    uses: tf-nira/kattu/.github/workflows/maven-build.yml@tf_nira_dev
     with:
       SERVICE_LOCATION: ./id-repository
       BUILD_ARTIFACT: id-repository
