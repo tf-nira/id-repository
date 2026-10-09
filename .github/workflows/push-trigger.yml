@@ -27,7 +27,7 @@ on:
 
 jobs:
   build-maven-id-repository:
-    uses: tf-nira/kattu/.github/workflows/maven-build.yml@tf_nira_dev
+    uses: mosip/kattu/.github/workflows/maven-build.yml@master
     with:
       SERVICE_LOCATION: ./id-repository
       BUILD_ARTIFACT: id-repository
