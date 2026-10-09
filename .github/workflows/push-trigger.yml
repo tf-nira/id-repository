@@ -26,6 +26,18 @@ on:
       - tf_nira_prod_other_issuers
 
 jobs:
+  check-maven-version:
+    name: Check GitHub Maven Version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Maven and Java versions
+        run: |
+          echo "===== Maven Version ====="
+          mvn -version
+          echo "===== Maven Executable ====="
+          which mvn
+          echo "===== Java Version ====="
+          java -version
   build-maven-id-repository:
     uses: mosip/kattu/.github/workflows/maven-build.yml@master
     with:
