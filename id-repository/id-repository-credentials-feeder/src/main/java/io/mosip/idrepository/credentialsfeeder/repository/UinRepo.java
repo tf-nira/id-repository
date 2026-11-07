@@ -65,4 +65,20 @@ public interface UinRepo extends JpaRepository<Uin, String> {
 	boolean existsByUinHash(String uinHash);
 	
 	Page<Uin> findByStatusCodeAndCreatedDateTimeBefore(String statusCode, LocalDateTime createdDateTime, Pageable pageable);
+
+	/**
+	 * Returns a page of encrypted UIN strings for active records created before the
+	 * given timestamp. Using a String projection avoids loading the large
+	 * {@code uinData} LOB column, which is not needed by the credentials feeder.
+	 *
+	 * @param statusCode      the UIN status code to filter by
+	 * @param createdDateTime the upper-bound creation timestamp
+	 * @param pageable        pagination and sort information
+	 * @return page of encrypted UIN strings
+	 */
+	@Query("SELECT u.uin FROM Uin u WHERE u.statusCode = :statusCode AND u.createdDateTime < :createdDateTime")
+	Page<String> findEncryptedUinByStatusCodeAndCreatedDateTimeBefore(
+			@Param("statusCode") String statusCode,
+			@Param("createdDateTime") LocalDateTime createdDateTime,
+			Pageable pageable);
 }
