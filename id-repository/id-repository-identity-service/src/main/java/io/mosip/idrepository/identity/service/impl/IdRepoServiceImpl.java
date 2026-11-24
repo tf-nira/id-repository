@@ -539,7 +539,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				securityManager.hash(data), "", IdRepoSecurityManager.getUser(),
 				DateUtils.getUTCCurrentDateTime(), null, null, false, null));
 
-
+		if (!isDraft)
 			uinBioHRepo.save(new UinBiometricHistory(uinRefId, DateUtils.getUTCCurrentDateTime(), fileRefId, doc.getCategory(),
 					docType.get(FILE_NAME_ATTRIBUTE).asText(), securityManager.hash(doc.getValue().getBytes()),
 					"", IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(),
@@ -568,7 +568,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				securityManager.hash(data), "", IdRepoSecurityManager.getUser(),
 				DateUtils.getUTCCurrentDateTime(), null, null, false, null));
 
-
+		if (!isDraft)
 			uinDocHRepo.save(new UinDocumentHistory(uinRefId, DateUtils.getUTCCurrentDateTime(), doc.getCategory(),
 					docType.get(TYPE).asText(), fileRefId, docType.get(FILE_NAME_ATTRIBUTE).asText(),
 					docType.get(FILE_FORMAT_ATTRIBUTE).asText(), securityManager.hash(data),
@@ -1273,5 +1273,19 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 	private String getFileRefId(JsonNode docType) {
 		return UUID.randomUUID().toString() + DOT + docType.get(FILE_FORMAT_ATTRIBUTE).asText();
+	}
+
+	protected void saveDocumentHistory(UinDocument doc) {
+		LocalDateTime now = DateUtils.getUTCCurrentDateTime();
+		uinDocHRepo.save(new UinDocumentHistory(doc.getUinRefId(), now, doc.getDoccatCode(), doc.getDoctypCode(),
+				doc.getDocId(), doc.getDocName(), doc.getDocfmtCode(), doc.getDocHash(), "",
+				IdRepoSecurityManager.getUser(), now, null, null, false, null));
+	}
+
+	protected void saveBiometricHistory(UinBiometric bio) {
+		LocalDateTime now = DateUtils.getUTCCurrentDateTime();
+		uinBioHRepo.save(new UinBiometricHistory(bio.getUinRefId(), now, bio.getBioFileId(), bio.getBiometricFileType(),
+				bio.getBiometricFileName(), bio.getBiometricFileHash(), "", IdRepoSecurityManager.getUser(), now, null,
+				null, false, null));
 	}
 }
