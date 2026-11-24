@@ -97,12 +97,12 @@ import io.mosip.idrepository.identity.entity.UinBiometricDraft;
 import io.mosip.idrepository.identity.entity.UinDocument;
 import io.mosip.idrepository.identity.entity.UinDocumentDraft;
 import io.mosip.idrepository.identity.entity.UinDraft;
+import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.VidDraftHelper;
 import io.mosip.idrepository.identity.repository.UinBiometricRepo;
 import io.mosip.idrepository.identity.repository.UinDocumentRepo;
 import io.mosip.idrepository.identity.repository.UinDraftRepo;
 import io.mosip.idrepository.identity.validator.IdRequestValidator;
-import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.kernel.core.http.ResponseWrapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
@@ -744,6 +744,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			return uinBio;
 		}).collect(Collectors.toList());
 		uinBiometricRepo.saveAll(uinBiometricList);
+		uinBiometricList.forEach(this::saveBiometricHistory);
 		List<UinDocument> uinDocumentList = draft.getDocuments().stream().map(doc -> {
 			UinDocument uinDoc = mapper.convertValue(doc, UinDocument.class);
 			uinDoc.setUinRefId(uinObject.getUinRefId());
@@ -751,6 +752,8 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			return uinDoc;
 		}).collect(Collectors.toList());
 		uinDocumentRepo.saveAll(uinDocumentList);
+		uinDocumentList.forEach(this::saveDocumentHistory);
+
 	}
 
 	private String decryptUin(String encryptedUin, String uinHash) throws IdRepoAppException {
