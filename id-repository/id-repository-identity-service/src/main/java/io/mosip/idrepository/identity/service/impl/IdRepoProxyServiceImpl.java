@@ -29,7 +29,10 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.RECORD_EX
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -58,6 +62,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.mosip.commons.khazana.dto.ObjectDto;
 import io.mosip.idrepository.core.builder.RestRequestBuilder;
 import io.mosip.idrepository.core.constant.EventType;
 import io.mosip.idrepository.core.constant.IDAEventType;
@@ -85,6 +90,7 @@ import io.mosip.idrepository.core.spi.IdRepoService;
 import io.mosip.idrepository.core.util.EnvUtil;
 import io.mosip.idrepository.identity.entity.CardDetail;
 import io.mosip.idrepository.identity.entity.Uin;
+import io.mosip.idrepository.identity.entity.UinDocument;
 import io.mosip.idrepository.identity.helper.IdRepoServiceHelper;
 import io.mosip.idrepository.identity.helper.ObjectStoreHelper;
 import io.mosip.idrepository.identity.repository.CardDetailRepository;
@@ -199,6 +205,12 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	@Value("${mosip.idrepo.dob.format}")
 	private String dobFormat;
 
+	/** Maximum number of older demographic files returned per request. */
+	@Value("${mosip.idrepo.demographic.max-older-files:100}")
+	private long maxOlderDemographicFiles;
+
+	private static final String HISTORY_CATEGORY_PREFIX = "HISTORY|";
+
 	private static final String INUGANDA = "In Uganda";
 
 	private static final String OUTSIDEUGANDA = "Outside Uganda";
@@ -250,16 +262,22 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	@Override
 	public IdResponseDTO retrieveIdentity(String id, IdType idType, String type, Map<String, String> extractionFormats)
 			throws IdRepoAppException {
+		return retrieveIdentity(id, idType, type, extractionFormats, false);
+	}
+
+	@Override
+	public IdResponseDTO retrieveIdentity(String id, IdType idType, String type, Map<String, String> extractionFormats,
+			boolean includeHistory) throws IdRepoAppException {
 		switch (idType) {
 			case HANDLE:
-				return retrieveIdentityByHandle(id, type, extractionFormats);
+				return retrieveIdentityByHandle(id, type, extractionFormats, includeHistory);
 			case VID:
-				return retrieveIdentityByVid(id, type, extractionFormats);
+				return retrieveIdentityByVid(id, type, extractionFormats, includeHistory);
 			case ID:
-				return retrieveIdentityByRid(id, type, extractionFormats);
+				return retrieveIdentityByRid(id, type, extractionFormats, includeHistory);
 			case UIN:
 			default:
-				return retrieveIdentityByUin(id, type, extractionFormats);
+				return retrieveIdentityByUin(id, type, extractionFormats, includeHistory);
 		}
 	}
 
@@ -272,11 +290,12 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 * @return the id response DTO
 	 * @throws IdRepoAppException the id repo app exception
 	 */
-	private IdResponseDTO retrieveIdentityByUin(String uin, String type, Map<String, String> extractionFormats)
+	private IdResponseDTO retrieveIdentityByUin(String uin, String type, Map<String, String> extractionFormats,
+			boolean includeHistory)
 			throws IdRepoAppException {
 		try {
 			String uinHash = retrieveUinHash(uin);
-			return retrieveIdentityByUinHash(type, uinHash, extractionFormats);
+			return retrieveIdentityByUinHash(type, uinHash, extractionFormats, includeHistory);
 		} catch (DataAccessException | TransactionException | JDBCConnectionException e) {
 			mosipLogger.error(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, RETRIEVE_IDENTITY,
 					"\n" + e.getMessage());
@@ -301,10 +320,11 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 * @return the id response DTO
 	 * @throws IdRepoAppException the id repo app exception
 	 */
-	private IdResponseDTO retrieveIdentityByVid(String vid, String type, Map<String, String> extractionFormats)
+	private IdResponseDTO retrieveIdentityByVid(String vid, String type, Map<String, String> extractionFormats,
+			boolean includeHistory)
 			throws IdRepoAppException {
 		String uin = getUinByVid(vid);
-		return retrieveIdentityByUin(uin, type, extractionFormats);
+		return retrieveIdentityByUin(uin, type, extractionFormats, includeHistory);
 	}
 
 	/**
@@ -328,15 +348,16 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 * @return the id response DTO
 	 * @throws IdRepoAppException the id repo app exception
 	 */
-	private IdResponseDTO retrieveIdentityByUinHash(String type, String uinHash, Map<String, String> extractionFormats)
+	private IdResponseDTO retrieveIdentityByUinHash(String type, String uinHash, Map<String, String> extractionFormats,
+			boolean includeHistory)
 			throws IdRepoAppException {
 		List<DocumentsDTO> documents = new ArrayList<>();
 		Uin uinObject = service.retrieveIdentity(uinHash, IdType.UIN, type, null);
 		if (StringUtils.containsIgnoreCase(type, BIO) || StringUtils.containsIgnoreCase(type, ALL)) {
-			getFiles(uinObject, documents, extractionFormats, BIOMETRICS);
+			getFiles(uinObject, documents, extractionFormats, BIOMETRICS, false);
 		}
 		if (StringUtils.containsIgnoreCase(type, DEMO) || StringUtils.containsIgnoreCase(type, ALL)) {
-			getFiles(uinObject, documents, null, DEMOGRAPHICS);
+			getFiles(uinObject, documents, null, DEMOGRAPHICS, includeHistory);
 		}
 		return constructIdResponse(this.id.get(READ), uinObject, documents);
 	}
@@ -352,13 +373,18 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 */
 	IdResponseDTO retrieveIdentityByRid(String rid, String type, Map<String, String> extractionFormats)
 			throws IdRepoAppException {
+		return retrieveIdentityByRid(rid, type, extractionFormats, false);
+	}
+
+	IdResponseDTO retrieveIdentityByRid(String rid, String type, Map<String, String> extractionFormats,
+			boolean includeHistory) throws IdRepoAppException {
 		try {
 			String uinHash = uinRepo.getUinHashByRid(rid);
 			if (Objects.isNull(uinHash)) {
 				uinHash = uinHistoryRepo.getUinHashByRid(rid);
 			}
 			if (Objects.nonNull(uinHash)) {
-				return retrieveIdentityByUinHash(type, uinHash, extractionFormats);
+				return retrieveIdentityByUinHash(type, uinHash, extractionFormats, includeHistory);
 			} else {
 				throw new IdRepoAppException(NO_RECORD_FOUND);
 			}
@@ -386,24 +412,70 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 * @return the files
 	 */
 	private void getFiles(Uin uinObject, List<DocumentsDTO> documents, Map<String, String> extractionFormats,
-						  String type) {
+						  String type, boolean includeHistory) {
 		if (type.equals(BIOMETRICS)) {
 			getBiometricFiles(uinObject, documents, extractionFormats);
 		}
 
 		if (type.equals(DEMOGRAPHICS)) {
-			getDemographicFiles(uinObject, documents);
+			getDemographicFiles(uinObject, documents, includeHistory);
 		}
 	}
 
 	/**
 	 * Gets the demographic files.
 	 *
-	 * @param uinObject the uin object
-	 * @param documents the documents
+	 * @param uinObject      the uin object
+	 * @param documents      the documents
+	 * @param includeHistory also return older files of the UIN's Demographics folder
 	 * @return the demographic files
 	 */
-	private void getDemographicFiles(Uin uinObject, List<DocumentsDTO> documents) {
+	private void getDemographicFiles(Uin uinObject, List<DocumentsDTO> documents, boolean includeHistory) {
+		getCurrentDemographicFiles(uinObject, documents);
+		if (includeHistory) {
+			getOlderDemographicFiles(uinObject, documents);
+		}
+	}
+
+	/**
+	 * Adds the demographic files that are present in the UIN's Demographics folder
+	 * of the object store but are not the current files mapped in the database
+	 * (documents replaced by later updates). These have no document category
+	 * stored anywhere, so the category is returned as
+	 * <code>HISTORY|&lt;last modified UTC&gt;|&lt;file name&gt;</code>, newest
+	 * first. A file that cannot be read is skipped so the current documents are
+	 * still returned.
+	 *
+	 * @param uinObject the uin object
+	 * @param documents the documents
+	 */
+	private void getOlderDemographicFiles(Uin uinObject, List<DocumentsDTO> documents) {
+		String uinHash = uinObject.getUinHash().split("_")[1];
+		Set<String> currentFiles = uinObject.getDocuments().stream().map(UinDocument::getDocId)
+				.collect(Collectors.toSet());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+		objectStoreHelper.listUinObjects(uinHash).stream()
+				.filter(obj -> DEMOGRAPHICS.equals(obj.getSource()) || DEMOGRAPHICS.equals(obj.getProcess()))
+				.filter(obj -> StringUtils.isNotBlank(obj.getObjectName())
+						&& !currentFiles.contains(obj.getObjectName()))
+				.sorted(Comparator.comparing(ObjectDto::getLastModified,
+						Comparator.nullsLast(Comparator.reverseOrder())))
+				.limit(maxOlderDemographicFiles).forEach(obj -> {
+					try {
+						byte[] data = objectStoreHelper.getDemographicObject(uinHash, obj.getObjectName());
+						String modified = Objects.nonNull(obj.getLastModified())
+								? formatter.format(obj.getLastModified().toInstant())
+								: "";
+						documents.add(new DocumentsDTO(HISTORY_CATEGORY_PREFIX + modified + "|" + obj.getObjectName(),
+								CryptoUtil.encodeToURLSafeBase64(data)));
+					} catch (IdRepoAppException e) {
+						mosipLogger.warn(IdRepoSecurityManager.getUser(), ID_REPO_SERVICE_IMPL, GET_FILES,
+								"Skipping older demographic file " + obj.getObjectName() + ": " + e.getMessage());
+					}
+				});
+	}
+
+	private void getCurrentDemographicFiles(Uin uinObject, List<DocumentsDTO> documents) {
 		uinObject.getDocuments().stream().forEach(demo -> {
 			try {
 				String uinHash = uinObject.getUinHash().split("_")[1];
@@ -1038,13 +1110,14 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 		return securityManager.hashwithSalt(uin.getBytes(), hashSalt.getBytes());
 	}
 
-	private IdResponseDTO retrieveIdentityByHandle(String handle, String type, Map<String, String> extractionFormats)
+	private IdResponseDTO retrieveIdentityByHandle(String handle, String type, Map<String, String> extractionFormats,
+			boolean includeHistory)
 			throws IdRepoAppException {
 		try {
 			String handleHash = idRepoServiceHelper.getHandleHash(handle);
 			Handle entity = handleRepo.findByHandleHash(handleHash);
 			if (Objects.nonNull(entity)) {
-				return retrieveIdentityByUinHash(type, entity.getUinHash(), extractionFormats);
+				return retrieveIdentityByUinHash(type, entity.getUinHash(), extractionFormats, includeHistory);
 			} else {
 				throw new IdRepoAppException(NO_RECORD_FOUND);
 			}
