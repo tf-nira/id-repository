@@ -15,14 +15,20 @@ import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.UPDATE_CO
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import io.mosip.idrepository.identity.constant.MappingJsonConstants;
+
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -275,6 +281,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 
 		Map<String, HandleDto> selectedUniqueHandlesMap = checkAndGetHandles(request);
 
+		if(identityInfo==null){
+			mosipLogger.info("AddIdentity identityInfo null for the uin: {} and rid: {}",
+					uin, request.getRequest().getRegistrationId());
+		}
 		anonymousProfileHelper
 			.setRegId(request.getRequest().getRegistrationId())
 			.setNewUinData(identityInfo);
@@ -529,7 +539,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				securityManager.hash(data), "", IdRepoSecurityManager.getUser(),
 				DateUtils.getUTCCurrentDateTime(), null, null, false, null));
 
-		if (!isDraft)
+
 			uinBioHRepo.save(new UinBiometricHistory(uinRefId, DateUtils.getUTCCurrentDateTime(), fileRefId, doc.getCategory(),
 					docType.get(FILE_NAME_ATTRIBUTE).asText(), securityManager.hash(doc.getValue().getBytes()),
 					"", IdRepoSecurityManager.getUser(), DateUtils.getUTCCurrentDateTime(),
@@ -558,7 +568,7 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 				securityManager.hash(data), "", IdRepoSecurityManager.getUser(),
 				DateUtils.getUTCCurrentDateTime(), null, null, false, null));
 
-		if (!isDraft)
+
 			uinDocHRepo.save(new UinDocumentHistory(uinRefId, DateUtils.getUTCCurrentDateTime(), doc.getCategory(),
 					docType.get(TYPE).asText(), fileRefId, docType.get(FILE_NAME_ATTRIBUTE).asText(),
 					docType.get(FILE_FORMAT_ATTRIBUTE).asText(), securityManager.hash(data),
@@ -616,6 +626,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 						.mappingProvider(new JacksonMappingProvider()).build();
 				DocumentContext inputData = JsonPath.using(configuration).parse(requestDTO.getIdentity());
 				DocumentContext dbData = JsonPath.using(configuration).parse(new String(uinObject.getUinData()));
+				if (Objects.isNull(dbData)) {
+					mosipLogger.info("updateIdentity dbData for oldUinData is null for the uin: {} and rid: {}",
+							uin, request.getRequest().getRegistrationId());
+				}
 				anonymousProfileHelper.setOldUinData(dbData.jsonString().getBytes());
 				updateVerifiedAttributes(requestDTO, inputData, dbData);
 
@@ -655,6 +669,10 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 			}
 			
 			uinObject = uinRepo.save(uinObject);
+			if (Objects.isNull(uinObject.getUinData())) {
+				mosipLogger.info("updateIdentity uinObject for NewUinData is null for the uin: {} and rid: {}",
+						uin, request.getRequest().getRegistrationId());
+			}
 			anonymousProfileHelper.setNewUinData(uinObject.getUinData());
 			uinHistoryRepo.save(new UinHistory(uinObject.getUinRefId(), DateUtils.getUTCCurrentDateTime(),
 					uinObject.getUin(), uinObject.getUinHash(), uinObject.getUinData(), uinObject.getUinDataHash(),
