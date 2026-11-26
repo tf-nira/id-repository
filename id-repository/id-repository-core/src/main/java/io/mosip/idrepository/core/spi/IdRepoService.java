@@ -52,6 +52,26 @@ public interface IdRepoService<REQUEST, RESPONSE> {
 	RESPONSE retrieveIdentity(String id, IdType idType, String type, Map<String, String> extractionFormats) throws IdRepoAppException;
 
 	/**
+	 * Same as
+	 * {@link #retrieveIdentity(String, IdType, String, Map)} and, when
+	 * <code>includeHistory</code> is true, also returns the older demographic
+	 * files kept in the object store. Implementations that do not support it
+	 * ignore the flag.
+	 *
+	 * @param id                the id
+	 * @param idType            the id type
+	 * @param type              the type
+	 * @param extractionFormats the extraction formats
+	 * @param includeHistory    whether to include older demographic files
+	 * @return the response
+	 * @throws IdRepoAppException the id repo app exception
+	 */
+	default RESPONSE retrieveIdentity(String id, IdType idType, String type, Map<String, String> extractionFormats,
+			boolean includeHistory) throws IdRepoAppException {
+		return retrieveIdentity(id, idType, type, extractionFormats);
+	}
+
+	/**
 	 * This operation will update an existing ID record in the ID repository for a 
 	 * given UIN (Unique Identification Number).
 	 *

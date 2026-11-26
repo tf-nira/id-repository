@@ -3,6 +3,7 @@ package io.mosip.idrepository.identity.test.service.impl;
 import static io.mosip.idrepository.core.constant.IdRepoErrorConstants.INVALID_INPUT_PARAMETER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -873,6 +874,51 @@ public class IdRepoServiceTest {
 			assertEquals(IdRepoErrorConstants.DOCUMENT_HASH_MISMATCH.getErrorMessage(), e.getErrorText());
 		}
 	}
+
+	private Uin buildUinWithDemoDocument() {
+		Uin uinObj = new Uin();
+		uinObj.setUin("1234");
+		uinObj.setUinRefId("1234");
+		uinObj.setUinHash("234_5B72C3B57A72C6497461289FCA7B1F865ED6FB0596B446FEA1F92AF931A5D4B7");
+		UinDocument document = new UinDocument();
+		document.setDoccatCode("ProofOfIdentity");
+		document.setDocHash("3A6EB0790F39AC87C94F3856B2DD2C5D110E6811602261A9A923D3BB23ADC8B7");
+		document.setDocId("1234");
+		document.setDocName("name");
+		uinObj.setDocuments(Collections.singletonList(document));
+		uinObj.setUinData("{\"ProofOfIdentity\":{\"format\":\"pdf\",\"version\":1.0,\"fileReference\":\"fileReferenceID\"}}".getBytes());
+		return uinObj;
+	}
+
+	@Test
+	public void testRetrieveIdentityWithIncludeHistoryReturnsOlderDemoFiles() throws IdRepoAppException {
+		when(objectStoreHelper.getDemographicObject(Mockito.any(), Mockito.any())).thenReturn("data".getBytes());
+		when(objectStoreHelper.listUinObjects(Mockito.any())).thenReturn(java.util.Arrays.asList(
+				new io.mosip.commons.khazana.dto.ObjectDto("hash", "Demographics", "1234", new java.util.Date()),
+				new io.mosip.commons.khazana.dto.ObjectDto("hash", "Demographics", "old.pdf", new java.util.Date()),
+				new io.mosip.commons.khazana.dto.ObjectDto("hash", "Biometrics", "bio.xml", new java.util.Date())));
+		ReflectionTestUtils.setField(proxyService, "maxOlderDemographicFiles", 100L);
+		when(uinRepo.findByUinHash(Mockito.any())).thenReturn(Optional.of(buildUinWithDemoDocument()));
+		when(uinHashSaltRepo.retrieveSaltById(Mockito.anyInt())).thenReturn("AG7JQI1HwFp_cI_DcdAQ9A");
+		when(uinRepo.existsByUinHash(Mockito.any())).thenReturn(true);
+		IdResponseDTO response = proxyService.retrieveIdentity("1234", IdType.UIN, "demo", null, true);
+		assertEquals(2, response.getResponse().getDocuments().size());
+		assertEquals("ProofOfIdentity", response.getResponse().getDocuments().get(0).getCategory());
+		assertTrue(response.getResponse().getDocuments().get(1).getCategory().startsWith("HISTORY|"));
+		assertTrue(response.getResponse().getDocuments().get(1).getCategory().endsWith("|old.pdf"));
+	}
+
+	@Test
+	public void testRetrieveIdentityWithoutIncludeHistoryDoesNotListOlderFiles() throws IdRepoAppException {
+		when(objectStoreHelper.getDemographicObject(Mockito.any(), Mockito.any())).thenReturn("data".getBytes());
+		when(uinRepo.findByUinHash(Mockito.any())).thenReturn(Optional.of(buildUinWithDemoDocument()));
+		when(uinHashSaltRepo.retrieveSaltById(Mockito.anyInt())).thenReturn("AG7JQI1HwFp_cI_DcdAQ9A");
+		when(uinRepo.existsByUinHash(Mockito.any())).thenReturn(true);
+		IdResponseDTO response = proxyService.retrieveIdentity("1234", IdType.UIN, "demo", null);
+		assertEquals(1, response.getResponse().getDocuments().size());
+		Mockito.verify(objectStoreHelper, Mockito.never()).listUinObjects(Mockito.any());
+	}
+
 
 	@Test
 	public void testRetrieveIdentityWithDemoDocuments()

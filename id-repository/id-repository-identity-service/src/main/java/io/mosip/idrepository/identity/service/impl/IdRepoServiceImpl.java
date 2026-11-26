@@ -1256,4 +1256,18 @@ public class IdRepoServiceImpl implements IdRepoService<IdRequestDTO, Uin> {
 	private String getFileRefId(JsonNode docType) {
 		return UUID.randomUUID().toString() + DOT + docType.get(FILE_FORMAT_ATTRIBUTE).asText();
 	}
+
+	protected void saveDocumentHistory(UinDocument doc) {
+		LocalDateTime now = DateUtils.getUTCCurrentDateTime();
+		uinDocHRepo.save(new UinDocumentHistory(doc.getUinRefId(), now, doc.getDoccatCode(), doc.getDoctypCode(),
+				doc.getDocId(), doc.getDocName(), doc.getDocfmtCode(), doc.getDocHash(), "",
+				IdRepoSecurityManager.getUser(), now, null, null, false, null));
+	}
+
+	protected void saveBiometricHistory(UinBiometric bio) {
+		LocalDateTime now = DateUtils.getUTCCurrentDateTime();
+		uinBioHRepo.save(new UinBiometricHistory(bio.getUinRefId(), now, bio.getBioFileId(), bio.getBiometricFileType(),
+				bio.getBiometricFileName(), bio.getBiometricFileHash(), "", IdRepoSecurityManager.getUser(), now, null,
+				null, false, null));
+	}
 }

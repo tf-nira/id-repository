@@ -744,6 +744,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			return uinBio;
 		}).collect(Collectors.toList());
 		uinBiometricRepo.saveAll(uinBiometricList);
+		uinBiometricList.forEach(this::saveBiometricHistory);
 		List<UinDocument> uinDocumentList = draft.getDocuments().stream().map(doc -> {
 			UinDocument uinDoc = mapper.convertValue(doc, UinDocument.class);
 			uinDoc.setUinRefId(uinObject.getUinRefId());
@@ -751,6 +752,7 @@ public class IdRepoDraftServiceImpl extends IdRepoServiceImpl implements IdRepoD
 			return uinDoc;
 		}).collect(Collectors.toList());
 		uinDocumentRepo.saveAll(uinDocumentList);
+		uinDocumentList.forEach(this::saveDocumentHistory);
 	}
 
 	private String decryptUin(String encryptedUin, String uinHash) throws IdRepoAppException {

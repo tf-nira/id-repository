@@ -235,7 +235,8 @@ public class IdRepoController {
 														  @RequestParam(name = ID_TYPE, required = false) @Nullable String idType,
 														  @RequestParam(name = FINGER_EXTRACTION_FORMAT, required = false) @Nullable String fingerExtractionFormat,
 														  @RequestParam(name = IRIS_EXTRACTION_FORMAT, required = false) @Nullable String irisExtractionFormat,
-														  @RequestParam(name = FACE_EXTRACTION_FORMAT, required = false) @Nullable String faceExtractionFormat)
+														  @RequestParam(name = FACE_EXTRACTION_FORMAT, required = false) @Nullable String faceExtractionFormat),
+														  @RequestParam(name = "includeHistory", required = false, defaultValue = "false") boolean includeHistory)
 			throws IdRepoAppException {
 		try {
 			type = validator.validateType(type);
@@ -252,7 +253,8 @@ public class IdRepoController {
 			extractionFormats.remove(null);
 			validator.validateTypeAndExtractionFormats(type, extractionFormats);
 			return new ResponseEntity<>(idRepoService.retrieveIdentity(id,
-					Objects.isNull(idType) ? getIdType(id) : validator.validateIdType(idType), type, extractionFormats),
+					Objects.isNull(idType) ? getIdType(id) : validator.validateIdType(idType), type, extractionFormats,
+					includeHistory),
 					HttpStatus.OK);
 		} catch (IdRepoAppException e) {
 			auditHelper.auditError(AuditModules.ID_REPO_CORE_SERVICE,
