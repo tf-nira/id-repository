@@ -235,7 +235,7 @@ public class IdRepoController {
 														  @RequestParam(name = ID_TYPE, required = false) @Nullable String idType,
 														  @RequestParam(name = FINGER_EXTRACTION_FORMAT, required = false) @Nullable String fingerExtractionFormat,
 														  @RequestParam(name = IRIS_EXTRACTION_FORMAT, required = false) @Nullable String irisExtractionFormat,
-														  @RequestParam(name = FACE_EXTRACTION_FORMAT, required = false) @Nullable String faceExtractionFormat),
+														  @RequestParam(name = FACE_EXTRACTION_FORMAT, required = false) @Nullable String faceExtractionFormat,
 														  @RequestParam(name = "includeHistory", required = false, defaultValue = "false") boolean includeHistory)
 			throws IdRepoAppException {
 		try {
