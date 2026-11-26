@@ -411,13 +411,13 @@ public class IdRepoProxyServiceImpl implements IdRepoService<IdRequestDTO, IdRes
 	 * @return the files
 	 */
 	private void getFiles(Uin uinObject, List<DocumentsDTO> documents, Map<String, String> extractionFormats,
-						  String type) {
+						  String type, boolean includeHistory) {
 		if (type.equals(BIOMETRICS)) {
-			getBiometricFiles(uinObject, documents, extractionFormats, boolean includeHistory);
+			getBiometricFiles(uinObject, documents, extractionFormats);
 		}
 
 		if (type.equals(DEMOGRAPHICS)) {
-			getDemographicFiles(uinObject, documents, boolean includeHistory);
+			getDemographicFiles(uinObject, documents, includeHistory);
 		}
 	}
 
