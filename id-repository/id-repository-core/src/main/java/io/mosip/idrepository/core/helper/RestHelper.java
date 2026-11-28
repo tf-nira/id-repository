@@ -230,14 +230,14 @@ public class RestHelper {
 				if (responseNode.has(ERRORS) && !responseNode.get(ERRORS).isNull() && responseNode.get(ERRORS).isArray()
 						&& responseNode.get(ERRORS).size() > 0) {
 					mosipLogger.error(IdRepoSecurityManager.getUser(), CLASS_REST_HELPER, CHECK_ERROR_RESPONSE,
-							THROWING_REST_SERVICE_EXCEPTION + UNKNOWN_ERROR_LOG
+							THROWING_REST_SERVICE_EXCEPTION + "CLIENT_ERROR - Errors in response: "
 									+ responseNode.get(ERRORS).toString());
 					throw new RestServiceException(CLIENT_ERROR, responseNode.toString(),
 							mapper.readValue(responseNode.toString().getBytes(), responseType));
 				}
 			} else {
 				mosipLogger.error(IdRepoSecurityManager.getUser(), CLASS_REST_HELPER, CHECK_ERROR_RESPONSE,
-						THROWING_REST_SERVICE_EXCEPTION + UNKNOWN_ERROR_LOG + "Response is null");
+						THROWING_REST_SERVICE_EXCEPTION + "CLIENT_ERROR - Response is null");
 				throw new RestServiceException(CLIENT_ERROR);
 			}
 		} catch (IOException e) {
@@ -272,7 +272,8 @@ public class RestHelper {
 							errorList.get(0).getMessage(), e.getRawStatusCode()));
 				} else {
 					mosipLogger.error(IdRepoSecurityManager.getUser(), CLASS_REST_HELPER, METHOD_HANDLE_STATUS_ERROR,
-							"Status error - returning RestServiceException - CLIENT_ERROR ");
+							"Status error - returning RestServiceException - CLIENT_ERROR - HTTP Status: " 
+							+ e.getRawStatusCode() + " - Response: " + e.getResponseBodyAsString());
 					throw new RestServiceException(CLIENT_ERROR, e.getResponseBodyAsString(),
 							mapper.readValue(e.getResponseBodyAsString().getBytes(), responseType));
 				}
